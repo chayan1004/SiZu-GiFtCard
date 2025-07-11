@@ -127,6 +127,14 @@ export class SquareWebhookService {
         case 'order.updated':
           await this.handleOrderUpdated(event);
           break;
+        case 'order.fulfillment.updated':
+          await this.handleOrderFulfillmentUpdated(event);
+          break;
+
+        // OAuth events
+        case 'oauth.authorization.revoked':
+          await this.handleOAuthRevoked(event);
+          break;
 
         // Payout events
         case 'payout.created':
@@ -224,10 +232,9 @@ export class SquareWebhookService {
     const refund = event.data.object;
     console.log(`Refund created: ${refund.id}, Amount: ${refund.amountMoney.amount}`);
     
-    // Create fraud alert for monitoring
+    // Create fraud alert for monitoring (without giftCardId for general refunds)
     await storage.createFraudAlert({
-      giftCardId: '',
-      type: 'refund_created',
+      alertType: 'refund_created',
       description: `Refund created for ${refund.amountMoney.amount / 100} ${refund.amountMoney.currency}`,
       severity: 'low',
       metadata: { refundId: refund.id, paymentId: refund.paymentId }
@@ -244,10 +251,9 @@ export class SquareWebhookService {
     const dispute = event.data.object;
     console.log(`Dispute created: ${dispute.id}, Amount: ${dispute.amountMoney.amount}`);
     
-    // Create high-severity fraud alert
+    // Create high-severity fraud alert (without giftCardId for general disputes)
     await storage.createFraudAlert({
-      giftCardId: '',
-      type: 'dispute_created',
+      alertType: 'dispute_created',
       description: `Dispute created for ${dispute.amountMoney.amount / 100} ${dispute.amountMoney.currency}. Reason: ${dispute.reason}`,
       severity: 'high',
       metadata: { disputeId: dispute.id, paymentId: dispute.disputedPayment?.paymentId }
@@ -265,13 +271,94 @@ export class SquareWebhookService {
 
   // Order event handlers
   private async handleOrderCreated(event: WebhookEvent) {
-    const order = event.data.object;
-    console.log(`Order created: ${order.id}, Total: ${order.totalMoney?.amount}`);
+    const { order_created } = event.data.object;
+    console.log(`Order created: ${order_created.order_id}`);
+    console.log(`  Location ID: ${order_created.location_id}`);
+    console.log(`  State: ${order_created.state}`);
+    console.log(`  Created at: ${order_created.created_at}`);
+    console.log(`  Version: ${order_created.version}`);
+    
+    // Store order creation event for tracking
+    await storage.createPaymentRecord({
+      orderId: order_created.order_id,
+      locationId: order_created.location_id,
+      state: order_created.state,
+      type: 'order_created',
+      createdAt: order_created.created_at,
+      metadata: event
+    });
   }
 
   private async handleOrderUpdated(event: WebhookEvent) {
-    const order = event.data.object;
-    console.log(`Order updated: ${order.id}, State: ${order.state}`);
+    const { order_updated } = event.data.object;
+    console.log(`Order updated: ${order_updated.order_id}`);
+    console.log(`  State: ${order_updated.state}`);
+    console.log(`  Updated at: ${order_updated.updated_at}`);
+    console.log(`  Version: ${order_updated.version}`);
+    
+    // Update order status
+    if (order_updated.state === 'COMPLETED') {
+      await storage.updateTransactionStatus(order_updated.order_id, 'completed');
+    } else if (order_updated.state === 'CANCELED') {
+      await storage.updateTransactionStatus(order_updated.order_id, 'failed');
+    }
+  }
+
+  private async handleOrderFulfillmentUpdated(event: WebhookEvent) {
+    const { order_fulfillment_updated } = event.data.object;
+    console.log(`Order fulfillment updated: ${order_fulfillment_updated.order_id}`);
+    console.log(`  Location ID: ${order_fulfillment_updated.location_id}`);
+    console.log(`  State: ${order_fulfillment_updated.state}`);
+    
+    // Process fulfillment updates
+    if (order_fulfillment_updated.fulfillment_update) {
+      for (const update of order_fulfillment_updated.fulfillment_update) {
+        console.log(`  Fulfillment ${update.fulfillment_uid}:`);
+        console.log(`    Old state: ${update.old_state}`);
+        console.log(`    New state: ${update.new_state}`);
+        
+        // Handle fulfillment state changes
+        if (update.new_state === 'COMPLETED') {
+          // Mark gift card as delivered
+          console.log(`    Fulfillment completed for order ${order_fulfillment_updated.order_id}`);
+        } else if (update.new_state === 'FAILED') {
+          // Handle failed fulfillment (without giftCardId for general order alerts)
+          await storage.createFraudAlert({
+            alertType: 'fulfillment_failed',
+            description: `Order fulfillment failed for order ${order_fulfillment_updated.order_id}`,
+            severity: 'medium',
+            metadata: { 
+              orderId: order_fulfillment_updated.order_id,
+              fulfillmentUid: update.fulfillment_uid
+            }
+          });
+        }
+      }
+    }
+  }
+
+  private async handleOAuthRevoked(event: WebhookEvent) {
+    const { revocation } = event.data.object;
+    console.error('⚠️  OAuth authorization revoked!');
+    console.log(`  Revoked at: ${revocation.revoked_at}`);
+    console.log(`  Revoker type: ${revocation.revoker_type}`);
+    console.log(`  Merchant ID: ${event.merchant_id}`);
+    
+    // Create critical alert for OAuth revocation (without giftCardId for system alerts)
+    await storage.createFraudAlert({
+      alertType: 'oauth_revoked',
+      description: `Square OAuth authorization revoked by ${revocation.revoker_type}. Payment processing may be affected.`,
+      severity: 'critical',
+      metadata: {
+        merchantId: event.merchant_id,
+        revokedAt: revocation.revoked_at,
+        revokerType: revocation.revoker_type,
+        eventId: event.event_id
+      }
+    });
+    
+    // Log critical event for immediate attention
+    console.error('CRITICAL: Square OAuth authorization has been revoked. Payment processing will fail until re-authorized.');
   }
 
   // Payout event handlers
