@@ -34,6 +34,10 @@ import ResetPassword from "@/pages/ResetPassword";
 import VerifyOTP from "@/pages/VerifyOTP";
 import UserWallet from "@/pages/user/UserWallet";
 import UserTransactions from "@/pages/user/UserTransactions";
+import UserReports from "@/pages/user/UserReports";
+import UserNotifications from "@/pages/user/UserNotifications";
+import UserSupport from "@/pages/user/UserSupport";
+import UserSettings from "@/pages/user/UserSettings";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -123,6 +127,10 @@ function Router() {
           <Route path="/orders/:orderId" component={OrderDetails} />
           <Route path="/dashboard/user/wallet" component={UserWallet} />
           <Route path="/dashboard/user/transactions" component={UserTransactions} />
+          <Route path="/dashboard/user/reports" component={UserReports} />
+          <Route path="/dashboard/user/notifications" component={UserNotifications} />
+          <Route path="/dashboard/user/support" component={UserSupport} />
+          <Route path="/dashboard/user/settings" component={UserSettings} />
           <Route path="/revenue" component={Revenue} />
           <Route path="/fees" component={FeeManagement} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
