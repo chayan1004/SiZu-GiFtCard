@@ -36,7 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCustomerAuth } from "@/hooks/useCustomerAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -87,7 +87,11 @@ interface GiftCard {
 
 export default function UserDashboard() {
   const [, setLocation] = useLocation();
-  const { user, logout, isLoading: authLoading } = useCustomerAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  const handleLogout = async () => {
+    window.location.href = '/api/auth/logout';
+  };
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,10 +115,7 @@ export default function UserDashboard() {
     enabled: !!user
   });
 
-  const handleLogout = async () => {
-    await logout();
-    setLocation('/');
-  };
+
 
   // Calculate total balance from gift cards
   const totalBalance = giftCards.reduce((sum, card) => sum + parseFloat(card.balance), 0);

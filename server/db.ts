@@ -12,13 +12,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Configure connection pooling with Neon's pooler for better performance
-// Use Neon's connection pooler by replacing the domain pattern
-const poolerUrl = process.env.DATABASE_URL.replace('.neon.tech', '-pooler.neon.tech');
-
+// Use standard connection URL for better compatibility  
 export const pool = new Pool({ 
-  connectionString: poolerUrl,
-  max: 10,                           // Reduced from 20 - pooler handles connection multiplexing
+  connectionString: process.env.DATABASE_URL,
+  max: 20,                           // Standard connection limit
   idleTimeoutMillis: 20000,          // Close idle connections after 20s
   connectionTimeoutMillis: 60000,    // Fail after 60s if can't connect
 });

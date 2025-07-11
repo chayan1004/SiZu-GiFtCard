@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/oauth', oauthRouter);
   
   // Add webhook subscriptions routes
-  app.use('/api/webhook-subscriptions', webhookSubscriptionsRouter);
+  app.use('/api/webhooks/subscriptions', webhookSubscriptionsRouter);
   
   // Add email templates routes
   app.use('/api/email-templates', emailTemplatesRouter);
@@ -194,6 +194,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add database tools routes (admin only)
   app.use('/api/admin/database', databaseToolsRouter);
+
+  // Add missing critical endpoints
+  
+  // Transactions endpoint
+  app.get('/api/transactions', requireAnyAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      if (user.isAdmin) {
+        // Admin gets all transactions
+        const transactions = await storage.getAllTransactions();
+        res.json(transactions);
+      } else {
+        // Regular user gets only their transactions
+        const giftCards = await storage.getGiftCardsByUser(user.id);
+        const allTransactions = [];
+        for (const card of giftCards) {
+          const cardTransactions = await storage.getTransactionsByGiftCard(card.id);
+          allTransactions.push(...cardTransactions.map(tx => ({
+            ...tx,
+            cardCode: card.code,
+            cardDesign: card.design
+          })));
+        }
+        allTransactions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        res.json(allTransactions);
+      }
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
+  // Receipts endpoint
+  app.get('/api/receipts', requireAnyAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      if (user.isAdmin) {
+        // Admin gets all receipts
+        const receipts = await storage.getAllReceipts();
+        res.json(receipts);
+      } else {
+        // Regular user gets only their receipts
+        const giftCards = await storage.getGiftCardsByUser(user.id);
+        const allReceipts = [];
+        for (const card of giftCards) {
+          const cardReceipts = await storage.getReceiptsByGiftCard(card.id);
+          allReceipts.push(...cardReceipts);
+        }
+        allReceipts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        res.json(allReceipts);
+      }
+    } catch (error) {
+      console.error("Error fetching receipts:", error);
+      res.status(500).json({ message: "Failed to fetch receipts" });
+    }
+  });
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
