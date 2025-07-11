@@ -81,6 +81,10 @@ export interface IStorage {
     totalCount: number;
   }>;
   getUserOrderDetails(userId: string, orderId: string): Promise<any | undefined>;
+  
+  // Revenue tracking operations
+  getGiftCardRevenue(giftCardId: string): Promise<{ totalRedeemed: number; redemptionCount: number }>;
+  getUserTotalSpending(email: string): Promise<{ totalSpent: number; purchaseCount: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -561,6 +565,53 @@ export class DatabaseStorage implements IStorage {
         createdAt: t.createdAt,
         notes: t.notes
       }))
+    };
+  }
+
+  // Revenue tracking operations
+  async getGiftCardRevenue(giftCardId: string): Promise<{ totalRedeemed: number; redemptionCount: number }> {
+    const redemptions = await db
+      .select({
+        amount: giftCardTransactions.amount
+      })
+      .from(giftCardTransactions)
+      .where(and(
+        eq(giftCardTransactions.giftCardId, giftCardId),
+        eq(giftCardTransactions.type, 'redemption')
+      ));
+    
+    const totalRedeemed = redemptions.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    
+    return {
+      totalRedeemed,
+      redemptionCount: redemptions.length
+    };
+  }
+
+  async getUserTotalSpending(email: string): Promise<{ totalSpent: number; purchaseCount: number }> {
+    // First, try to find user by email
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+    
+    if (!user) {
+      return { totalSpent: 0, purchaseCount: 0 };
+    }
+    
+    // Get all gift cards purchased by this user
+    const purchases = await db
+      .select({
+        amount: giftCards.initialAmount
+      })
+      .from(giftCards)
+      .where(eq(giftCards.issuedById, user.id));
+    
+    const totalSpent = purchases.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    
+    return {
+      totalSpent,
+      purchaseCount: purchases.length
     };
   }
 }

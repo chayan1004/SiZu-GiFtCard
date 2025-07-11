@@ -15,7 +15,8 @@ import {
   Mail,
   MessageSquare,
   Activity,
-  DollarSign
+  DollarSign,
+  TrendingUp
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -243,6 +244,94 @@ export default function OrderDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Revenue Tracking */}
+        {order.revenue && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Revenue Analytics
+              </CardTitle>
+              <CardDescription>
+                Financial insights for this gift card
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Gift Card Revenue */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Gift Card Revenue</h4>
+                  <Card className="bg-muted/50">
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Total Redeemed</span>
+                          <span className="font-semibold text-green-600">
+                            ${order.revenue.giftCardRevenue.totalRedeemed.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Redemption Count</span>
+                          <span className="font-medium">
+                            {order.revenue.giftCardRevenue.redemptionCount}
+                          </span>
+                        </div>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Utilization Rate</span>
+                            <span className="font-medium">
+                              {((order.revenue.giftCardRevenue.totalRedeemed / parseFloat(order.amount)) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Recipient Spending */}
+                {order.recipientEmail && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Recipient Activity</h4>
+                    <Card className="bg-muted/50">
+                      <CardContent className="p-4">
+                        {order.revenue.recipientSpending.totalSpent > 0 ? (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-muted-foreground">Total Spent</span>
+                              <span className="font-semibold text-blue-600">
+                                ${order.revenue.recipientSpending.totalSpent.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-muted-foreground">Purchases Made</span>
+                              <span className="font-medium">
+                                {order.revenue.recipientSpending.purchaseCount}
+                              </span>
+                            </div>
+                            <div className="mt-2 pt-2 border-t">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">Average Purchase</span>
+                                <span className="font-medium">
+                                  ${(order.revenue.recipientSpending.totalSpent / order.revenue.recipientSpending.purchaseCount).toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-2">
+                            Recipient has not made any purchases yet
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Transaction History */}
         {order.transactions && order.transactions.length > 0 && (

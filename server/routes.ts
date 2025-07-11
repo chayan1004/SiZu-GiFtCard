@@ -457,7 +457,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      res.json(orderDetails);
+      // Get revenue information
+      const giftCardRevenue = await storage.getGiftCardRevenue(orderId);
+      
+      // Get recipient spending if they have an email
+      let recipientSpending = { totalSpent: 0, purchaseCount: 0 };
+      if (orderDetails.recipientEmail) {
+        recipientSpending = await storage.getUserTotalSpending(orderDetails.recipientEmail);
+      }
+      
+      res.json({
+        ...orderDetails,
+        revenue: {
+          giftCardRevenue,
+          recipientSpending
+        }
+      });
     } catch (error) {
       console.error("Error fetching order details:", error);
       res.status(500).json({ message: "Failed to fetch order details" });
