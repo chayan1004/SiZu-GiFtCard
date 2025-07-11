@@ -5,12 +5,9 @@ import { useLocation } from "wouter";
 
 interface User {
   id: string;
+  name: string;
   email: string;
-  role: string;
-  firstName?: string;
-  lastName?: string;
-  isEmailVerified?: boolean;
-  isAdmin?: boolean;
+  role: 'admin' | 'user';
 }
 
 export function useAuth() {
@@ -18,7 +15,7 @@ export function useAuth() {
   const [, setLocation] = useLocation();
 
   // Check for any authentication (admin or customer)
-  const { data: authState, isLoading, error } = useQuery({
+  const { data: authState, isLoading, error } = useQuery<any, Error>({ // Generic types added for data and error
     queryKey: ["/api/auth/status"],
     queryFn: async () => {
       try {
@@ -32,7 +29,9 @@ export function useAuth() {
             isAuthenticated: true
           };
         }
-      } catch {}
+      } catch (adminError) {
+        console.error("Admin auth check failed:", adminError); // Log the error
+      }
 
       try {
         // Then check for customer auth
@@ -45,7 +44,9 @@ export function useAuth() {
             isAuthenticated: true
           };
         }
-      } catch {}
+      } catch (customerError) {
+        console.error("Customer auth check failed:", customerError); // Log the error
+      }
 
       return {
         user: null,
@@ -55,7 +56,15 @@ export function useAuth() {
     },
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 10, // 10 minutes,
+    onError: (err) => { // Error handler added
+      console.error("Authentication query failed:", err);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to determine authentication status.",
+        variant: "destructive",
+      });
+    }
   });
 
   // Customer login mutation

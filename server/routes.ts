@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const squareService = new SquareService();
   const squareCustomerService = new SquareCustomerService();
-  
+
   // Initialize payments service only if Square access token is available
   let paymentsService: any = null;
   try {
@@ -161,42 +161,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add payment routes
   app.use('/api/payments', paymentsRouter);
-  
+
   // Add webhook routes
   app.use('/api/webhooks', webhooksRouter);
-  
+
   // Add payment links routes
   app.use('/api/payment-links', paymentLinksRouter);
-  
+
   // Add refunds routes
   app.use('/api/refunds', refundsRouter);
-  
+
   // Add disputes routes
   app.use('/api/disputes', disputesRouter);
-  
+
   // Add OAuth routes
   app.use('/api/oauth', oauthRouter);
-  
+
   // Add webhook subscriptions routes
   app.use('/api/webhooks/subscriptions', webhookSubscriptionsRouter);
-  
+
   // Add email templates routes
   app.use('/api/email-templates', emailTemplatesRouter);
-  
+
   // Add gift card designs routes
   app.use('/api/gift-card-designs', giftCardDesignsRouter);
-  
+
   // Add system settings routes
   app.use('/api/system-settings', systemSettingsRouter);
-  
+
   // Add audit logs routes
   app.use('/api/audit-logs', auditLogsRouter);
-  
+
   // Add database tools routes (admin only)
   app.use('/api/admin/database', databaseToolsRouter);
 
   // Add missing critical endpoints
-  
+
   // Transactions endpoint
   app.get('/api/transactions', requireAnyAuth, async (req: any, res) => {
     try {
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       if (user.isAdmin) {
         // Admin gets all transactions
         const transactions = await storage.getAllTransactions();
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       if (user.isAdmin) {
         // Admin gets all receipts
         const receipts = await storage.getAllReceipts();
@@ -725,7 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/giftcards/balance', giftCardRateLimit, validateGiftCardCode, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
-      
+
       const giftCard = await storage.getGiftCardByCode(code);
       if (!giftCard) {
         return res.status(404).json({ message: "Gift card not found" });
@@ -748,12 +748,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to check balance" });
     }
   });
-  
+
   // Alternative check balance endpoint (Public) 
   app.post('/api/giftcards/check-balance', giftCardRateLimit, validateGiftCardCode, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
-      
+
       const giftCard = await storage.getGiftCardByCode(code);
       if (!giftCard) {
         return res.status(404).json({ message: "Gift card not found" });
@@ -781,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardCode, validateGiftCardAmount, async (req, res) => {
     try {
       const { code, amount } = redeemGiftCardSchema.parse(req.body);
-      
+
       const giftCard = await storage.getGiftCardByCode(code);
       if (!giftCard) {
         return res.status(404).json({ message: "Gift card not found" });
@@ -871,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch gift cards" });
     }
   });
-  
+
   // Admin endpoint alias for consistency
   app.get('/api/admin/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -898,7 +898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch gift cards" });
     }
   });
-  
+
   // Get transactions for a specific gift card
   app.get('/api/giftcards/:id/transactions', requireAnyAuth, validateId, async (req: any, res) => {
     try {
@@ -906,15 +906,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       const giftCardId = req.params.id;
-      
+
       // Verify the gift card belongs to the user
       const giftCard = await storage.getGiftCardById(giftCardId);
       if (!giftCard || giftCard.purchasedBy !== user.id) {
         return res.status(404).json({ message: "Gift card not found" });
       }
-      
+
       const transactions = await storage.getTransactionsByGiftCard(giftCardId);
       res.json(transactions);
     } catch (error) {
@@ -928,7 +928,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token } = req.params;
       const receipt = await storage.getReceiptByToken(token);
-      
+
       if (!receipt) {
         return res.status(404).json({ message: "Receipt not found or expired" });
       }
@@ -954,7 +954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token } = req.params;
       const receipt = await storage.getReceiptByToken(token);
-      
+
       if (!receipt || !receipt.pdfPath) {
         return res.status(404).json({ message: "Receipt PDF not found" });
       }
@@ -969,7 +969,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set proper headers for PDF download
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="receipt-${receipt.id}.pdf"`);
-      
+
       res.download(receipt.pdfPath, `receipt-${receipt.id}.pdf`);
     } catch (error) {
       console.error("Error serving PDF:", error);
@@ -1013,7 +1013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const userId = req.user.claims.sub;
-      
+
       const alert = await storage.resolveFraudAlert(id, userId);
       res.json(alert);
     } catch (error) {
@@ -1027,7 +1027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get all users from the database
       const users = await storage.getAllUsers();
-      
+
       // Remove sensitive data before sending
       const sanitizedUsers = users.map(user => ({
         id: user.id,
@@ -1041,7 +1041,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         giftCardCount: user.giftCardCount || 0,
         totalSpent: user.totalSpent || 0
       }));
-      
+
       res.json(sanitizedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -1050,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User Dashboard Routes
-  
+
   // Get dashboard stats
   app.get('/api/user/dashboard/stats', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1058,23 +1058,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       // Get user's gift cards
       const giftCards = await storage.getGiftCardsByUser(user.id);
-      
+
       // Calculate statistics
       const totalBalance = giftCards.reduce((sum, card) => sum + parseFloat(card.balance), 0);
       const totalInitialValue = giftCards.reduce((sum, card) => sum + parseFloat(card.initialAmount), 0);
       const totalSpent = totalInitialValue - totalBalance;
       const activeCards = giftCards.filter(card => parseFloat(card.balance) > 0).length;
-      
+
       // Get recent transactions
       const allTransactions = [];
       for (const card of giftCards) {
         const cardTransactions = await storage.getTransactionsByGiftCard(card.id);
         allTransactions.push(...cardTransactions);
       }
-      
+
       // Sort by date and get recent ones
       const recentTransactions = allTransactions
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -1087,21 +1087,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           date: tx.createdAt,
           status: 'completed' as const
         }));
-      
+
       // Calculate monthly spending from actual transactions
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
+
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const monthlySpending = [];
-      
+
       // Get last 6 months
       for (let i = 5; i >= 0; i--) {
         const monthDate = new Date();
         monthDate.setMonth(monthDate.getMonth() - i);
         const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
         const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-        
+
         // Calculate spending for this month
         const monthTransactions = allTransactions.filter(tx => {
           const txDate = new Date(tx.createdAt);
@@ -1109,15 +1109,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                  txDate >= monthStart && 
                  txDate <= monthEnd;
         });
-        
+
         const monthAmount = monthTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
-        
+
         monthlySpending.push({
           month: monthNames[monthDate.getMonth()],
           amount: Math.round(monthAmount * 100) / 100
         });
       }
-      
+
       res.json({
         totalBalance,
         totalSpent,
@@ -1131,7 +1131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch dashboard statistics" });
     }
   });
-  
+
   // Get user's transactions
   app.get('/api/user/transactions', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1139,10 +1139,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      
+
       // Get user's gift cards
       const giftCards = await storage.getGiftCardsByUser(user.id);
-      
+
       // Get all transactions for user's cards
       const allTransactions = [];
       for (const card of giftCards) {
@@ -1153,19 +1153,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cardDesign: card.design
         })));
       }
-      
+
       // Sort by date (newest first)
       allTransactions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-      
+
       res.json(allTransactions);
     } catch (error) {
       console.error("Error fetching user transactions:", error);
       res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });
-  
+
   // Order History Routes
-  
+
   // Get user's order history (paginated)
   app.get('/api/user/orders', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1176,14 +1176,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = user.id;
       const page = parseInt(req.query.page as string) || 1;
       const pageSize = parseInt(req.query.pageSize as string) || 10;
-      
+
       // Validate pagination parameters
       if (page < 1 || pageSize < 1 || pageSize > 50) {
         return res.status(400).json({ message: "Invalid pagination parameters" });
       }
-      
+
       const { orders, totalCount } = await storage.getUserOrders(userId, page, pageSize);
-      
+
       res.json({
         orders,
         pagination: {
@@ -1198,7 +1198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch order history" });
     }
   });
-  
+
   // Get specific order details
   app.get('/api/user/orders/:orderId', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1208,22 +1208,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const userId = user.id;
       const { orderId } = req.params;
-      
+
       const orderDetails = await storage.getUserOrderDetails(userId, orderId);
-      
+
       if (!orderDetails) {
         return res.status(404).json({ message: "Order not found" });
       }
-      
+
       // Get revenue information
       const giftCardRevenue = await storage.getGiftCardRevenue(orderId);
-      
+
       // Get recipient spending if they have an email
       let recipientSpending = { totalSpent: 0, purchaseCount: 0 };
       if (orderDetails.recipientEmail) {
         recipientSpending = await storage.getUserTotalSpending(orderDetails.recipientEmail);
       }
-      
+
       res.json({
         ...orderDetails,
         revenue: {
@@ -1238,7 +1238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Saved Card Routes
-  
+
   // List user's saved cards
   app.get('/api/cards', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1254,7 +1254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch saved cards" });
     }
   });
-  
+
   // Alias endpoint for consistency with user namespace
   app.get('/api/user/saved-cards', requireAnyAuth, async (req: any, res) => {
     try {
@@ -1280,7 +1280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const userId = user.id;
       const data = addSavedCardSchema.parse(req.body);
-      
+
       // Get user data
       const userData = await storage.getUser(userId);
       if (!userData) {
@@ -1416,7 +1416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Fee Configuration Routes (Admin only)
-  
+
   // Get all fee configurations
   app.get('/api/admin/fees', isAuthenticated, async (req: any, res) => {
     try {
@@ -1508,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/fees/calculate', async (req, res) => {
     try {
       const { amount, feeType = 'standard' } = req.body;
-      
+
       if (!amount || amount <= 0) {
         return res.status(400).json({ message: "Invalid amount" });
       }
@@ -1529,16 +1529,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Routes
-  
+
   // AI Design Suggestion
   app.post('/api/ai/suggest-design', async (req, res) => {
     try {
       const { prompt } = req.body;
-      
+
       if (!prompt || prompt.trim().length === 0) {
         return res.status(400).json({ message: "Prompt is required" });
       }
-      
+
       const result = await aiService.suggestDesign(prompt);
       res.json(result);
     } catch (error: any) {
@@ -1552,16 +1552,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to suggest design" });
     }
   });
-  
+
   // AI Message Generation
   app.post('/api/ai/generate-message', async (req, res) => {
     try {
       const { occasion, recipient, tone, senderName } = req.body;
-      
+
       if (!occasion || !recipient) {
         return res.status(400).json({ message: "Occasion and recipient are required" });
       }
-      
+
       const result = await aiService.generateMessage({
         occasion,
         recipient,
@@ -1580,16 +1580,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate message" });
     }
   });
-  
+
   // AI Gift Ideas
   app.post('/api/ai/gift-ideas', async (req, res) => {
     try {
       const { query } = req.body;
-      
+
       if (!query || query.trim().length === 0) {
         return res.status(400).json({ message: "Query is required" });
       }
-      
+
       const result = await aiService.getGiftIdeas(query);
       res.json(result);
     } catch (error: any) {
@@ -1603,16 +1603,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get gift ideas" });
     }
   });
-  
+
   // AI Recipient Analysis
   app.post('/api/ai/analyze-recipient', async (req, res) => {
     try {
       const { description } = req.body;
-      
+
       if (!description || description.trim().length === 0) {
         return res.status(400).json({ message: "Description is required" });
       }
-      
+
       const result = await aiService.analyzeRecipientPreferences(description);
       res.json(result);
     } catch (error: any) {
@@ -1626,24 +1626,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to analyze recipient" });
     }
   });
-  
+
   // Public Routes
-  
+
   // Public Purchase Gift Card (no auth required)
   app.post('/api/giftcards/purchase', giftCardRateLimit, async (req, res) => {
     try {
       const giftCardData = createGiftCardSchema.parse(req.body);
-      
+
       // Generate gift card code
       const code = nanoid(10).toUpperCase();
-      
+
       // Create gift card
       const giftCard = await storage.createGiftCard({
         ...giftCardData,
         code,
         initialAmount: giftCardData.initialAmount.toString(),
       });
-      
+
       // Create issue transaction
       const transaction = await storage.createTransaction({
         giftCardId: giftCard.id,
@@ -1652,7 +1652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         balanceAfter: giftCardData.initialAmount.toString(),
         notes: 'Gift card purchased',
       });
-      
+
       // Generate receipt
       const receiptData = {
         giftCardCode: code,
@@ -1666,10 +1666,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString(),
         type: 'purchase',
       };
-      
+
       const accessToken = nanoid(32);
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      
+
       const receipt = await storage.createReceipt({
         giftCardId: giftCard.id,
         transactionId: transaction.id,
@@ -1677,16 +1677,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accessToken,
         expiresAt,
       });
-      
+
       // Generate QR code
       const qrCode = await qrService.generateQRCode(
         `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/balance?code=${code}`
       );
-      
+
       // Generate PDF receipt
       const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
       await storage.updateReceiptPdfPath(receipt.id, pdfPath);
-      
+
       // Send email if recipient email provided
       if (giftCard.recipientEmail) {
         try {
@@ -1705,12 +1705,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Don't fail the transaction if email fails
         }
       }
-      
+
       // Broadcast revenue update
       if ((global as any).broadcastRevenueUpdate) {
         (global as any).broadcastRevenueUpdate(transaction);
       }
-      
+
       res.json({
         success: true,
         code: giftCard.code,
@@ -1727,37 +1727,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to purchase gift card" });
     }
   });
-  
+
   // Public Order Lookup
   app.post('/api/public/orders', async (req, res) => {
     try {
       const { email, orderCode } = req.body;
-      
+
       if (!email || !validateEmail(email)) {
         return res.status(400).json({ message: "Valid email is required" });
       }
-      
+
       // Get all gift cards for the email (either as sender or recipient)
       const allGiftCards = await storage.getAllGiftCards();
       let userGiftCards = allGiftCards.filter(card => 
         card.recipientEmail === email || 
         (card.senderName && card.senderName.toLowerCase().includes(email.toLowerCase()))
       );
-      
+
       // If order code provided, filter by it
       if (orderCode) {
         userGiftCards = userGiftCards.filter(card => 
           card.code.toUpperCase() === orderCode.toUpperCase()
         );
       }
-      
+
       // Format as orders
       const orders = await Promise.all(userGiftCards.map(async (card) => {
         const transactions = await storage.getTransactionsByGiftCard(card.id);
         const purchaseTransaction = transactions.find(t => t.type === 'issue');
         const redemptions = transactions.filter(t => t.type === 'redeem');
         const totalRedeemed = redemptions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        
+
         return {
           id: card.id,
           code: card.code,
@@ -1775,35 +1775,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           redeemedAmount: totalRedeemed.toFixed(2),
         };
       }));
-      
-      // Sort by most recent first
+
+      // Sort by mostrecent first
       orders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-      
+
       res.json({ orders });
     } catch (error) {
       console.error("Error looking up orders:", error);
       res.status(500).json({ message: "Failed to look up orders" });
     }
   });
-  
+
   // Public Recharge Gift Card (placeholder - requires payment integration)
   app.post('/api/giftcards/recharge', giftCardRateLimit, async (req, res) => {
     try {
       const { code, amount, paymentMethod } = req.body;
-      
+
       if (!code || !amount || amount <= 0) {
         return res.status(400).json({ message: "Valid code and amount are required" });
       }
-      
+
       const giftCard = await storage.getGiftCardByCode(code);
       if (!giftCard) {
         return res.status(404).json({ message: "Gift card not found" });
       }
-      
+
       if (!giftCard.isActive) {
         return res.status(400).json({ message: "Gift card is not active" });
       }
-      
+
       // Process payment
       if (!paymentMethod) {
         return res.status(400).json({ message: "Payment method is required" });
@@ -1836,9 +1836,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update gift card balance
       const currentBalance = parseFloat(giftCard.currentBalance);
       const newBalance = currentBalance + amount;
-      
+
       await storage.updateGiftCardBalance(giftCard.id, newBalance.toString());
-      
+
       // Create recharge transaction
       const transaction = await storage.createTransaction({
         giftCardId: giftCard.id,
@@ -1888,12 +1888,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to recharge gift card" });
     }
   });
-  
+
   // Update check balance to return all card details
   app.post('/api/giftcards/check-balance', giftCardRateLimit, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
-      
+
       const giftCard = await storage.getGiftCardByCode(code);
       if (!giftCard) {
         return res.status(404).json({ message: "Gift card not found" });
@@ -1946,7 +1946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', async (ws, req) => {
     const clientIP = req.socket.remoteAddress || 'unknown';
     console.log(`WebSocket client connected from ${clientIP}`);
-    
+
     // Database-based rate limiting check
     try {
       const isAllowed = await storage.checkRateLimit(clientIP, 'websocket', 60000, 100);
@@ -1954,24 +1954,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ws.close(1008, 'Rate limit exceeded');
         return;
       }
-      
+
       // Increment rate limit counter
       await storage.incrementRateLimit(clientIP, 'websocket');
     } catch (error) {
       console.error('Rate limit check failed:', error);
       // Allow connection on error to prevent blocking legitimate users
     }
-    
+
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        
+
         // Validate message structure
         if (!data.type || typeof data.type !== 'string') {
           ws.send(JSON.stringify({ error: 'Invalid message format' }));
           return;
         }
-        
+
         // Handle authenticated messages only
         if (data.type === 'auth') {
           // Implement WebSocket authentication
@@ -1979,7 +1979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ws.send(JSON.stringify({ type: 'auth-error', message: 'Session ID required' }));
             return;
           }
-          
+
           // Store authenticated state on the WebSocket connection
           (ws as any).isAuthenticated = true;
           (ws as any).sessionId = data.sessionId;
@@ -2032,6 +2032,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Export broadcast functions for use in services
   (global as any).broadcastFraudAlert = broadcastFraudAlert;
   (global as any).broadcastRevenueUpdate = broadcastRevenueUpdate;
+
+  // Admin middleware
+  const requireAdmin = (req: any, res: any, next: any) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    next();
+  };
+
+  // Admin users endpoint
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+
+      // Remove sensitive data before sending
+      const sanitizedUsers = users.map(user => ({
+        id: user.id,
+        name: user.name || 'N/A',
+        email: user.email || 'N/A',
+        role: user.role || 'user',
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin || null,
+        isActive: user.isActive !== false,
+        hasProfilePicture: !!user.profilePicture,
+        giftCardCount: user.giftCardCount || 0,
+        totalSpent: user.totalSpent || 0
+      }));
+
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Public fee endpoint for shop
+  app.get('/api/fees/active', async (req, res) => {
+    try {
+      const fees = await storage.getFeeConfigurations();
+      const activeFees = fees.filter(fee => fee.isActive);
+      res.json(activeFees);
+    } catch (error) {
+      console.error("Error fetching active fees:", error);
+      res.status(500).json({ message: "Failed to fetch active fees" });
+    }
+  });
 
   return httpServer;
 }

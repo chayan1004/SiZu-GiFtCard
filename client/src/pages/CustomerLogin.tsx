@@ -14,7 +14,7 @@ import { CreditCard, Mail, Lock, Eye, EyeOff, LogIn, Gift, Sparkles, ShieldCheck
 export default function CustomerLogin() {
   const { login, isLoading } = useCustomerAuth();
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -43,7 +43,7 @@ export default function CustomerLogin() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
         <div className="absolute top-40 left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
       </div>
-      
+
       {/* Floating icons */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 
@@ -61,7 +61,7 @@ export default function CustomerLogin() {
         >
           <Gift className="w-8 h-8" />
         </motion.div>
-        
+
         <motion.div 
           animate={{ 
             x: [0, -25, 0], 
@@ -78,7 +78,7 @@ export default function CustomerLogin() {
         >
           <Sparkles className="w-6 h-6" />
         </motion.div>
-        
+
         <motion.div 
           animate={{ 
             x: [0, 20, 0], 
@@ -131,7 +131,7 @@ export default function CustomerLogin() {
                   </div>
                 </div>
               </motion.div>
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export default function CustomerLogin() {
                 </CardDescription>
               </motion.div>
             </CardHeader>
-            
+
             <form onSubmit={handleSubmit(onSubmit)}>
               <CardContent className="space-y-6">
                 <motion.div 

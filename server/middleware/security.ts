@@ -9,20 +9,28 @@ import rateLimit from 'express-rate-limit';
 // Rate limiting configurations
 export const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later',
-  },
+  max: 100,
+  message: { error: 'Too many requests from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/api/health';
+  }
+});
+
+export const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes  
+  max: 5,
+  message: { error: 'Too many authentication attempts, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-export const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 login attempts per windowMs
-  message: {
-    error: 'Too many authentication attempts, please try again later',
-  },
+export const apiRateLimit = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 10,
+  message: { error: 'Too many API requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -82,7 +90,7 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
   const body = req.body;
   const query = req.query;
   const params = req.params;
-  
+
   // Enhanced SQL injection patterns with specific error messages
   const dangerousPatterns = [
     { pattern: /('|\\')|(;|\\;)|\||\*/, message: 'SQL injection characters detected. Please remove special characters like quotes, semicolons, or pipes.' },
@@ -104,13 +112,13 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
     if (depth > 10) {
       return 'Input structure too deep. Please simplify your data.';
     }
-    
+
     if (typeof value === 'string') {
       // Additional length check
       if (value.length > 10000) {
         return 'Input too long. Please limit text to 10,000 characters.';
       }
-      
+
       // Allow Square test payment tokens
       const squareTestTokens = [
         'wnon:cash-app-ok',
@@ -121,44 +129,44 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
         'bauth:ach-account-insufficient-funds',
         'bauth:ach-account-invalid'
       ];
-      
+
       if (squareTestTokens.includes(value)) {
         return null; // Skip validation for Square test tokens
       }
-      
+
       // Also allow any token that starts with common Square prefixes
       const squareTokenPrefixes = ['wnon:', 'cnon:', 'bauth:', 'gift_card_id:', 'order_id:'];
       if (squareTokenPrefixes.some(prefix => value.startsWith(prefix))) {
         return null; // Skip validation for Square tokens
       }
-      
+
       // Check against all patterns
       for (const { pattern, message } of dangerousPatterns) {
         if (pattern.test(value)) {
           return message;
         }
       }
-      
+
       // Check for null bytes
       if (value.includes('\0')) {
         return 'Null bytes are not allowed in input.';
       }
     }
-    
+
     if (Array.isArray(value)) {
       for (const item of value) {
         const result = checkValue(item, depth + 1);
         if (result) return result;
       }
     }
-    
+
     if (typeof value === 'object' && value !== null) {
       for (const val of Object.values(value)) {
         const result = checkValue(val, depth + 1);
         if (result) return result;
       }
     }
-    
+
     return null;
   };
 
@@ -168,7 +176,7 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
     { data: query, name: 'query' },
     { data: params, name: 'params' }
   ];
-  
+
   for (const { data, name } of sources) {
     const errorMessage = checkValue(data);
     if (errorMessage) {
@@ -223,7 +231,7 @@ export const validateEmail = (req: Request, res: Response, next: NextFunction) =
   for (const targetEmail of emails) {
     // Enhanced email validation
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    
+
     // Check basic format
     if (!emailRegex.test(targetEmail)) {
       return res.status(400).json({
@@ -231,7 +239,7 @@ export const validateEmail = (req: Request, res: Response, next: NextFunction) =
         message: 'Please provide a valid email address'
       });
     }
-    
+
     // Check length
     if (targetEmail.length > 254) {
       return res.status(400).json({
@@ -239,7 +247,7 @@ export const validateEmail = (req: Request, res: Response, next: NextFunction) =
         message: 'Email address is too long'
       });
     }
-    
+
     // Check for suspicious patterns
     const suspiciousPatterns = [
       /[<>'"]/,
@@ -247,7 +255,7 @@ export const validateEmail = (req: Request, res: Response, next: NextFunction) =
       /^\.|\.$/, 
       /@.*@/
     ];
-    
+
     for (const pattern of suspiciousPatterns) {
       if (pattern.test(targetEmail)) {
         return res.status(400).json({
@@ -265,7 +273,7 @@ export const validateEmail = (req: Request, res: Response, next: NextFunction) =
 export const validateGiftCardCode = (req: Request, res: Response, next: NextFunction) => {
   const { code, giftCardCode } = req.body;
   const targetCode = code || giftCardCode;
-  
+
   if (targetCode) {
     // Gift card codes should only contain alphanumeric characters
     if (!/^[A-Z0-9]{6,20}$/i.test(targetCode)) {
@@ -275,40 +283,40 @@ export const validateGiftCardCode = (req: Request, res: Response, next: NextFunc
       });
     }
   }
-  
+
   next();
 };
 
 // Sanitize string inputs
 export const sanitizeString = (input: string): string => {
   if (!input || typeof input !== 'string') return '';
-  
+
   // Remove null bytes
   let sanitized = input.replace(/\0/g, '');
-  
+
   // Trim whitespace
   sanitized = sanitized.trim();
-  
+
   // Remove control characters except newlines and tabs
   sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-  
+
   // Limit length
   if (sanitized.length > 1000) {
     sanitized = sanitized.substring(0, 1000);
   }
-  
+
   return sanitized;
 };
 
 // ID parameter validation
 export const validateId = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  
+
   if (id) {
     // UUIDs or numeric IDs only
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const numericRegex = /^\d+$/;
-    
+
     if (!uuidRegex.test(id) && !numericRegex.test(id)) {
       return res.status(400).json({
         error: 'Invalid ID',
@@ -316,7 +324,7 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
       });
     }
   }
-  
+
   next();
 };
 
@@ -391,7 +399,7 @@ export const corsOptions = {
         'http://127.0.0.1:5000',
         'http://127.0.0.1:5173'
       ];
-      
+
       if (devOrigins.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
         return callback(null, true);
       }
@@ -410,7 +418,7 @@ export const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     // Check if origin ends with allowed domains
     const allowedDomains = ['.replit.com', '.replit.dev', '.replit.app'];
     if (allowedDomains.some(domain => origin.endsWith(domain))) {
@@ -421,7 +429,7 @@ export const corsOptions = {
     if (process.env.NODE_ENV === 'development') {
       console.warn(`CORS: Rejected origin ${origin}`);
     }
-    
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -438,7 +446,7 @@ export const validateApiKey = (req: Request, res: Response, next: NextFunction) 
   // Only validate in production
   if (process.env.NODE_ENV === 'production') {
     const squareToken = process.env.SQUARE_ACCESS_TOKEN;
-    
+
     if (!squareToken) {
       return res.status(500).json({
         error: 'Configuration error',

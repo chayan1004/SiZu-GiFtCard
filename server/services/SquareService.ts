@@ -71,6 +71,26 @@ export class SquareService {
   }
 
   /**
+   * Test the Square API connection.
+   */
+  async testConnection(): Promise<boolean> {
+    if (!this.isInitialized) {
+      console.warn("Square API not initialized, cannot test connection.");
+      return false;
+    }
+
+    try {
+        const giftCardsApi = this.client.giftCardsApi;
+        // Attempt a simple API call to verify the connection
+        await giftCardsApi.listGiftCards();
+        return true;
+    } catch (error) {
+        console.error("Square connection test failed:", error);
+        return false;
+    }
+  }
+
+  /**
    * Create a gift card (without activation - requires separate activation call)
    */
   async createGiftCard(externalId: string): Promise<GiftCardCreationResult> {
@@ -126,7 +146,7 @@ export class SquareService {
       };
     } catch (error: any) {
       console.error('Gift card creation error:', error);
-      
+
       if (error.statusCode && error.errors) {
         return {
           success: false,
@@ -205,7 +225,7 @@ export class SquareService {
       };
     } catch (error: any) {
       console.error('Gift card activation error:', error);
-      
+
       if (error.statusCode && error.errors) {
         return {
           success: false,
@@ -286,7 +306,7 @@ export class SquareService {
       };
     } catch (error: any) {
       console.error('Gift card redemption error:', error);
-      
+
       if (error.statusCode && error.errors) {
         return {
           success: false,
@@ -397,7 +417,7 @@ export class SquareService {
       };
     } catch (error: any) {
       console.error('Gift card load error:', error);
-      
+
       if (error.statusCode && error.errors) {
         return {
           success: false,
