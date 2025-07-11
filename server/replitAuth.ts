@@ -109,13 +109,15 @@ export async function setupAuth(app: Express) {
     try {
       console.log("Login request hostname:", req.hostname);
       console.log("Available auth strategies:", Object.keys(passport._strategies));
-      passport.authenticate(`replitauth:${req.hostname}`, {
+      const strategyName = `replitauth:${req.hostname}`;
+      console.log("Using strategy:", strategyName);
+      passport.authenticate(strategyName, {
         prompt: "login consent",
         scope: ["openid", "email", "profile", "offline_access"],
       })(req, res, next);
     } catch (error) {
       console.error("Login error:", error);
-      res.redirect("/");
+      res.status(500).json({ error: error.message });
     }
   });
 
