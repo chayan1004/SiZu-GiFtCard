@@ -145,6 +145,8 @@ Preferred communication style: Simple, everyday language.
   - Created combined authentication hook for admin and customer sessions
   - Fixed post-verification redirects
   - Proper handling of authenticated customer routes
+  - Updated all customer API endpoints to use requireAnyAuth middleware
+  - Fixed 401 errors on /api/cards, /api/user/orders, and /api/giftcards/mine
 
 ### July 11, 2025 - Phase 13: Revenue and Fee Management UI Reconstruction
 - **Revenue Analytics Page**: Created comprehensive AdminRevenue page with modern dark theme

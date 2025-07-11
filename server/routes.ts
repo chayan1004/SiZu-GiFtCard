@@ -541,9 +541,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's gift cards
-  app.get('/api/giftcards/mine', isAuthenticated, async (req: any, res) => {
+  app.get('/api/giftcards/mine', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const giftCards = await storage.getGiftCardsByUser(userId);
       res.json(giftCards);
     } catch (error) {
@@ -654,9 +658,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Order History Routes
   
   // Get user's order history (paginated)
-  app.get('/api/user/orders', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/orders', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const page = parseInt(req.query.page as string) || 1;
       const pageSize = parseInt(req.query.pageSize as string) || 10;
       
@@ -683,9 +691,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get specific order details
-  app.get('/api/user/orders/:orderId', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/orders/:orderId', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const { orderId } = req.params;
       
       const orderDetails = await storage.getUserOrderDetails(userId, orderId);
@@ -719,9 +731,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Saved Card Routes
   
   // List user's saved cards
-  app.get('/api/cards', isAuthenticated, async (req: any, res) => {
+  app.get('/api/cards', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const cards = await storage.getUserSavedCards(userId);
       res.json(cards);
     } catch (error) {
@@ -731,9 +747,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Alias endpoint for consistency with user namespace
-  app.get('/api/user/saved-cards', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/saved-cards', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const cards = await storage.getUserSavedCards(userId);
       res.json(cards);
     } catch (error) {
@@ -743,14 +763,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add a new card
-  app.post('/api/cards', authRateLimit, isAuthenticated, async (req: any, res) => {
+  app.post('/api/cards', authRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const data = addSavedCardSchema.parse(req.body);
       
       // Get user data
-      const user = await storage.getUser(userId);
-      if (!user) {
+      const userData = await storage.getUser(userId);
+      if (!userData) {
         return res.status(404).json({ message: "User not found" });
       }
 
@@ -760,13 +784,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create or update Square customer if needed
-      let squareCustomerId = user.squareCustomerId;
+      let squareCustomerId = userData.squareCustomerId;
       if (!squareCustomerId) {
         try {
           const customer = await squareCustomerService.createCustomer(
-            user.email || undefined,
-            user.firstName || undefined,
-            user.lastName || undefined
+            userData.email || undefined,
+            userData.firstName || undefined,
+            userData.lastName || undefined
           );
           squareCustomerId = customer.id!;
           await storage.updateUserSquareCustomerId(userId, squareCustomerId);
@@ -823,9 +847,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a saved card
-  app.delete('/api/cards/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/cards/:id', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const cardId = req.params.id;
 
       // Verify card ownership
@@ -854,9 +882,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Set card as default
-  app.put('/api/cards/:id/default', isAuthenticated, async (req: any, res) => {
+  app.put('/api/cards/:id/default', requireAnyAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const userId = user.id;
       const cardId = req.params.id;
 
       // Verify card ownership

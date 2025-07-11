@@ -1,4 +1,4 @@
-import formData from 'form-data';
+import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
 
 export class EmailService {
@@ -10,23 +10,21 @@ export class EmailService {
   constructor() {
     // Configure with Mailgun API
     const apiKey = process.env.MAILGUN_API_KEY;
-    this.domain = process.env.MAILGUN_DOMAIN || '';
-    this.fromEmail = process.env.MAILGUN_FROM_EMAIL || 'noreply@sizu-giftcard.com';
+    this.domain = process.env.MAILGUN_DOMAIN || 'sizugiftcard.com';
+    this.fromEmail = process.env.MAILGUN_FROM_EMAIL || 'postmaster@sizugiftcard.com';
     
-    if (apiKey && this.domain) {
-      const mailgun = new Mailgun(formData);
+    if (apiKey) {
+      const mailgun = new Mailgun(FormData);
       this.mailgunClient = mailgun.client({
         username: 'api',
         key: apiKey,
-        // Uncomment for EU region:
-        // url: 'https://api.eu.mailgun.net'
       });
       this.isConfigured = true;
-      console.log('Mailgun API configured successfully');
+      console.log('Mailgun API configured successfully with domain:', this.domain);
     } else {
       this.isConfigured = false;
-      console.warn('Mailgun API credentials not provided. Emails will be logged to console.');
-      console.warn('Please set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables.');
+      console.warn('Mailgun API key not provided. Emails will be logged to console.');
+      console.warn('Please set MAILGUN_API_KEY environment variable.');
     }
   }
 
