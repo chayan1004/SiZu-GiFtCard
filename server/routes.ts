@@ -167,12 +167,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expiresAt,
       });
 
-      // Generate QR code
+      // Generate QR code for premium receipt page
       const baseUrl = process.env.REPLIT_DOMAINS 
         ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
         : `http://localhost:${process.env.PORT || 5000}`;
-      const qrCodeUrl = `${baseUrl}/redeem?code=${code}`;
-      console.log('Generating QR code for URL:', qrCodeUrl);
+      const qrCodeUrl = `${baseUrl}/receipt-view/${accessToken}`;
+      console.log('Generating QR code for receipt URL:', qrCodeUrl);
       const qrCode = await qrService.generateQRCode(qrCodeUrl);
 
       // Generate PDF receipt
@@ -349,11 +349,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Receipt not found or expired" });
       }
 
-      // Regenerate QR code for the gift card
+      // Regenerate QR code for premium receipt page
       const baseUrl = process.env.REPLIT_DOMAINS 
         ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
         : `http://localhost:${process.env.PORT || 5000}`;
-      const qrCodeUrl = `${baseUrl}/redeem?code=${receipt.receiptData.giftCardCode}`;
+      const qrCodeUrl = `${baseUrl}/receipt-view/${token}`;
       const qrCode = await qrService.generateQRCode(qrCodeUrl);
 
       res.json({

@@ -16,6 +16,7 @@ import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
 import Revenue from "@/pages/Revenue";
 import FeeManagement from "@/pages/FeeManagement";
+import ReceiptView from "@/pages/ReceiptView";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -79,6 +80,7 @@ function Router() {
           <Route path="/shop" component={Shop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
+          <Route path="/receipt-view/:token" component={ReceiptView} />
         </>
       ) : (
         <>
@@ -92,6 +94,7 @@ function Router() {
           <Route path="/orders/:orderId" component={OrderDetails} />
           <Route path="/revenue" component={Revenue} />
           <Route path="/fees" component={FeeManagement} />
+          <Route path="/receipt-view/:token" component={ReceiptView} />
         </>
       )}
       <Route component={NotFound} />
