@@ -1,0 +1,22 @@
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:220:18
+    at div
+    at div
+    at _c1 (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/src/components/ui/card.tsx:123:12)
+    at form
+    at div
+    at _c (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at MotionComponent (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=9a1ae241:945:40)
+    at div
+    at CustomerRegister (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/src/pages/CustomerRegister.tsx:33:49)
+    at Route (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:206:16)
+    at Switch (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:262:17)
+    at Router (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/src/App.tsx?v=57M4EmTGe01qXHVUAA9li:134:52)
+    at ErrorBoundary (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/src/App.tsx?v=57M4EmTGe01qXHVUAA9li:79:5)
+    at Provider (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=9a1ae241:38:15)
+    at TooltipProvider (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9a1ae241:63:5)
+    at QueryClientProvider (https://62ea9ec0-5722-45ca-a606-79eadf95c793-00-2hh66d6q1cggw.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9a1ae241:2933:3)
+    at App

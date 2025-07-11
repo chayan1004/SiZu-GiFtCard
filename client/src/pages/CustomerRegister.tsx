@@ -225,10 +225,8 @@ export default function CustomerRegister() {
 
               <div className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link href="/login">
-                  <a className="text-purple-600 hover:underline font-medium">
-                    Sign in
-                  </a>
+                <Link href="/login" className="text-purple-600 hover:underline font-medium">
+                  Sign in
                 </Link>
               </div>
             </CardFooter>
