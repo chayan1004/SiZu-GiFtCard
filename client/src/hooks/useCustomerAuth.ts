@@ -94,10 +94,10 @@ export function useCustomerAuth() {
       if (response.userId) {
         toast({
           title: "Registration successful!",
-          description: "Please check your email to verify your account."
+          description: "Please check your email for your verification code."
         });
         
-        setLocation("/login");
+        setLocation("/verify-otp");
         return response;
       }
     } catch (error: any) {

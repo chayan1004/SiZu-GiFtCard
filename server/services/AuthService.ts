@@ -6,6 +6,11 @@ import { storage } from '../storage';
 export class AuthService {
   private static saltRounds = 12;
 
+  // Generate 6-digit OTP
+  private static generateOTP(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   // Register new customer
   static async registerCustomer(email: string, password: string, firstName?: string, lastName?: string) {
     // Check if email already exists
@@ -17,8 +22,9 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, this.saltRounds);
     
-    // Generate verification token
-    const verificationToken = nanoid(32);
+    // Generate OTP and expiry (10 minutes)
+    const otp = this.generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Create customer user
     const user = await storage.createCustomer({
@@ -28,10 +34,11 @@ export class AuthService {
       lastName,
       role: 'customer',
       isEmailVerified: false,
-      verificationToken,
+      verificationOtp: otp,
+      otpExpiry,
     });
 
-    return { user, verificationToken };
+    return { user, otp };
   }
 
   // Login customer
@@ -53,19 +60,59 @@ export class AuthService {
     return user;
   }
 
-  // Verify email
-  static async verifyEmail(token: string) {
-    const user = await storage.getUserByVerificationToken(token);
+  // Verify OTP
+  static async verifyOTP(email: string, otp: string) {
+    const user = await storage.getUserByEmail(email);
     if (!user) {
-      throw new Error('Invalid verification token');
+      throw new Error('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    if (!user.verificationOtp || !user.otpExpiry) {
+      throw new Error('No OTP found. Please request a new one.');
+    }
+
+    if (user.otpExpiry < new Date()) {
+      throw new Error('OTP has expired. Please request a new one.');
+    }
+
+    if (user.verificationOtp !== otp) {
+      throw new Error('Invalid OTP');
     }
 
     await storage.updateUser(user.id, {
       isEmailVerified: true,
-      verificationToken: null,
+      verificationOtp: null,
+      otpExpiry: null,
     });
 
     return user;
+  }
+
+  // Resend OTP
+  static async resendOTP(email: string) {
+    const user = await storage.getUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    // Generate new OTP
+    const otp = this.generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await storage.updateUser(user.id, {
+      verificationOtp: otp,
+      otpExpiry,
+    });
+
+    return otp;
   }
 
   // Request password reset
@@ -76,11 +123,11 @@ export class AuthService {
     }
 
     const resetToken = nanoid(32);
-    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await storage.updateUser(user.id, {
       resetToken,
-      resetExpires,
+      resetTokenExpiry,
     });
 
     return resetToken;
@@ -89,7 +136,7 @@ export class AuthService {
   // Reset password
   static async resetPassword(token: string, newPassword: string) {
     const user = await storage.getUserByResetToken(token);
-    if (!user || !user.resetExpires || user.resetExpires < new Date()) {
+    if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
       throw new Error('Invalid or expired reset token');
     }
 
@@ -98,7 +145,7 @@ export class AuthService {
     await storage.updateUser(user.id, {
       password: hashedPassword,
       resetToken: null,
-      resetExpires: null,
+      resetTokenExpiry: null,
     });
 
     return user;

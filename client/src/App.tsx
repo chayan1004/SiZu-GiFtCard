@@ -31,6 +31,7 @@ import CustomerLogin from "@/pages/CustomerLogin";
 import CustomerRegister from "@/pages/CustomerRegister";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import VerifyOTP from "@/pages/VerifyOTP";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -93,6 +94,7 @@ function Router() {
           <Route path="/" component={Landing} />
           <Route path="/login" component={CustomerLogin} />
           <Route path="/register" component={CustomerRegister} />
+          <Route path="/verify-otp" component={VerifyOTP} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password/:token" component={ResetPassword} />
           <Route path="/admin-login" component={Login} />

@@ -99,14 +99,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Password must be at least 8 characters" });
       }
 
-      const { user, verificationToken } = await AuthService.registerCustomer(email, password, firstName, lastName);
+      const { user, otp } = await AuthService.registerCustomer(email, password, firstName, lastName);
       
-      // Send verification email
-      await emailService.sendVerificationEmail(email, verificationToken);
+      // Send OTP email
+      await emailService.sendOTPEmail(email, otp, firstName);
 
       res.status(201).json({ 
-        message: "Registration successful. Please check your email for verification.",
-        userId: user.id 
+        message: "Registration successful. Please check your email for verification code.",
+        userId: user.id,
+        email: user.email
       });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -153,13 +154,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get('/api/auth/verify/:token', async (req, res) => {
+  app.post('/api/auth/verify-otp', authRateLimit, validateInput, async (req, res) => {
     try {
-      const { token } = req.params;
-      await AuthService.verifyEmail(token);
-      res.json({ message: "Email verified successfully" });
+      const { email, otp } = req.body;
+      
+      if (!email || !otp) {
+        return res.status(400).json({ message: "Email and OTP are required" });
+      }
+
+      const user = await AuthService.verifyOTP(email, otp);
+      
+      // Automatically log them in after verification
+      req.session.userId = user.id;
+      req.session.role = user.role;
+      
+      res.json({ 
+        message: "Email verified successfully",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Verification failed" });
+    }
+  });
+
+  app.post('/api/auth/resend-otp', authRateLimit, validateInput, validateEmail, async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const otp = await AuthService.resendOTP(email);
+      const user = await storage.getUserByEmail(email);
+      
+      // Send new OTP email
+      await emailService.sendOTPEmail(email, otp, user?.firstName);
+      
+      res.json({ message: "New verification code sent to your email" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to resend OTP" });
     }
   });
 

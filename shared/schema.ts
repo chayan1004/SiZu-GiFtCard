@@ -30,11 +30,17 @@ export const sessions = pgTable(
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
+  password: varchar("password"), // For customer accounts only
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role").default("user").notNull(), // 'admin' or 'user'
+  role: varchar("role").default("user").notNull(), // 'admin' or 'user' or 'customer'
   squareCustomerId: varchar("square_customer_id").unique(), // Square Customer ID for saved cards
+  isEmailVerified: boolean("is_email_verified").default(false),
+  verificationOtp: varchar("verification_otp", { length: 6 }), // 6-digit OTP
+  otpExpiry: timestamp("otp_expiry", { withTimezone: true, mode: 'date' }),
+  resetToken: varchar("reset_token"),
+  resetTokenExpiry: timestamp("reset_token_expiry", { withTimezone: true, mode: 'date' }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

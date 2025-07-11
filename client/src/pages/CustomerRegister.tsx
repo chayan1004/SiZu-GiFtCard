@@ -31,6 +31,8 @@ export default function CustomerRegister() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       await registerUser(data.email, data.password, data.firstName, data.lastName);
+      // Store email for OTP verification page
+      localStorage.setItem('verificationEmail', data.email);
       setRegistrationSuccess(true);
     } catch (error: any) {
       setError("root", {
@@ -55,19 +57,19 @@ export default function CustomerRegister() {
                   <CheckCircle className="w-12 h-12 text-white" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold">Registration Successful!</CardTitle>
+              <CardTitle className="text-2xl font-bold">Check Your Email!</CardTitle>
               <CardDescription className="mt-2">
-                We've sent a verification email to your inbox. Please check your email and click the verification link to activate your account.
+                We've sent a 6-digit verification code to your email. Please check your inbox to complete the registration.
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex flex-col space-y-4">
-              <Link href="/login">
+              <Link href="/verify-otp">
                 <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                  Go to Login
+                  Enter Verification Code
                 </Button>
               </Link>
               <p className="text-sm text-gray-600 text-center">
-                Didn't receive the email? Check your spam folder or contact support.
+                Didn't receive the code? Check your spam folder or you can request a new code on the next page.
               </p>
             </CardFooter>
           </Card>

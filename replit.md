@@ -121,6 +121,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 10, 2025 - Phase 14: OTP-Based Email Verification
+- **Authentication Enhancement**: Replaced link-based verification with OTP system
+  - Added OTP fields to users table (verification_otp, otp_expiry)
+  - 6-digit OTP generation with 10-minute expiry
+  - Created dedicated OTP verification page with modern UI
+  - Integrated OTP resend functionality with 60-second cooldown
+- **Email Service Updates**: Redesigned verification emails
+  - Professional OTP email template with clear verification code display
+  - Security warnings and expiry notices
+  - Mailgun SMTP integration for reliable delivery
+- **Frontend Flow**: Complete OTP verification experience
+  - Auto-redirect from registration to OTP verification page
+  - Real-time OTP input validation
+  - Resend code button with countdown timer
+  - Auto-login after successful verification
+- **Security Features**: Enhanced authentication security
+  - OTP expires after 10 minutes
+  - Rate limiting on OTP verification attempts
+  - Secure session creation post-verification
+
 ### July 11, 2025 - Phase 13: Revenue and Fee Management UI Reconstruction
 - **Revenue Analytics Page**: Created comprehensive AdminRevenue page with modern dark theme
   - Real-time revenue statistics with gradient cards and animations

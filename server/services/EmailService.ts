@@ -272,22 +272,20 @@ export class EmailService {
     `;
   }
 
-  async sendVerificationEmail(email: string, verificationToken: string): Promise<void> {
+  async sendOTPEmail(email: string, otp: string, firstName?: string): Promise<void> {
     try {
-      const verificationUrl = `${process.env.APP_URL || 'http://localhost:5000'}/api/auth/verify/${verificationToken}`;
-      
       const mailOptions = {
         from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
         to: email,
-        subject: 'Verify Your SiZu GiftCard Account',
-        html: this.generateVerificationEmailHTML(email, verificationUrl),
+        subject: 'Your SiZu GiftCard Verification Code',
+        html: this.generateOTPEmailHTML(email, otp, firstName),
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Verification email sent:', info.messageId);
+      console.log('OTP email sent:', info.messageId);
     } catch (error) {
-      console.error('Error sending verification email:', error);
-      throw new Error('Failed to send verification email');
+      console.error('Error sending OTP email:', error);
+      throw new Error('Failed to send OTP email');
     }
   }
 
@@ -310,7 +308,9 @@ export class EmailService {
     }
   }
 
-  private generateVerificationEmailHTML(email: string, verificationUrl: string): string {
+  private generateOTPEmailHTML(email: string, otp: string, firstName?: string): string {
+    const name = firstName || 'there';
+    
     return `
       <!DOCTYPE html>
       <html>
@@ -323,31 +323,34 @@ export class EmailService {
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
           .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
-          .button { display: inline-block; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .otp-box { background: white; border: 2px solid #7C3AED; border-radius: 10px; padding: 20px; text-align: center; margin: 30px 0; }
+          .otp-code { font-size: 36px; font-weight: bold; color: #7C3AED; letter-spacing: 8px; }
           .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+          .warning { background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 5px; padding: 15px; margin: 20px 0; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to SiZu GiftCard!</h1>
+            <h1>Email Verification</h1>
           </div>
           
           <div class="content">
-            <p>Hi there,</p>
+            <p>Hi ${name},</p>
             
-            <p>Thank you for creating an account with SiZu GiftCard. To complete your registration, please verify your email address by clicking the button below:</p>
+            <p>Thank you for registering with SiZu GiftCard! To complete your registration, please enter the verification code below:</p>
             
-            <div style="text-align: center;">
-              <a href="${verificationUrl}" class="button">Verify My Email</a>
+            <div class="otp-box">
+              <p style="margin: 0 0 10px 0; color: #666;">Your verification code is:</p>
+              <div class="otp-code">${otp}</div>
+              <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">This code expires in 10 minutes</p>
             </div>
             
-            <p>Or copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #7C3AED;">${verificationUrl}</p>
+            <div class="warning">
+              <strong>Security Notice:</strong> Never share this code with anyone. SiZu GiftCard staff will never ask for your verification code.
+            </div>
             
-            <p>This link will expire in 24 hours for security reasons.</p>
-            
-            <p>If you didn't create an account with us, please ignore this email.</p>
+            <p>If you didn't create an account with us, please ignore this email and the code will expire automatically.</p>
           </div>
           
           <div class="footer">
