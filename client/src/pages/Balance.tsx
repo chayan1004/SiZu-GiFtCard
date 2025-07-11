@@ -48,8 +48,6 @@ export default function Balance() {
     },
   });
 
-
-
   const handleLogout = () => {
     toast({
       title: "Logging out...",
@@ -62,17 +60,9 @@ export default function Balance() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!giftCardCode.trim()) {
-      toast({
-        title: "Invalid Input",
-        description: "Please enter a gift card code.",
-        variant: "destructive",
-      });
-      return;
+    if (giftCardCode.trim()) {
+      checkBalanceMutation.mutate(giftCardCode.trim());
     }
-
-    checkBalanceMutation.mutate(giftCardCode.trim());
   };
 
   const handleReset = () => {
@@ -92,42 +82,34 @@ export default function Balance() {
       <div className="pt-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <PageHeader
-            title="Check Balance"
+            title="Check Gift Card Balance"
             subtitle="Enter your gift card code to check your current balance"
           />
 
           <FormContainer
             title="Balance Check"
-            description="Enter your gift card details below"
+            description="This works without signing in - simply enter your gift card code"
           >
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="giftCardCode" className="text-white">Gift Card Code</Label>
+              <div className="space-y-2">
+                <Label htmlFor="giftCardCode" className="text-white">
+                  Gift Card Code
+                </Label>
                 <Input
                   id="giftCardCode"
                   type="text"
+                  placeholder="Enter your gift card code"
                   value={giftCardCode}
                   onChange={(e) => setGiftCardCode(e.target.value)}
-                  placeholder="Enter your gift card code"
-                  className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                   disabled={checkBalanceMutation.isPending}
+                  className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                 />
               </div>
-              
-              <div className="flex gap-4">
-                <GradientButton 
-                  onClick={() => {
-                    if (!giftCardCode.trim()) {
-                      toast({
-                        title: "Invalid Input",
-                        description: "Please enter a gift card code.",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    checkBalanceMutation.mutate(giftCardCode.trim());
-                  }}
-                  disabled={checkBalanceMutation.isPending || !giftCardCode.trim()}
+
+              <div className="flex gap-2">
+                <GradientButton
+                  type="submit"
+                  disabled={!giftCardCode.trim() || checkBalanceMutation.isPending}
                   className="flex-1"
                 >
                   {checkBalanceMutation.isPending ? (
@@ -143,15 +125,14 @@ export default function Balance() {
                   )}
                 </GradientButton>
                 
-                {(balanceResult || checkBalanceMutation.isError) && (
-                  <GradientButton 
-                    variant="outline"
-                    onClick={handleReset}
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Reset
-                  </GradientButton>
-                )}
+                <GradientButton
+                  type="button"
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={checkBalanceMutation.isPending}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </GradientButton>
               </div>
             </form>
           </FormContainer>
@@ -167,43 +148,50 @@ export default function Balance() {
                     </div>
                     
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">Current Balance</h3>
-                      <p className="text-5xl font-bold text-green-400 mb-4">
-                        ${balanceResult.balance.toFixed(2)}
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        Balance Found!
+                      </h3>
+                      <p className="text-gray-300">
+                        Your gift card details
                       </p>
-                      <Badge 
-                        variant={balanceResult.isActive ? "default" : "destructive"}
-                        className={`${balanceResult.isActive ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}
-                      >
-                        {balanceResult.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
                     </div>
                     
-                    <div className="bg-white/10 rounded-lg p-4 space-y-2">
+                    <div className="bg-white/5 rounded-lg p-4 space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-300">Gift Card Code:</span>
-                        <span className="text-white font-mono text-sm">{balanceResult.code}</span>
+                        <span className="text-white font-mono">{balanceResult.code}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Status:</span>
-                        <span className="text-white">{balanceResult.isActive ? 'Active' : 'Inactive'}</span>
+                        <span className="text-gray-300">Current Balance:</span>
+                        <span className="text-green-400 font-semibold text-lg">${balanceResult.balance.toFixed(2)}</span>
                       </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Design:</span>
+                        <Badge variant="secondary" className="bg-white/10 text-white">
+                          {balanceResult.design}
+                        </Badge>
+                      </div>
+                      {balanceResult.initialAmount && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300">Original Amount:</span>
+                          <span className="text-white">${balanceResult.initialAmount.toFixed(2)}</span>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="flex gap-4">
+                    
+                    <div className="flex gap-2">
                       <GradientButton 
                         onClick={() => window.location.href = '/redeem'}
-                        disabled={!balanceResult.isActive || balanceResult.balance <= 0}
                         className="flex-1"
                       >
                         Redeem Gift Card
                       </GradientButton>
                       <GradientButton 
-                        onClick={handleReset}
+                        onClick={() => window.location.href = '/recharge'}
                         variant="outline"
                         className="flex-1"
                       >
-                        Check Another
+                        Recharge Card
                       </GradientButton>
                     </div>
                   </div>
@@ -212,34 +200,30 @@ export default function Balance() {
             </div>
           )}
 
-          {/* Error State */}
-          {checkBalanceMutation.isError && !balanceResult && (
+          {/* No Balance Result */}
+          {!balanceResult && !checkBalanceMutation.isPending && giftCardCode && (
             <div className="mt-8">
-              <GlassCard className="border-red-500/20">
+              <GlassCard>
                 <CardContent className="p-6">
-                  <div className="text-center space-y-6">
+                  <div className="text-center space-y-4">
                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
                       <XCircle className="w-8 h-8 text-red-400" />
                     </div>
                     
                     <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">Gift Card Not Found</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        No Balance Found
+                      </h3>
                       <p className="text-gray-300">
-                        The gift card code you entered was not found. Please check the code and try again.
+                        Please check your gift card code and try again
                       </p>
                     </div>
                     
-                    <div className="bg-red-500/20 rounded-lg p-4">
-                      <p className="text-red-400 text-sm">
-                        Make sure you've entered the complete gift card code exactly as shown on your gift card.
-                      </p>
-                    </div>
-
                     <GradientButton 
-                      onClick={handleReset}
-                      variant="outline"
+                      onClick={() => window.location.href = '/shop'}
+                      className="w-full"
                     >
-                      Try Again
+                      Buy a Gift Card
                     </GradientButton>
                   </div>
                 </CardContent>

@@ -1,26 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
-import { Gift, CreditCard, TrendingUp, User, Settings, LogOut, Plus, Search, ArrowDownCircle, History, ShoppingBag } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { TrendingUp, Users, Gift, AlertTriangle } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { 
   PageContainer, 
   PageHeader, 
-  Section, 
-  FeatureCard, 
-  StatCard, 
-  GlassCard, 
+  GlassCard,
   LoadingPage,
-  EmptyState,
-  GradientButton 
+  Section,
+  StatCard 
 } from "@/components/DesignSystem";
 import { CardContent } from "@/components/ui/card";
 
 export default function Home() {
-  const { user, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
-  const [greeting, setGreeting] = useState('');
+  const [greeting, setGreeting] = useState('Hello');
 
   // Get user's gift cards
   const { data: myGiftCards, isLoading: cardsLoading } = useQuery({
@@ -106,17 +104,17 @@ export default function Home() {
                       delay={0.2}
                     />
                     <StatCard
-                      icon={<CreditCard className="w-6 h-6 text-blue-400" />}
-                      title="Redemptions"
-                      value={dashboardStats?.redemptionsCount || '0'}
+                      icon={<Users className="w-6 h-6 text-blue-400" />}
+                      title="Active Users"
+                      value={dashboardStats?.activeUsers || '0'}
                       color="bg-blue-600/20"
                       delay={0.3}
                     />
                     <StatCard
-                      icon={<User className="w-6 h-6 text-amber-400" />}
-                      title="Active Balance"
-                      value={`$${dashboardStats?.activeBalance?.toLocaleString() || '0'}`}
-                      color="bg-amber-600/20"
+                      icon={<AlertTriangle className="w-6 h-6 text-yellow-400" />}
+                      title="Pending Issues"
+                      value={dashboardStats?.pendingIssues || '0'}
+                      color="bg-yellow-600/20"
                       delay={0.4}
                     />
                   </>
@@ -127,125 +125,119 @@ export default function Home() {
 
           {/* Quick Actions */}
           <Section title="Quick Actions" className="py-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              <FeatureCard
-                icon={<ShoppingBag className="w-8 h-8 text-purple-400" />}
-                title="Shop"
-                description="Buy gift cards"
-                iconColor="bg-purple-600/20"
-                onClick={() => window.location.href = '/shop'}
-                delay={0.1}
-              />
-              <FeatureCard
-                icon={<Search className="w-8 h-8 text-blue-400" />}
-                title="Balance"
-                description="Check balance"
-                iconColor="bg-blue-600/20"
-                onClick={() => window.location.href = '/balance'}
-                delay={0.2}
-              />
-              <FeatureCard
-                icon={<ArrowDownCircle className="w-8 h-8 text-pink-400" />}
-                title="Redeem"
-                description="Use gift cards"
-                iconColor="bg-pink-600/20"
-                onClick={() => window.location.href = '/redeem'}
-                delay={0.3}
-              />
-              <FeatureCard
-                icon={<Plus className="w-8 h-8 text-green-400" />}
-                title="Recharge"
-                description="Add funds"
-                iconColor="bg-green-600/20"
-                onClick={() => window.location.href = '/recharge'}
-                delay={0.4}
-              />
-              <FeatureCard
-                icon={<History className="w-8 h-8 text-amber-400" />}
-                title="History"
-                description="View orders"
-                iconColor="bg-amber-600/20"
-                onClick={() => window.location.href = '/order-history'}
-                delay={0.5}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <Link href="/shop">
+                <GlassCard className="group cursor-pointer hover:scale-105 transition-transform">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Gift className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">Shop</h3>
+                    <p className="text-gray-300 text-sm">Buy gift cards</p>
+                  </CardContent>
+                </GlassCard>
+              </Link>
+
+              <Link href="/balance">
+                <GlassCard className="group cursor-pointer hover:scale-105 transition-transform">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <TrendingUp className="w-6 h-6 text-green-400" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">Balance</h3>
+                    <p className="text-gray-300 text-sm">Check balance</p>
+                  </CardContent>
+                </GlassCard>
+              </Link>
+
+              <Link href="/redeem">
+                <GlassCard className="group cursor-pointer hover:scale-105 transition-transform">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Gift className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">Redeem</h3>
+                    <p className="text-gray-300 text-sm">Use gift card</p>
+                  </CardContent>
+                </GlassCard>
+              </Link>
+
+              <Link href="/recharge">
+                <GlassCard className="group cursor-pointer hover:scale-105 transition-transform">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <TrendingUp className="w-6 h-6 text-yellow-400" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">Recharge</h3>
+                    <p className="text-gray-300 text-sm">Add funds</p>
+                  </CardContent>
+                </GlassCard>
+              </Link>
+
+              <Link href="/orders">
+                <GlassCard className="group cursor-pointer hover:scale-105 transition-transform">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-12 h-12 bg-indigo-600/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-6 h-6 text-indigo-400" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">Orders</h3>
+                    <p className="text-gray-300 text-sm">Order history</p>
+                  </CardContent>
+                </GlassCard>
+              </Link>
             </div>
           </Section>
 
           {/* My Gift Cards */}
           <Section title="My Gift Cards" className="py-8">
-            <div className="flex justify-between items-center mb-6">
-              <div></div>
-              <GradientButton onClick={() => window.location.href = '/shop'}>
-                <Gift className="w-4 h-4 mr-2" />
-                Create New
-              </GradientButton>
-            </div>
-            
-            {cardsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Array.from({ length: 3 }).map((_, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cardsLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
                   <GlassCard key={i} className="loading-shimmer">
                     <CardContent className="p-6">
-                      <div className="h-32"></div>
+                      <div className="h-24"></div>
                     </CardContent>
                   </GlassCard>
-                ))}
-              </div>
-            ) : myGiftCards && myGiftCards.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {myGiftCards.map((card: any, index: number) => (
-                  <AnimatedCard key={card.id} delay={index * 0.1}>
-                    <GlassCard>
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-white">{card.design || 'Classic'} Design</h3>
-                          <Badge 
-                            variant={card.isActive ? "default" : "secondary"} 
-                            className={`text-xs px-2 py-0.5 ${
-                              card.isActive 
-                                ? 'bg-green-500/20 text-green-300 border-green-500/30' 
-                                : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
-                            }`}
-                          >
-                            {card.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
+                ))
+              ) : myGiftCards && myGiftCards.length > 0 ? (
+                myGiftCards.map((card: any) => (
+                  <GlassCard key={card.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-sm text-gray-300">{card.design}</div>
+                        <div className="text-lg font-semibold text-white">
+                          ${card.currentBalance.toFixed(2)}
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-300 text-sm">Balance:</span>
-                            <span className="text-white font-bold text-xl text-gradient">
-                              ${parseFloat(card.currentBalance).toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-300 text-sm">Code:</span>
-                            <span className="text-white font-mono text-sm bg-white/10 px-2 py-0.5 rounded">
-                              {card.code}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-300 text-sm">Created:</span>
-                            <span className="text-white text-sm">
-                              {new Date(card.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </GlassCard>
-                  </AnimatedCard>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                icon={<Gift className="w-8 h-8 text-gray-400" />}
-                title="No Gift Cards Yet"
-                description="Create your first gift card to get started"
-                action={{
-                  label: "Create Gift Card",
-                  onClick: () => window.location.href = '/shop'
-                }}
-              />
-            )}
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono">{card.code}</div>
+                      <div className="mt-4 flex gap-2">
+                        <Link href={`/redeem?code=${card.code}`} className="flex-1">
+                          <button className="w-full bg-primary/20 hover:bg-primary/30 text-primary-foreground py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                            Redeem
+                          </button>
+                        </Link>
+                        <Link href={`/recharge?code=${card.code}`} className="flex-1">
+                          <button className="w-full bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                            Recharge
+                          </button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </GlassCard>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <Gift className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Gift Cards Yet</h3>
+                  <p className="text-gray-300 mb-4">Purchase your first gift card to get started</p>
+                  <Link href="/shop">
+                    <button className="bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-6 rounded-lg font-medium transition-colors">
+                      Shop Gift Cards
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </Section>
         </div>
       </div>
