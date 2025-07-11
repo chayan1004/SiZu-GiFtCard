@@ -111,7 +111,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     generalRateLimit(req, res, next);
   });
 
-  app.use(validateInput);
+  // Apply input validation middleware except for webhook endpoints
+  app.use((req, res, next) => {
+    // Skip validation for webhook endpoints - they receive legitimate JSON from external services
+    if (req.path.startsWith('/api/webhooks/')) {
+      return next();
+    }
+    validateInput(req, res, next);
+  });
   app.use(secureLogger);
 
   // Health check endpoint

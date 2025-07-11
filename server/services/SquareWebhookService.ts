@@ -155,24 +155,43 @@ export class SquareWebhookService {
 
   // Payment event handlers
   private async handlePaymentCreated(event: WebhookEvent) {
-    const payment = event.data.object;
-    console.log(`Payment created: ${payment.id}, Amount: ${payment.amountMoney.amount}`);
+    // Payment data is nested inside data.object.payment
+    const payment = event.data.object.payment;
+    console.log(`Payment created: ${payment.id}`);
+    console.log(`  Amount: $${payment.amount_money.amount / 100} ${payment.amount_money.currency}`);
+    console.log(`  Status: ${payment.status}`);
+    console.log(`  Order ID: ${payment.order_id}`);
+    console.log(`  Location ID: ${payment.location_id}`);
+    
+    if (payment.card_details) {
+      console.log(`  Card: ${payment.card_details.card.card_brand} ****${payment.card_details.card.last_4}`);
+      console.log(`  Card Status: ${payment.card_details.status}`);
+    }
+    
+    if (payment.risk_evaluation) {
+      console.log(`  Risk Level: ${payment.risk_evaluation.risk_level}`);
+    }
     
     // Update transaction status in database
-    if (payment.orderId) {
-      await storage.updateTransactionStatus(payment.orderId, 'completed');
+    if (payment.order_id) {
+      await storage.updateTransactionStatus(payment.order_id, 'completed');
     }
   }
 
   private async handlePaymentUpdated(event: WebhookEvent) {
-    const payment = event.data.object;
+    // Payment data is nested inside data.object.payment
+    const payment = event.data.object.payment;
     console.log(`Payment updated: ${payment.id}, Status: ${payment.status}`);
     
+    if (payment.receipt_url) {
+      console.log(`  Receipt URL: ${payment.receipt_url}`);
+    }
+    
     // Update transaction status based on payment status
-    if (payment.orderId) {
+    if (payment.order_id) {
       const status = payment.status === 'COMPLETED' ? 'completed' : 
                     payment.status === 'FAILED' ? 'failed' : 'pending';
-      await storage.updateTransactionStatus(payment.orderId, status);
+      await storage.updateTransactionStatus(payment.order_id, status);
     }
   }
 
