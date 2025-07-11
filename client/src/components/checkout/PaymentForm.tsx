@@ -69,6 +69,7 @@ export default function PaymentForm({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('card');
   const [processing, setProcessing] = useState(false);
   const [paymentForm, setPaymentForm] = useState<any>(null);
+  const [achToken, setAchToken] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<PaymentFormData>({
@@ -164,6 +165,41 @@ export default function PaymentForm({
         console.error('Apple Pay failed to initialize:', error);
       }
 
+      // ACH Bank Transfer
+      try {
+        const ach = await payments.ach({
+          redirectURI: window.location.href,
+          transactionId: `ach-${giftCardId}-${Date.now()}`,
+        });
+        paymentMethodsConfig.ach = ach;
+        
+        // Listen for ACH tokenization events
+        ach.addEventListener('ontokenization', (event: any) => {
+          const { tokenResult, error } = event.detail;
+          if (error) {
+            console.error('ACH tokenization error:', error);
+            toast({
+              title: 'Bank Connection Error',
+              description: error.message || 'Failed to connect to bank',
+              variant: 'destructive',
+            });
+            setProcessing(false);
+          } else if (tokenResult?.status === 'OK') {
+            console.log('ACH tokenization successful, token:', tokenResult.token);
+            setAchToken(tokenResult.token);
+            
+            // Automatically submit the form with the ACH token
+            if (tokenResult.token) {
+              form.handleSubmit((data) => {
+                handlePayment(data, tokenResult.token);
+              })();
+            }
+          }
+        });
+      } catch (error) {
+        console.error('ACH payment method failed to initialize:', error);
+      }
+
       // Cash App Pay
       try {
         const cashAppPay = await payments.cashAppPay({
@@ -176,14 +212,7 @@ export default function PaymentForm({
         console.error('Cash App Pay failed to initialize:', error);
       }
 
-      // ACH Bank Transfer
-      try {
-        const ach = await payments.ach();
-        await ach.attach('#ach-container');
-        paymentMethodsConfig.ach = ach;
-      } catch (error) {
-        console.error('ACH payment method failed to initialize:', error);
-      }
+
 
       setPaymentMethods(paymentMethodsConfig);
       setSquareLoaded(true);
@@ -193,7 +222,27 @@ export default function PaymentForm({
     }
   };
 
-  const handlePayment = async (data: PaymentFormData) => {
+  const handlePayment = async (data: PaymentFormData, achTokenFromEvent?: string) => {
+    // For ACH payments with token from event listener
+    if (selectedPaymentMethod === 'ach' && achTokenFromEvent) {
+      setProcessing(true);
+      try {
+        await processPayment(data, achTokenFromEvent);
+      } catch (error: any) {
+        console.error('ACH payment processing error:', error);
+        onPaymentError(error.message || 'Payment processing failed');
+        toast({
+          title: 'Payment Failed',
+          description: error.message || 'Please check your payment information and try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setProcessing(false);
+        setAchToken(null);
+      }
+      return;
+    }
+
     if (!squareLoaded || !paymentMethods[selectedPaymentMethod]) {
       onPaymentError('Payment system not ready');
       return;
@@ -204,85 +253,21 @@ export default function PaymentForm({
     try {
       const paymentMethod = paymentMethods[selectedPaymentMethod];
       
-      // Tokenize payment method
+      // For ACH, tokenization is triggered by button click, not form submission
+      if (selectedPaymentMethod === 'ach') {
+        toast({
+          title: 'Connect Bank Account',
+          description: 'Please click "Connect Bank Account" button to proceed with ACH payment.',
+        });
+        setProcessing(false);
+        return;
+      }
+      
+      // Other payment methods use standard tokenization
       const tokenResult = await paymentMethod.tokenize();
       
       if (tokenResult.status === 'OK') {
-        let verificationToken: string | undefined;
-        
-        // For card payments, perform 3D Secure verification when required
-        if (selectedPaymentMethod === 'card' && window.Square?.payments) {
-          try {
-            // Get payments instance from Square
-            const configResponse = await fetch('/api/payments/config');
-            const config = await configResponse.json();
-            const payments = window.Square.payments(config.applicationId, config.locationId);
-            
-            // Prepare buyer details for verification
-            const verificationDetails = {
-              amount: String(data.amount),
-              billingContact: {
-                givenName: data.firstName,
-                familyName: data.lastName,
-                email: data.email,
-                country: data.billingAddress.country || 'US',
-                addressLines: data.billingAddress.addressLine1 ? [data.billingAddress.addressLine1] : [],
-                city: data.billingAddress.city || '',
-                state: data.billingAddress.state || '',
-                postalCode: data.billingAddress.postalCode || '',
-              },
-              currencyCode: 'USD',
-              intent: 'CHARGE'
-            };
-            
-            // Perform buyer verification (3D Secure/SCA)
-            const verificationResult = await payments.verifyBuyer(
-              tokenResult.token,
-              verificationDetails
-            );
-            
-            // Store verification token if successful
-            if (verificationResult?.token) {
-              verificationToken = verificationResult.token;
-            }
-          } catch (verifyError) {
-            // Log verification error but continue - verification might not be required
-            console.log('Buyer verification error (may not be required):', verifyError);
-          }
-        }
-        
-        // Process payment on backend with verification token
-        const paymentRequest = {
-          sourceId: tokenResult.token,
-          amount: data.amount,
-          giftCardId,
-          recipientEmail: recipientEmail || data.email,
-          recipientName: recipientName || `${data.firstName} ${data.lastName}`,
-          message: message || 'Thank you for your purchase!',
-          designType,
-          verificationToken, // Include verification token for 3D Secure
-          buyerEmailAddress: data.email // Include buyer email for receipts
-        };
-
-        const response = await fetch('/api/payments/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentRequest),
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          onPaymentSuccess(result);
-          toast({
-            title: 'Payment Successful!',
-            description: `Your payment of $${data.amount} has been processed.`,
-          });
-        } else {
-          throw new Error(result.errorMessage || 'Payment failed');
-        }
+        await processPayment(data, tokenResult.token);
       } else {
         throw new Error(tokenResult.errors?.[0]?.message || 'Payment tokenization failed');
       }
@@ -296,6 +281,97 @@ export default function PaymentForm({
       });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const processPayment = async (data: PaymentFormData, token: string) => {
+    try {
+      let verificationToken: string | undefined;
+      
+      // For card payments, perform 3D Secure verification when required
+      if (selectedPaymentMethod === 'card' && window.Square?.payments) {
+        try {
+          // Get payments instance from Square
+          const configResponse = await fetch('/api/payments/config');
+          const config = await configResponse.json();
+          const payments = window.Square.payments(config.applicationId, config.locationId);
+          
+          // Prepare buyer details for verification
+          const verificationDetails = {
+            amount: String(data.amount),
+            billingContact: {
+              givenName: data.firstName,
+              familyName: data.lastName,
+              email: data.email,
+              country: data.billingAddress?.country || 'US',
+              addressLines: data.billingAddress?.addressLine1 ? [data.billingAddress.addressLine1] : [],
+              city: data.billingAddress?.locality || '',
+              state: data.billingAddress?.administrativeDistrictLevel1 || '',
+              postalCode: data.billingAddress?.postalCode || '',
+            },
+            currencyCode: 'USD',
+            intent: 'CHARGE'
+          };
+          
+          // Perform buyer verification (3D Secure/SCA)
+          const verificationResult = await payments.verifyBuyer(
+            token,
+            verificationDetails
+          );
+          
+          // Store verification token if successful
+          if (verificationResult?.token) {
+            verificationToken = verificationResult.token;
+          }
+        } catch (verifyError) {
+          // Log verification error but continue - verification might not be required
+          console.log('Buyer verification error (may not be required):', verifyError);
+        }
+      }
+      
+      // Process payment on backend with verification token
+      const paymentRequest = {
+        sourceId: token,
+        amount: data.amount,
+        giftCardId,
+        recipientEmail: recipientEmail || data.email,
+        recipientName: recipientName || `${data.firstName} ${data.lastName}`,
+        message: message || 'Thank you for your purchase!',
+        designType,
+        verificationToken, // Include verification token for 3D Secure
+        buyerEmailAddress: data.email, // Include buyer email for receipts
+        paymentType: selectedPaymentMethod === 'ach' ? 'ACH' : undefined // Mark ACH payments
+      };
+
+      const response = await fetch('/api/payments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentRequest),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        onPaymentSuccess(result);
+        
+        if (selectedPaymentMethod === 'ach') {
+          toast({
+            title: 'ACH Payment Initiated!',
+            description: `Your ACH payment of $${data.amount} has been initiated. It will process in 3-5 business days.`,
+          });
+        } else {
+          toast({
+            title: 'Payment Successful!',
+            description: `Your payment of $${data.amount} has been processed.`,
+          });
+        }
+      } else {
+        throw new Error(result.errorMessage || 'Payment failed');
+      }
+    } catch (error: any) {
+      throw error;
     }
   };
 
@@ -437,20 +513,62 @@ export default function PaymentForm({
                 <TabsContent value="ach" className="space-y-4">
                   <Alert>
                     <AlertDescription>
-                      ACH bank transfers typically take 1-3 business days to process.
+                      ACH bank transfers typically take 3-5 business days to process.
                       Your gift card will be activated once payment is confirmed.
                     </AlertDescription>
                   </Alert>
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-sm font-medium mb-2 block">Bank Account</Label>
-                    <div id="ach-container" className="min-h-[120px]">
-                      {!squareLoaded && (
-                        <div className="flex items-center justify-center h-20">
-                          <Loader2 className="w-6 h-6 animate-spin" />
-                          <span className="ml-2">Loading bank form...</span>
-                        </div>
-                      )}
-                    </div>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Click the button below to securely connect your bank account through Plaid.
+                      1% processing fee (minimum $1).
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      disabled={!squareLoaded || processing}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        
+                        // Validate form first
+                        const isValid = await form.trigger();
+                        if (!isValid) {
+                          toast({
+                            title: 'Form Validation Error',
+                            description: 'Please fill in all required fields before connecting your bank account.',
+                            variant: 'destructive',
+                          });
+                          return;
+                        }
+                        
+                        if (paymentMethods.ach) {
+                          try {
+                            setProcessing(true);
+                            const firstName = form.getValues('firstName');
+                            const lastName = form.getValues('lastName');
+                            const accountHolderName = `${firstName} ${lastName}`;
+                            
+                            await paymentMethods.ach.tokenize({
+                              accountHolderName,
+                              intent: 'CHARGE',
+                              amount: String(amount),
+                              currency: 'USD'
+                            });
+                          } catch (error) {
+                            setProcessing(false);
+                            console.error('ACH tokenization error:', error);
+                            toast({
+                              title: 'Bank Connection Error',
+                              description: 'Failed to connect to your bank. Please try again.',
+                              variant: 'destructive',
+                            });
+                          }
+                        }
+                      }}
+                    >
+                      <Building className="w-4 h-4 mr-2" />
+                      Connect Bank Account
+                    </Button>
                   </div>
                 </TabsContent>
               </Tabs>

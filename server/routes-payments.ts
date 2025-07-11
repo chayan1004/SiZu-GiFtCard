@@ -72,7 +72,7 @@ router.post('/create',
   async (req, res) => {
     try {
       const { 
-        sourceId,  // Card nonce from Web Payments SDK
+        sourceId,  // Card nonce or ACH token from Web Payments SDK
         amount, 
         giftCardId,
         recipientEmail,
@@ -80,7 +80,8 @@ router.post('/create',
         message,
         designType,
         verificationToken, // 3D Secure verification token
-        buyerEmailAddress // Buyer's email for receipts
+        buyerEmailAddress, // Buyer's email for receipts
+        paymentType // Payment type (e.g., 'ACH')
       } = req.body;
 
       if (!sourceId || !amount || !giftCardId) {
@@ -125,6 +126,11 @@ router.post('/create',
         });
       }
 
+      // Log ACH payment type if applicable
+      if (paymentType === 'ACH') {
+        console.log('Processing ACH payment with token:', sourceId.substring(0, 10) + '...');
+      }
+
       // Process payment with Square Payments API
       const paymentResult = await squarePaymentsService.createPayment(
         sourceId,
@@ -132,11 +138,13 @@ router.post('/create',
         undefined, // customerId - optional
         orderResult.orderId,
         giftCardId, // referenceId
-        `Gift card purchase: ${designType || 'Standard'} - ${recipientEmail || 'Self'}`,
+        `Gift card purchase: ${designType || 'Standard'} - ${recipientEmail || 'Self'} - ${paymentType === 'ACH' ? 'ACH Payment' : 'Card Payment'}`,
         false, // no verification needed for gift card purchase
         {
           verificationToken, // 3D Secure/SCA verification token
-          buyerEmailAddress: buyerEmailAddress || userEmail // Use buyer email for receipts
+          buyerEmailAddress: buyerEmailAddress || userEmail, // Use buyer email for receipts
+          // For ACH payments, we need to set autocomplete to true
+          autocomplete: true
         }
       );
 
@@ -426,6 +434,16 @@ router.get('/methods', async (req, res) => {
         fees: 'No additional fees',
         supported: true,
         walletType: 'CASH_APP'
+      },
+      {
+        type: 'ach',
+        name: 'Bank Transfer (ACH)',
+        description: 'Pay directly from your bank account via Plaid',
+        processingTime: '3-5 business days',
+        fees: '1% processing fee (minimum $1)',
+        supported: true,
+        paymentType: 'ACH',
+        notes: 'Powered by Square and Plaid partnership'
       }
     ];
 

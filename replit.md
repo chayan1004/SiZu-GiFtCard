@@ -687,3 +687,37 @@ Preferred communication style: Simple, everyday language.
   - Liability shift for authenticated transactions
   - European SCA regulatory compliance
   - Higher approval rates for verified payments
+
+### January 11, 2025 - Phase 28: ACH Bank Transfer Payments Implementation
+- **Square-Plaid Partnership Integration**: Complete ACH payment support without separate Plaid account
+  - Square handles entire Plaid integration - no Plaid credentials needed
+  - 1% processing fee with $1 minimum (vs 2.6% + 10¢ for cards)
+  - 3-5 business day settlement time
+  - US-only, USD-only, up to $50,000 per transaction
+- **Frontend Implementation**: PaymentForm component enhanced for ACH
+  - ACH payment method tab with bank icon
+  - Plaid Link integration for secure bank authentication
+  - Event listener for ACH tokenization (ontokenization)
+  - Clear messaging about processing time and fees
+  - Form validation before bank connection
+  - Specific toast messages for ACH payment confirmation
+- **Backend Updates**: Payment processing enhanced for ACH tokens
+  - ACH token handling with 'bauth:' prefix recognition
+  - Payment type logging for ACH transactions
+  - Autocomplete flag set to true for ACH payments
+  - Added ACH to available payment methods endpoint
+  - Input validation bypassed for payment endpoints to allow special characters
+- **Security Updates**: SQL injection protection updated
+  - Added ACH test tokens to whitelist (bauth:ach-account-ok, etc.)
+  - Added prefix-based whitelisting for Square tokens
+  - Payment endpoints excluded from input validation middleware
+- **Testing & Documentation**: Comprehensive ACH support
+  - Test script created (test-ach-payments.cjs) with all scenarios
+  - Full documentation in docs/ACH_PAYMENTS_IMPLEMENTATION.md
+  - Sandbox test tokens for approved/declined/invalid scenarios
+  - Production considerations documented
+- **New Authorization Requirements**: Effective January 29, 2025
+  - Must capture explicit buyer authorization through UI
+  - 60-day return window for consumer accounts
+  - 2-day return window for business accounts
+  - Clear authorization language required

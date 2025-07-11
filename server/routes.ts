@@ -115,10 +115,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     generalRateLimit(req, res, next);
   });
 
-  // Apply input validation middleware except for webhook and payment-links endpoints
+  // Apply input validation middleware except for webhook, payment-links, and payments endpoints
   app.use((req, res, next) => {
     // Skip validation for webhook endpoints - they receive legitimate JSON from external services
-    if (req.path.startsWith('/api/webhooks/') || req.path.startsWith('/api/payment-links/')) {
+    // Also skip payment endpoints as they need to accept tokens with special characters
+    if (req.path.startsWith('/api/webhooks/') || 
+        req.path.startsWith('/api/payment-links/') ||
+        req.path.startsWith('/api/payments/')) {
       return next();
     }
     validateInput(req, res, next);

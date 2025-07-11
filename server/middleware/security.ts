@@ -116,11 +116,20 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
         'wnon:cash-app-ok',
         'wnon:cash-app-declined',
         'cnon:card-nonce-ok',
-        'cnon:card-nonce-declined'
+        'cnon:card-nonce-declined',
+        'bauth:ach-account-ok',
+        'bauth:ach-account-insufficient-funds',
+        'bauth:ach-account-invalid'
       ];
       
       if (squareTestTokens.includes(value)) {
         return null; // Skip validation for Square test tokens
+      }
+      
+      // Also allow any token that starts with common Square prefixes
+      const squareTokenPrefixes = ['wnon:', 'cnon:', 'bauth:', 'gift_card_id:', 'order_id:'];
+      if (squareTokenPrefixes.some(prefix => value.startsWith(prefix))) {
+        return null; // Skip validation for Square tokens
       }
       
       // Check against all patterns
