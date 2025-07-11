@@ -4,6 +4,7 @@ import {
   giftCardTransactions,
   receipts,
   fraudAlerts,
+  savedCards,
   type User,
   type UpsertUser,
   type GiftCard,
@@ -14,6 +15,8 @@ import {
   type InsertReceipt,
   type FraudAlert,
   type InsertFraudAlert,
+  type SavedCard,
+  type InsertSavedCard,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
@@ -62,6 +65,15 @@ export interface IStorage {
     cardsIssued: number;
     redemptionsCount: number;
   }>;
+  
+  // Saved Card operations
+  updateUserSquareCustomerId(userId: string, squareCustomerId: string): Promise<User>;
+  addSavedCard(card: InsertSavedCard): Promise<SavedCard>;
+  getUserSavedCards(userId: string): Promise<SavedCard[]>;
+  getSavedCardById(cardId: string, userId: string): Promise<SavedCard | undefined>;
+  deleteSavedCard(cardId: string, userId: string): Promise<void>;
+  setDefaultCard(cardId: string, userId: string): Promise<void>;
+  getDefaultCard(userId: string): Promise<SavedCard | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -319,6 +331,102 @@ export class DatabaseStorage implements IStorage {
       cardsIssued: sales.count,
       redemptionsCount: redemptions.count,
     };
+  }
+
+  // Saved Card operations
+  async updateUserSquareCustomerId(userId: string, squareCustomerId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        squareCustomerId,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    return user;
+  }
+
+  async addSavedCard(card: InsertSavedCard): Promise<SavedCard> {
+    // If this is set as default, unset other defaults for this user
+    if (card.isDefault) {
+      await db
+        .update(savedCards)
+        .set({ isDefault: false })
+        .where(eq(savedCards.userId, card.userId));
+    }
+
+    const [savedCard] = await db
+      .insert(savedCards)
+      .values(card)
+      .returning();
+    
+    return savedCard;
+  }
+
+  async getUserSavedCards(userId: string): Promise<SavedCard[]> {
+    return await db
+      .select()
+      .from(savedCards)
+      .where(eq(savedCards.userId, userId))
+      .orderBy(desc(savedCards.isDefault), desc(savedCards.createdAt));
+  }
+
+  async getSavedCardById(cardId: string, userId: string): Promise<SavedCard | undefined> {
+    const [card] = await db
+      .select()
+      .from(savedCards)
+      .where(and(
+        eq(savedCards.id, cardId),
+        eq(savedCards.userId, userId)
+      ));
+    
+    return card;
+  }
+
+  async deleteSavedCard(cardId: string, userId: string): Promise<void> {
+    await db
+      .delete(savedCards)
+      .where(and(
+        eq(savedCards.id, cardId),
+        eq(savedCards.userId, userId)
+      ));
+  }
+
+  async setDefaultCard(cardId: string, userId: string): Promise<void> {
+    // First, unset all defaults for this user
+    await db
+      .update(savedCards)
+      .set({ isDefault: false })
+      .where(eq(savedCards.userId, userId));
+    
+    // Then set the specified card as default
+    await db
+      .update(savedCards)
+      .set({ 
+        isDefault: true,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(savedCards.id, cardId),
+        eq(savedCards.userId, userId)
+      ));
+  }
+
+  async getDefaultCard(userId: string): Promise<SavedCard | undefined> {
+    const [card] = await db
+      .select()
+      .from(savedCards)
+      .where(and(
+        eq(savedCards.userId, userId),
+        eq(savedCards.isDefault, true)
+      ));
+    
+    return card;
   }
 }
 
