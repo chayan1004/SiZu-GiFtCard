@@ -5,6 +5,7 @@ import {
   receipts,
   fraudAlerts,
   savedCards,
+  feeConfigurations,
   type User,
   type UpsertUser,
   type GiftCard,
@@ -17,6 +18,8 @@ import {
   type InsertFraudAlert,
   type SavedCard,
   type InsertSavedCard,
+  type FeeConfiguration,
+  type InsertFeeConfiguration,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
@@ -85,6 +88,14 @@ export interface IStorage {
   // Revenue tracking operations
   getGiftCardRevenue(giftCardId: string): Promise<{ totalRedeemed: number; redemptionCount: number }>;
   getUserTotalSpending(email: string): Promise<{ totalSpent: number; purchaseCount: number }>;
+  
+  // Fee Configuration operations
+  getFeeConfigurations(): Promise<FeeConfiguration[]>;
+  getFeeByType(feeType: string): Promise<FeeConfiguration | undefined>;
+  createFeeConfiguration(fee: InsertFeeConfiguration): Promise<FeeConfiguration>;
+  updateFeeConfiguration(id: string, fee: Partial<InsertFeeConfiguration>): Promise<FeeConfiguration>;
+  deleteFeeConfiguration(id: string): Promise<void>;
+  calculateFeeAmount(cardAmount: number, feeType: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -613,6 +624,82 @@ export class DatabaseStorage implements IStorage {
       totalSpent,
       purchaseCount: purchases.length
     };
+  }
+
+  // Fee Configuration operations
+  async getFeeConfigurations(): Promise<FeeConfiguration[]> {
+    return await db
+      .select()
+      .from(feeConfigurations)
+      .where(eq(feeConfigurations.isActive, true))
+      .orderBy(feeConfigurations.feeType);
+  }
+
+  async getFeeByType(feeType: string): Promise<FeeConfiguration | undefined> {
+    const [fee] = await db
+      .select()
+      .from(feeConfigurations)
+      .where(and(
+        eq(feeConfigurations.feeType, feeType),
+        eq(feeConfigurations.isActive, true)
+      ));
+    return fee;
+  }
+
+  async createFeeConfiguration(fee: InsertFeeConfiguration): Promise<FeeConfiguration> {
+    const [newFee] = await db
+      .insert(feeConfigurations)
+      .values({
+        ...fee,
+        updatedAt: new Date()
+      })
+      .returning();
+    return newFee;
+  }
+
+  async updateFeeConfiguration(id: string, fee: Partial<InsertFeeConfiguration>): Promise<FeeConfiguration> {
+    const [updatedFee] = await db
+      .update(feeConfigurations)
+      .set({
+        ...fee,
+        updatedAt: new Date()
+      })
+      .where(eq(feeConfigurations.id, id))
+      .returning();
+    return updatedFee;
+  }
+
+  async deleteFeeConfiguration(id: string): Promise<void> {
+    await db
+      .update(feeConfigurations)
+      .set({ isActive: false })
+      .where(eq(feeConfigurations.id, id));
+  }
+
+  async calculateFeeAmount(cardAmount: number, feeType: string): Promise<number> {
+    const fee = await this.getFeeByType(feeType);
+    if (!fee) {
+      return 0;
+    }
+
+    let calculatedFee = 0;
+    const feeAmount = parseFloat(fee.feeAmount);
+
+    if (fee.isPercentage) {
+      calculatedFee = (cardAmount * feeAmount) / 100;
+    } else {
+      calculatedFee = feeAmount;
+    }
+
+    // Apply min/max limits if specified
+    if (fee.minAmount && calculatedFee < parseFloat(fee.minAmount)) {
+      calculatedFee = parseFloat(fee.minAmount);
+    }
+    if (fee.maxAmount && calculatedFee > parseFloat(fee.maxAmount)) {
+      calculatedFee = parseFloat(fee.maxAmount);
+    }
+
+    return Math.round(calculatedFee * 100) / 100; // Round to 2 decimal places
   }
 }
 

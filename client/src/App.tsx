@@ -15,6 +15,7 @@ import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
 import Revenue from "@/pages/Revenue";
+import FeeManagement from "@/pages/FeeManagement";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -90,6 +91,7 @@ function Router() {
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />
           <Route path="/revenue" component={Revenue} />
+          <Route path="/fees" component={FeeManagement} />
         </>
       )}
       <Route component={NotFound} />

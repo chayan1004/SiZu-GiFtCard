@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Gift, CreditCard, Sparkles, Heart, Star, Loader2, Download, Mail } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -36,6 +36,36 @@ export default function Shop() {
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [createdGiftCard, setCreatedGiftCard] = useState<any>(null);
+
+  // Fetch active fees
+  const { data: activeFees = [] } = useQuery({
+    queryKey: ['/api/fees/active'],
+    enabled: step === 2,
+  });
+
+  // Calculate total price based on selected design and amount
+  const calculateTotalPrice = () => {
+    const amount = form.watch('initialAmount') || 0;
+    const design = form.watch('design');
+    let totalFees = 0;
+
+    if (activeFees.length > 0) {
+      // Add design-specific fee
+      if (design === 'premium') {
+        const premiumFee = activeFees.find(fee => fee.feeType === 'premium');
+        if (premiumFee) {
+          totalFees += parseFloat(premiumFee.feeAmount);
+        }
+      } else if (design === 'classic' || design === 'love') {
+        const standardFee = activeFees.find(fee => fee.feeType === 'standard');
+        if (standardFee) {
+          totalFees += parseFloat(standardFee.feeAmount);
+        }
+      }
+    }
+
+    return amount + totalFees;
+  };
 
   const form = useForm<CreateGiftCardForm>({
     resolver: zodResolver(createGiftCardSchema),
@@ -349,6 +379,34 @@ export default function Shop() {
                           {form.formState.errors.senderName && (
                             <p className="text-red-400 text-sm mt-1">{form.formState.errors.senderName.message}</p>
                           )}
+                        </div>
+
+                        {/* Price Breakdown */}
+                        <div className="border-t border-white/20 pt-4 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-300">Gift Card Amount:</span>
+                            <span className="text-white">${form.watch('initialAmount') || 0}</span>
+                          </div>
+                          {activeFees.length > 0 && (
+                            <>
+                              {form.watch('design') === 'premium' && activeFees.find(fee => fee.feeType === 'premium') && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-300">Premium Design Fee:</span>
+                                  <span className="text-white">${activeFees.find(fee => fee.feeType === 'premium')?.feeAmount}</span>
+                                </div>
+                              )}
+                              {(form.watch('design') === 'classic' || form.watch('design') === 'love') && activeFees.find(fee => fee.feeType === 'standard') && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-300">Processing Fee:</span>
+                                  <span className="text-white">${activeFees.find(fee => fee.feeType === 'standard')?.feeAmount}</span>
+                                </div>
+                              )}
+                            </>
+                          )}
+                          <div className="flex justify-between font-bold pt-2 border-t border-white/20">
+                            <span className="text-white">Total:</span>
+                            <span className="text-white">${calculateTotalPrice().toFixed(2)}</span>
+                          </div>
                         </div>
 
                         <div className="flex gap-4 pt-4">

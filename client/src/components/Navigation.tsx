@@ -15,7 +15,7 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
-import { CreditCard, User, LogOut, Settings, BarChart3, Menu, History, TrendingUp } from "lucide-react";
+import { CreditCard, User, LogOut, Settings, BarChart3, Menu, History, TrendingUp, DollarSign } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface NavigationProps {
@@ -130,6 +130,12 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                         <DropdownMenuItem className="text-white hover:bg-white/10">
                           <TrendingUp className="mr-2 h-4 w-4" />
                           <span>Revenue Analytics</span>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/fees">
+                        <DropdownMenuItem className="text-white hover:bg-white/10">
+                          <DollarSign className="mr-2 h-4 w-4" />
+                          <span>Fee Management</span>
                         </DropdownMenuItem>
                       </Link>
                     </>

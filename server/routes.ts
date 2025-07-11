@@ -625,6 +625,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fee Configuration Routes (Admin only)
+  
+  // Get all fee configurations
+  app.get('/api/admin/fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const fees = await storage.getFeeConfigurations();
+      res.json(fees);
+    } catch (error) {
+      console.error("Error fetching fee configurations:", error);
+      res.status(500).json({ message: "Failed to fetch fee configurations" });
+    }
+  });
+
+  // Create fee configuration
+  app.post('/api/admin/fees', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const feeData = {
+        ...req.body,
+        updatedBy: user.id
+      };
+
+      const fee = await storage.createFeeConfiguration(feeData);
+      res.json(fee);
+    } catch (error) {
+      console.error("Error creating fee configuration:", error);
+      res.status(500).json({ message: "Failed to create fee configuration" });
+    }
+  });
+
+  // Update fee configuration
+  app.put('/api/admin/fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      const feeData = {
+        ...req.body,
+        updatedBy: user.id
+      };
+
+      const fee = await storage.updateFeeConfiguration(id, feeData);
+      res.json(fee);
+    } catch (error) {
+      console.error("Error updating fee configuration:", error);
+      res.status(500).json({ message: "Failed to update fee configuration" });
+    }
+  });
+
+  // Delete fee configuration
+  app.delete('/api/admin/fees/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      await storage.deleteFeeConfiguration(id);
+      res.json({ message: "Fee configuration deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting fee configuration:", error);
+      res.status(500).json({ message: "Failed to delete fee configuration" });
+    }
+  });
+
+  // Public fee endpoint for shop
+  app.get('/api/fees/active', async (req, res) => {
+    try {
+      const fees = await storage.getFeeConfigurations();
+      const activeFees = fees.filter(fee => fee.isActive);
+      res.json(activeFees);
+    } catch (error) {
+      console.error("Error fetching active fees:", error);
+      res.status(500).json({ message: "Failed to fetch active fees" });
+    }
+  });
+
+  // Public fee endpoint for shop
+  app.get('/api/fees/active', async (req, res) => {
+    try {
+      const fees = await storage.getFeeConfigurations();
+      const activeFees = fees.filter(fee => fee.isActive);
+      res.json(activeFees);
+    } catch (error) {
+      console.error("Error fetching active fees:", error);
+      res.status(500).json({ message: "Failed to fetch active fees" });
+    }
+  });
+
+  // Calculate fee for gift card amount
+  app.post('/api/fees/calculate', async (req, res) => {
+    try {
+      const { amount, feeType = 'standard' } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      const feeAmount = await storage.calculateFeeAmount(amount, feeType);
+      const total = amount + feeAmount;
+
+      res.json({
+        amount,
+        feeType,
+        feeAmount,
+        total
+      });
+    } catch (error) {
+      console.error("Error calculating fee:", error);
+      res.status(500).json({ message: "Failed to calculate fee" });
+    }
+  });
+
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

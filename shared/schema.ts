@@ -104,6 +104,22 @@ export const receipts = pgTable("receipts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Fee Configuration table
+export const feeConfigurations = pgTable("fee_configurations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  feeType: varchar("fee_type", { length: 100 }).notNull().unique(), // e.g., "standard", "premium", "rush", "corporate"
+  feeName: varchar("fee_name", { length: 255 }).notNull(),
+  feeAmount: decimal("fee_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+  isPercentage: boolean("is_percentage").notNull().default(false),
+  minAmount: decimal("min_amount", { precision: 10, scale: 2 }),
+  maxAmount: decimal("max_amount", { precision: 10, scale: 2 }),
+  isActive: boolean("is_active").notNull().default(true),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  updatedBy: varchar("updated_by", { length: 255 }), // User ID who last updated
+});
+
 // Fraud Alerts table
 export const fraudAlerts = pgTable("fraud_alerts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -230,6 +246,18 @@ export const insertSavedCardSchema = createInsertSchema(savedCards).pick({
   isDefault: true,
 });
 
+export const insertFeeConfigurationSchema = createInsertSchema(feeConfigurations).pick({
+  feeType: true,
+  feeName: true,
+  feeAmount: true,
+  isPercentage: true,
+  minAmount: true,
+  maxAmount: true,
+  isActive: true,
+  description: true,
+  updatedBy: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -248,6 +276,9 @@ export type FraudAlert = typeof fraudAlerts.$inferSelect;
 
 export type InsertSavedCard = z.infer<typeof insertSavedCardSchema>;
 export type SavedCard = typeof savedCards.$inferSelect;
+
+export type InsertFeeConfiguration = z.infer<typeof insertFeeConfigurationSchema>;
+export type FeeConfiguration = typeof feeConfigurations.$inferSelect;
 
 // Additional validation schemas
 export const redeemGiftCardSchema = z.object({
