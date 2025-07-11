@@ -1142,18 +1142,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public fee endpoint for shop
-  app.get('/api/fees/active', async (req, res) => {
-    try {
-      const fees = await storage.getFeeConfigurations();
-      const activeFees = fees.filter(fee => fee.isActive);
-      res.json(activeFees);
-    } catch (error) {
-      console.error("Error fetching active fees:", error);
-      res.status(500).json({ message: "Failed to fetch active fees" });
-    }
-  });
-
   // Calculate fee for gift card amount
   app.post('/api/fees/calculate', async (req, res) => {
     try {
@@ -1500,6 +1488,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Catch-all for API routes that don't exist
+  app.all('/api/*', (req, res) => {
+    res.status(404).json({ message: `API endpoint not found: ${req.method} ${req.path}` });
   });
 
   // Create HTTP server
