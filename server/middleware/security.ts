@@ -111,6 +111,18 @@ export const validateInput = (req: Request, res: Response, next: NextFunction) =
         return 'Input too long. Please limit text to 10,000 characters.';
       }
       
+      // Allow Square test payment tokens
+      const squareTestTokens = [
+        'wnon:cash-app-ok',
+        'wnon:cash-app-declined',
+        'cnon:card-nonce-ok',
+        'cnon:card-nonce-declined'
+      ];
+      
+      if (squareTestTokens.includes(value)) {
+        return null; // Skip validation for Square test tokens
+      }
+      
       // Check against all patterns
       for (const { pattern, message } of dangerousPatterns) {
         if (pattern.test(value)) {

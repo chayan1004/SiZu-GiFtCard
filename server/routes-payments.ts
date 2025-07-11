@@ -357,11 +357,20 @@ router.get('/status/:paymentId',
           amount: payment.amountMoney ? Number(payment.amountMoney.amount) / 100 : 0,
           createdAt: payment.createdAt,
           updatedAt: payment.updatedAt,
+          sourceType: payment.sourceType,
           cardDetails: payment.cardDetails ? {
             last4: payment.cardDetails.card?.last4,
             brand: payment.cardDetails.card?.cardBrand,
             expMonth: payment.cardDetails.card?.expMonth,
             expYear: payment.cardDetails.card?.expYear
+          } : undefined,
+          walletDetails: payment.walletDetails ? {
+            status: payment.walletDetails.status,
+            brand: payment.walletDetails.brand,
+            cashAppDetails: payment.walletDetails.cashAppDetails ? {
+              buyerCountryCode: payment.walletDetails.cashAppDetails.buyerCountryCode,
+              buyerCashtag: payment.walletDetails.cashAppDetails.buyerCashtag
+            } : undefined
           } : undefined
         }
       });
@@ -402,6 +411,15 @@ router.get('/methods', async (req, res) => {
         processingTime: 'Instant',
         fees: 'No additional fees',
         supported: true
+      },
+      {
+        type: 'cash_app_pay',
+        name: 'Cash App',
+        description: 'Pay with Cash App - quick and secure digital wallet',
+        processingTime: 'Instant',
+        fees: 'No additional fees',
+        supported: true,
+        walletType: 'CASH_APP'
       }
     ];
 
