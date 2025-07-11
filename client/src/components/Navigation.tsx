@@ -60,13 +60,13 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
-                <a className={`transition-colors ${
+                <span className={`transition-colors cursor-pointer ${
                   isActive(item.path) 
                     ? 'text-primary font-semibold' 
                     : 'text-white hover:text-accent'
                 }`}>
                   {item.label}
-                </a>
+                </span>
               </Link>
             ))}
           </div>
@@ -108,10 +108,8 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                   {showDashboard && (
                     <DropdownMenuItem className="text-white hover:bg-white/10">
                       <Link href="/dashboard">
-                        <div className="flex items-center">
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
-                        </div>
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -149,8 +147,8 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                   <div className="grid gap-6 py-6">
                     {navItems.map((item) => (
                       <Link key={item.path} href={item.path}>
-                        <a 
-                          className={`block text-lg font-medium transition-colors ${
+                        <span 
+                          className={`block text-lg font-medium transition-colors cursor-pointer ${
                             isActive(item.path) 
                               ? 'text-primary' 
                               : 'text-white hover:text-accent'
@@ -158,7 +156,7 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {item.label}
-                        </a>
+                        </span>
                       </Link>
                     ))}
                     {!user && (
