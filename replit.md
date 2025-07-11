@@ -150,9 +150,9 @@ Preferred communication style: Simple, everyday language.
   - All other operations: Users can browse and fill forms, but get login prompt when submitting
   - Login redirects implemented with toast notifications for better UX
 - **AI Integration**: Shop page enhanced with AI capabilities
-  - OpenAI integration for message generation and design recommendations
+  - OpenAI integration for message generation and design recommendations (now working!)
   - Perplexity integration for real-time gift idea search
-  - API keys configured but OpenAI quota exceeded (needs billing)
+  - API keys configured and fully functional
 - **Landing Page Enhancement**: Added Quick Actions section
   - Grid layout with cards for all five main features
   - Visual icons and descriptions for each service
