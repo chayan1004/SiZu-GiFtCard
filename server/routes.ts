@@ -555,6 +555,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch gift cards" });
     }
   });
+  
+  // Get transactions for a specific gift card
+  app.get('/api/giftcards/:id/transactions', requireAnyAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const giftCardId = req.params.id;
+      
+      // Verify the gift card belongs to the user
+      const giftCard = await storage.getGiftCardById(giftCardId);
+      if (!giftCard || giftCard.purchasedBy !== user.id) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+      
+      const transactions = await storage.getTransactionsByGiftCard(giftCardId);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching gift card transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
 
   // Receipt routes
   app.get('/api/receipts/:token', async (req, res) => {
@@ -655,6 +679,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Dashboard Routes
+  
+  // Get dashboard stats
+  app.get('/api/user/dashboard/stats', requireAnyAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Get user's gift cards
+      const giftCards = await storage.getGiftCardsByUser(user.id);
+      
+      // Calculate statistics
+      const totalBalance = giftCards.reduce((sum, card) => sum + parseFloat(card.balance), 0);
+      const totalInitialValue = giftCards.reduce((sum, card) => sum + parseFloat(card.initialAmount), 0);
+      const totalSpent = totalInitialValue - totalBalance;
+      const activeCards = giftCards.filter(card => parseFloat(card.balance) > 0).length;
+      
+      // Get recent transactions
+      const allTransactions = [];
+      for (const card of giftCards) {
+        const cardTransactions = await storage.getTransactionsByGiftCard(card.id);
+        allTransactions.push(...cardTransactions);
+      }
+      
+      // Sort by date and get recent ones
+      const recentTransactions = allTransactions
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 10)
+        .map(tx => ({
+          id: tx.id,
+          amount: parseFloat(tx.amount),
+          type: tx.type as 'purchase' | 'redemption',
+          description: tx.description || `${tx.type} transaction`,
+          date: tx.createdAt,
+          status: 'completed' as const
+        }));
+      
+      // Calculate monthly spending (mock data for now)
+      const monthlySpending = [
+        { month: 'Jan', amount: 125 },
+        { month: 'Feb', amount: 89 },
+        { month: 'Mar', amount: 156 },
+        { month: 'Apr', amount: 234 },
+        { month: 'May', amount: 189 },
+        { month: 'Jun', amount: 298 }
+      ];
+      
+      res.json({
+        totalBalance,
+        totalSpent,
+        activeCards,
+        pendingTransactions: 0,
+        monthlySpending,
+        recentTransactions
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard statistics" });
+    }
+  });
+  
+  // Get user's transactions
+  app.get('/api/user/transactions', requireAnyAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Get user's gift cards
+      const giftCards = await storage.getGiftCardsByUser(user.id);
+      
+      // Get all transactions for user's cards
+      const allTransactions = [];
+      for (const card of giftCards) {
+        const cardTransactions = await storage.getTransactionsByGiftCard(card.id);
+        allTransactions.push(...cardTransactions.map(tx => ({
+          ...tx,
+          cardCode: card.code,
+          cardDesign: card.design
+        })));
+      }
+      
+      // Sort by date (newest first)
+      allTransactions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+      res.json(allTransactions);
+    } catch (error) {
+      console.error("Error fetching user transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+  
   // Order History Routes
   
   // Get user's order history (paginated)

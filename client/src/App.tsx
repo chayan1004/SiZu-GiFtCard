@@ -32,6 +32,8 @@ import CustomerRegister from "@/pages/CustomerRegister";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyOTP from "@/pages/VerifyOTP";
+import UserWallet from "@/pages/user/UserWallet";
+import UserTransactions from "@/pages/user/UserTransactions";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -119,6 +121,8 @@ function Router() {
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />
+          <Route path="/dashboard/user/wallet" component={UserWallet} />
+          <Route path="/dashboard/user/transactions" component={UserTransactions} />
           <Route path="/revenue" component={Revenue} />
           <Route path="/fees" component={FeeManagement} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
