@@ -194,6 +194,24 @@ export class SquareWebhookService {
       console.log(`  Risk Level: ${payment.risk_evaluation.risk_level}`);
     }
     
+    // Store payment record in database
+    await storage.createPaymentRecord({
+      paymentId: payment.id,
+      orderId: payment.order_id,
+      status: payment.status,
+      amount: payment.amount_money?.amount || 0,
+      currency: payment.amount_money?.currency || 'USD',
+      locationId: payment.location_id,
+      customerId: payment.customer_id,
+      cardBrand: payment.card_details?.card?.card_brand,
+      cardLast4: payment.card_details?.card?.last_4,
+      cardStatus: payment.card_details?.status,
+      riskLevel: payment.risk_evaluation?.risk_level,
+      receiptUrl: payment.receipt_url,
+      createdAt: payment.created_at,
+      updatedAt: payment.updated_at
+    });
+    
     // Update transaction status in database
     if (payment.order_id) {
       await storage.updateTransactionStatus(payment.order_id, 'completed');
@@ -208,6 +226,24 @@ export class SquareWebhookService {
     if (payment.receipt_url) {
       console.log(`  Receipt URL: ${payment.receipt_url}`);
     }
+    
+    // Update payment record in database
+    await storage.createPaymentRecord({
+      paymentId: payment.id,
+      orderId: payment.order_id,
+      status: payment.status,
+      amount: payment.amount_money?.amount || 0,
+      currency: payment.amount_money?.currency || 'USD',
+      locationId: payment.location_id,
+      customerId: payment.customer_id,
+      cardBrand: payment.card_details?.card?.card_brand,
+      cardLast4: payment.card_details?.card?.last_4,
+      cardStatus: payment.card_details?.status,
+      riskLevel: payment.risk_evaluation?.risk_level,
+      receiptUrl: payment.receipt_url,
+      createdAt: payment.created_at,
+      updatedAt: payment.updated_at
+    });
     
     // Update transaction status based on payment status
     if (payment.order_id) {
@@ -226,6 +262,23 @@ export class SquareWebhookService {
     console.log(`  Type: ${giftCard.type}`);
     console.log(`  State: ${giftCard.state}`);
     console.log(`  Balance: $${giftCard.balance_money.amount / 100} ${giftCard.balance_money.currency}`);
+    
+    // Check if local gift card exists with this GAN
+    if (giftCard.gan) {
+      const localCard = await storage.getGiftCardByCode(giftCard.gan);
+      if (localCard && !localCard.squareGiftCardId) {
+        // Update local card with Square gift card ID
+        await storage.updateGiftCardSquareId(localCard.id, giftCard.id);
+      }
+    }
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleGiftCardUpdated(event: WebhookEvent) {
@@ -243,6 +296,14 @@ export class SquareWebhookService {
         await storage.updateGiftCardBalance(localCard.id, balance);
       }
     }
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleGiftCardActivityCreated(event: WebhookEvent) {
@@ -274,6 +335,14 @@ export class SquareWebhookService {
         });
       }
     }
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleGiftCardActivityUpdated(event: WebhookEvent) {
@@ -296,6 +365,14 @@ export class SquareWebhookService {
         await storage.updateGiftCardBalance(localCard.id, balance);
       }
     }
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleGiftCardCustomerLinked(event: WebhookEvent) {
@@ -307,6 +384,14 @@ export class SquareWebhookService {
     console.log(`  GAN: ${giftCard.gan}`);
     console.log(`  Linked Customer ID: ${linkedCustomerId}`);
     console.log(`  Customer IDs: ${giftCard.customer_ids?.join(', ')}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleGiftCardCustomerUnlinked(event: WebhookEvent) {
@@ -317,6 +402,14 @@ export class SquareWebhookService {
     console.log(`  Gift Card ID: ${giftCard.id}`);
     console.log(`  GAN: ${giftCard.gan}`);
     console.log(`  Unlinked Customer ID: ${unlinkedCustomerId}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   // Refund event handlers
@@ -331,11 +424,40 @@ export class SquareWebhookService {
       severity: 'low',
       metadata: { refundId: refund.id, paymentId: refund.paymentId }
     });
+    
+    // Store refund record in database
+    await storage.createRefund({
+      refundId: refund.id,
+      paymentId: refund.paymentId,
+      orderId: refund.orderId,
+      amount: refund.amountMoney?.amount || 0,
+      currency: refund.amountMoney?.currency || 'USD',
+      status: refund.status,
+      reason: refund.reason,
+      createdAt: refund.createdAt,
+      updatedAt: refund.updatedAt
+    });
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleRefundUpdated(event: WebhookEvent) {
     const refund = event.data.object;
     console.log(`Refund updated: ${refund.id}, Status: ${refund.status}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   // Dispute event handlers
@@ -350,15 +472,52 @@ export class SquareWebhookService {
       severity: 'high',
       metadata: { disputeId: dispute.id, paymentId: dispute.disputedPayment?.paymentId }
     });
+    
+    // Store dispute record in database
+    await storage.createDispute({
+      disputeId: dispute.id,
+      paymentId: dispute.disputedPayment?.paymentId,
+      amount: dispute.amountMoney?.amount || 0,
+      currency: dispute.amountMoney?.currency || 'USD',
+      reason: dispute.reason,
+      state: dispute.state,
+      dueAt: dispute.evidenceDueByDate,
+      createdAt: dispute.createdAt,
+      updatedAt: dispute.updatedAt
+    });
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleDisputeUpdated(event: WebhookEvent) {
     const dispute = event.data.object;
     console.log(`Dispute updated: ${dispute.id}, State: ${dispute.state}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleDisputeEvidenceCreated(event: WebhookEvent) {
     console.log(`Dispute evidence created:`, event.data);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   // Order event handlers
@@ -427,6 +586,14 @@ export class SquareWebhookService {
         }
       }
     }
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleOAuthRevoked(event: WebhookEvent) {
@@ -457,11 +624,27 @@ export class SquareWebhookService {
   private async handlePayoutCreated(event: WebhookEvent) {
     const payout = event.data.object;
     console.log(`Payout created: ${payout.id}, Amount: ${payout.amountMoney.amount}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handlePayoutUpdated(event: WebhookEvent) {
     const payout = event.data.object;
     console.log(`Payout updated: ${payout.id}, Status: ${payout.status}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   // Online Checkout event handlers
@@ -490,6 +673,14 @@ export class SquareWebhookService {
     }
     
     console.log(`  Updated at: ${settings.updated_at}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleOnlineCheckoutMerchantSettingsUpdated(event: WebhookEvent) {
@@ -523,6 +714,14 @@ export class SquareWebhookService {
     }
     
     console.log(`  Updated at: ${settings.updated_at}`);
+    
+    // Store webhook event in database
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   // Customer event handlers
@@ -547,6 +746,27 @@ export class SquareWebhookService {
     }
     
     console.log(`  Created at: ${customer.created_at}`);
+    
+    // Store customer in database
+    await storage.createSquareCustomer({
+      customerId: customer.id,
+      email: customer.email_address,
+      givenName: customer.given_name,
+      familyName: customer.family_name,
+      phoneNumber: customer.phone_number,
+      birthday: customer.birthday,
+      address: customer.address ? JSON.stringify(customer.address) : null,
+      createdAt: customer.created_at,
+      updatedAt: customer.updated_at
+    });
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleCustomerUpdated(event: WebhookEvent) {
@@ -566,6 +786,27 @@ export class SquareWebhookService {
         console.log(`  Updated local user ${existingUser.id} with Square customer ID`);
       }
     }
+    
+    // Update or create customer record
+    await storage.createSquareCustomer({
+      customerId: customer.id,
+      email: customer.email_address,
+      givenName: customer.given_name,
+      familyName: customer.family_name,
+      phoneNumber: customer.phone_number,
+      birthday: customer.birthday,
+      address: customer.address ? JSON.stringify(customer.address) : null,
+      createdAt: customer.created_at,
+      updatedAt: customer.updated_at
+    });
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   private async handleCustomerDeleted(event: WebhookEvent) {
@@ -582,6 +823,17 @@ export class SquareWebhookService {
       console.log(`    Email: ${customer.email_address}`);
       console.log(`    Version: ${customer.version}`);
     }
+    
+    // Mark customer as deleted in database
+    await storage.deleteSquareCustomer(customerId);
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      type: event.type,
+      data: event,
+      merchant_id: event.merchant_id
+    });
   }
 
   /**

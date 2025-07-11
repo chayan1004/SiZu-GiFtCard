@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-07-11T17:05:22.514Z",
+  "timestamp": "2025-07-11T17:13:22.819Z",
   "summary": {
     "implemented": 8,
     "placeholders": 0,
-    "missing": 62
+    "missing": 61
   },
   "placeholderImplementations": [],
   "missingFeatures": [
@@ -65,11 +65,6 @@
     {
       "category": "Webhook Handler",
       "feature": "handleDisputeUpdated",
-      "type": "NO_DATABASE_STORAGE"
-    },
-    {
-      "category": "Webhook Handler",
-      "feature": "handleDisputeEvidenceCreated",
       "type": "NO_DATABASE_STORAGE"
     },
     {
