@@ -11,6 +11,7 @@ import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
 import Balance from "@/pages/Balance";
 import Redeem from "@/pages/Redeem";
+import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import UserDashboard from "@/pages/UserDashboard";
 import Profile from "@/pages/Profile";
@@ -93,8 +94,9 @@ function Router() {
           <Route path="/shop" component={Shop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
-          <Route path="/dashboard" component={AdminDashboard} />
-          <Route path="/user-dashboard" component={UserDashboard} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/dashboard/admin" component={AdminDashboard} />
+          <Route path="/dashboard/user" component={UserDashboard} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />
