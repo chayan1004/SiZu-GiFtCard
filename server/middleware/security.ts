@@ -6,180 +6,43 @@
 import type { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
-// Enhanced Rate limiting configurations with different tiers
+// Rate limiting configurations
 export const generalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: (req) => {
-    // Higher limits for authenticated users
-    const multiplier = req.res?.locals?.rateLimitMultiplier || 1;
-    return 100 * multiplier;
-  },
-  message: { 
-    error: 'Too many requests from this IP, please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED',
-    retryAfter: '15 minutes'
-  },
+  max: 100,
+  message: { error: 'Too many requests from this IP, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks and development assets
-    return req.path === '/api/health' || 
-           (process.env.NODE_ENV === 'development' && 
-            (req.path.startsWith('/@') || req.path.startsWith('/src')));
-  },
-  keyGenerator: (req) => {
-    // Use user ID for authenticated requests, IP for anonymous
-    return req.user?.claims?.sub || req.ip;
+    // Skip rate limiting for health checks
+    return req.path === '/api/health';
   }
 });
 
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes  
-  max: 10, // Increased from 5 to 10 for better UX
-  message: { 
-    error: 'Too many authentication attempts, please try again later.',
-    code: 'AUTH_RATE_LIMIT_EXCEEDED',
-    retryAfter: '15 minutes',
-    suggestion: 'Please wait before attempting to log in again'
-  },
+  max: 5,
+  message: { error: 'Too many authentication attempts, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful logins
 });
 
 export const apiRateLimit = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: (req) => {
-    // Different limits based on user type
-    if (req.user?.dbUser?.role === 'admin') return 50;
-    if (req.user?.claims?.sub) return 30;
-    return 10;
-  },
-  message: { 
-    error: 'Too many API requests, please try again later.',
-    code: 'API_RATE_LIMIT_EXCEEDED',
-    retryAfter: '1 minute'
-  },
+  max: 10,
+  message: { error: 'Too many API requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
 });
 
 export const giftCardRateLimit = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: (req) => {
-    // Higher limits for authenticated users
-    if (req.user?.dbUser?.role === 'admin') return 50;
-    if (req.user?.claims?.sub) return 20;
-    return 10;
-  },
+  max: 10, // limit each IP to 10 gift card operations per minute
   message: {
     error: 'Too many gift card requests, please try again later',
-    code: 'GIFT_CARD_RATE_LIMIT_EXCEEDED',
-    retryAfter: '1 minute',
-    suggestion: 'Please wait before making another gift card operation'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
-});
-
-// Admin-specific rate limiting (higher limits)
-export const adminRateLimit = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100,
-  message: {
-    error: 'Too many admin requests, please try again later',
-    code: 'ADMIN_RATE_LIMIT_EXCEEDED',
-    retryAfter: '1 minute'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
-});
-
-// Payment-specific rate limiting (more restrictive)
-export const paymentRateLimit = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: (req) => {
-    // Conservative limits for payment operations
-    if (req.user?.dbUser?.role === 'admin') return 20;
-    if (req.user?.claims?.sub) return 10;
-    return 3; // Very low for anonymous users
-  },
-  message: {
-    error: 'Too many payment requests, please try again later',
-    code: 'PAYMENT_RATE_LIMIT_EXCEEDED',
-    retryAfter: '5 minutes',
-    suggestion: 'Payment operations are limited for security reasons'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
-});
-
-// Webhook rate limiting (for external services)
-export const webhookRateLimit = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // Higher limit for legitimate webhooks
-  message: {
-    error: 'Too many webhook requests, please try again later',
-    code: 'WEBHOOK_RATE_LIMIT_EXCEEDED'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for Square webhooks with valid signatures
-    return req.path === '/api/webhooks/square' && req.headers['x-square-signature'];
-  }
-});
-
-// Search and read operations rate limiting
-export const readRateLimit = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: (req) => {
-    if (req.user?.dbUser?.role === 'admin') return 200;
-    if (req.user?.claims?.sub) return 100;
-    return 30;
-  },
-  message: {
-    error: 'Too many read requests, please try again later',
-    code: 'READ_RATE_LIMIT_EXCEEDED',
-    retryAfter: '1 minute'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
-});
-
-// Write operations rate limiting (more restrictive)
-export const writeRateLimit = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: (req) => {
-    if (req.user?.dbUser?.role === 'admin') return 50;
-    if (req.user?.claims?.sub) return 20;
-    return 5;
-  },
-  message: {
-    error: 'Too many write requests, please try again later',
-    code: 'WRITE_RATE_LIMIT_EXCEEDED',
-    retryAfter: '1 minute'
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.claims?.sub || req.ip;
-  }
 });
 
 // Security headers middleware
