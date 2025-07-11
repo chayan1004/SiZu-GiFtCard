@@ -8,10 +8,12 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requireCustomerAuth, requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
+import { SquarePaymentsService } from "./services/SquarePaymentsService";
 import { PDFService } from "./services/PDFService";
 import { EmailService } from "./services/EmailService";
 import { QRService } from "./services/QRService";
 import { aiService } from "./services/aiService";
+import { paymentsRouter } from "./routes-payments";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -49,7 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const squareService = new SquareService();
   const squareCustomerService = new SquareCustomerService();
-
+  const paymentsService = new SquarePaymentsService();
 
   // Configure secure sessions
   app.use(session({
@@ -62,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
     },
-    name: 'sizu.sid' // Don't use default session name
+    name: 'sizu.sid'
   }));
 
   const pdfService = new PDFService();
@@ -73,28 +75,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(httpsRedirect);
   app.use(securityHeaders);
   app.use(cors(corsOptions));
-  
-  // Set additional CORS headers for all responses
+
   app.use((req, res, next) => {
-    // Ensure CORS headers are set for all responses
     const origin = req.get('origin');
     if (origin) {
       res.setHeader('Vary', 'Origin');
     }
-    
-    // Add security headers for API responses
+
     if (req.path.startsWith('/api/')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
     }
-    
+
     next();
   });
-  
-  // Apply rate limiting only to API routes and not to Vite development routes
+
   app.use((req, res, next) => {
-    // Skip rate limiting for Vite development routes
     if (process.env.NODE_ENV === 'development' && 
         (req.path.startsWith('/@') || 
          req.path.startsWith('/src') || 
@@ -103,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     generalRateLimit(req, res, next);
   });
-  
+
   app.use(validateInput);
   app.use(secureLogger);
 
@@ -112,7 +109,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ 
       status: 'healthy', 
       timestamp: new Date().toISOString(),
-      version: '1.0.0'
+      version: '1.0.0',
+      services: {
+        payments: paymentsService.isAvailable(),
+        square: squareService ? true : false,
+        email: true // EmailService availability
+      }
     });
   });
 
@@ -121,6 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Import AuthService
   const { AuthService } = await import('./services/AuthService');
+
+  // Add payment routes
+  app.use('/api/payments', paymentsRouter);
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -138,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', authRateLimit, validateInput, validateEmail, async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
       }
@@ -148,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { user, otp } = await AuthService.registerCustomer(email, password, firstName, lastName);
-      
+
       // Send OTP email
       await emailService.sendOTPEmail(email, otp, firstName);
 
@@ -166,17 +171,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/login', authRateLimit, validateInput, async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
       const user = await AuthService.loginCustomer(email, password);
-      
+
       // Create session
       req.session.userId = user.id;
       req.session.role = user.role;
-      
+
       res.json({ 
         message: "Login successful",
         user: {
@@ -205,17 +210,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/verify-otp', authRateLimit, validateInput, async (req, res) => {
     try {
       const { email, otp } = req.body;
-      
+
       if (!email || !otp) {
         return res.status(400).json({ message: "Email and OTP are required" });
       }
 
       const user = await AuthService.verifyOTP(email, otp);
-      
+
       // Automatically log them in after verification
       req.session.userId = user.id;
       req.session.role = user.role;
-      
+
       res.json({ 
         message: "Email verified successfully",
         user: {
@@ -234,17 +239,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/resend-otp', authRateLimit, validateInput, validateEmail, async (req, res) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
 
       const otp = await AuthService.resendOTP(email);
       const user = await storage.getUserByEmail(email);
-      
+
       // Send new OTP email
       await emailService.sendOTPEmail(email, otp, user?.firstName);
-      
+
       res.json({ message: "New verification code sent to your email" });
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Failed to resend OTP" });
@@ -255,10 +260,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email } = req.body;
       const resetToken = await AuthService.requestPasswordReset(email);
-      
+
       // Send reset email
       await emailService.sendPasswordResetEmail(email, resetToken);
-      
+
       res.json({ message: "If that email exists, we've sent a password reset link" });
     } catch (error: any) {
       res.status(500).json({ message: "Password reset request failed" });
@@ -268,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/reset-password', authRateLimit, validateInput, async (req, res) => {
     try {
       const { token, password } = req.body;
-      
+
       if (!password || password.length < 8) {
         return res.status(400).json({ message: "Password must be at least 8 characters" });
       }
@@ -318,22 +323,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Gift Card Routes
-  
-  // Create gift card (Admin only)
+  // Gift Card Routes - Enhanced with payment integration
+
+  // Create gift card with payment processing (Admin only)
   app.post('/api/giftcards', giftCardRateLimit, validateGiftCardAmount, validateEmail, isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const data = createGiftCardSchema.parse(req.body);
       const userId = req.user.claims.sub;
-      
+
+      // Process payment if payment information provided
+      let paymentResult = null;
+      if (req.body.paymentMethod) {
+        const paymentRequest = {
+          amount: parseFloat(data.initialAmount.toString()),
+          currency: 'USD',
+          paymentMethod: req.body.paymentMethod,
+          referenceId: `admin-gc-${nanoid(10)}`,
+          note: `Admin gift card creation - $${data.initialAmount}`,
+        };
+
+        paymentResult = await paymentsService.processPayment(paymentRequest);
+
+        if (!paymentResult.success) {
+          return res.status(400).json({
+            message: "Payment failed",
+            error: paymentResult.errorMessage
+          });
+        }
+      }
+
       // Generate unique code
       const code = `GC${nanoid(12).toUpperCase()}`;
-      
+
       // Create gift card in database
       const giftCard = await storage.createGiftCard({
         ...data,
         code,
         issuedById: userId,
+        paymentId: paymentResult?.paymentId,
       });
 
       // Create with Square API
@@ -342,7 +369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parseFloat(data.initialAmount.toString()),
           code
         );
-        
+
         // Update with Square ID
         await storage.updateGiftCardSquareId(giftCard.id, squareGiftCard.id);
       } catch (squareError) {
@@ -357,7 +384,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: data.initialAmount.toString(),
         balanceAfter: data.initialAmount.toString(),
         performedById: userId,
-        notes: 'Gift card issued',
+        notes: 'Gift card issued by admin',
+        paymentId: paymentResult?.paymentId,
       });
 
       // Broadcast revenue update
@@ -376,6 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         senderName: data.senderName,
         transactionId: transaction.id,
         timestamp: new Date().toISOString(),
+        paymentMethod: paymentResult?.cardDetails || null,
       };
 
       const accessToken = nanoid(32);
@@ -394,7 +423,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
         : `http://localhost:${process.env.PORT || 5000}`;
       const qrCodeUrl = `${baseUrl}/receipt-view/${accessToken}`;
-      console.log('Generating QR code for receipt URL:', qrCodeUrl);
       const qrCode = await qrService.generateQRCode(qrCodeUrl);
 
       // Generate PDF receipt
@@ -416,6 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...giftCard,
         receiptUrl: `/api/receipts/${accessToken}`,
         qrCode,
+        paymentResult,
       });
     } catch (error) {
       console.error("Error creating gift card:", error);
@@ -423,6 +452,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create gift card" });
+    }
+  });
+
+  // Public gift card purchase with payment processing
+  app.post('/api/giftcards/purchase', giftCardRateLimit, async (req, res) => {
+    try {
+      const giftCardData = createGiftCardSchema.parse(req.body);
+      const paymentData = req.body.paymentMethod;
+
+      if (!paymentData) {
+        return res.status(400).json({ message: "Payment method is required" });
+      }
+
+      // Process payment first
+      const paymentRequest = {
+        amount: parseFloat(giftCardData.initialAmount.toString()),
+        currency: 'USD',
+        paymentMethod: paymentData,
+        referenceId: `gc-purchase-${nanoid(10)}`,
+        note: `Gift card purchase - $${giftCardData.initialAmount}`,
+        buyerEmailAddress: giftCardData.recipientEmail || req.body.buyerEmail,
+      };
+
+      const paymentResult = await paymentsService.processPayment(paymentRequest);
+
+      if (!paymentResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment failed",
+          error: paymentResult.errorMessage
+        });
+      }
+
+      // Generate gift card code
+      const code = nanoid(10).toUpperCase();
+
+      // Create gift card
+      const giftCard = await storage.createGiftCard({
+        ...giftCardData,
+        code,
+        initialAmount: giftCardData.initialAmount.toString(),
+        paymentId: paymentResult.paymentId,
+      });
+
+      // Create issue transaction
+      const transaction = await storage.createTransaction({
+        giftCardId: giftCard.id,
+        type: 'issue',
+        amount: giftCardData.initialAmount.toString(),
+        balanceAfter: giftCardData.initialAmount.toString(),
+        notes: 'Gift card purchased online',
+        paymentId: paymentResult.paymentId,
+      });
+
+      // Generate receipt and send email
+      const receiptData = {
+        giftCardCode: code,
+        amount: parseFloat(giftCardData.initialAmount),
+        design: giftCard.design,
+        recipientName: giftCard.recipientName,
+        recipientEmail: giftCard.recipientEmail,
+        senderName: giftCard.senderName,
+        customMessage: giftCard.customMessage,
+        transactionId: transaction.id,
+        timestamp: new Date().toISOString(),
+        type: 'purchase',
+        paymentMethod: paymentResult.cardDetails,
+      };
+
+      const accessToken = nanoid(32);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const receipt = await storage.createReceipt({
+        giftCardId: giftCard.id,
+        transactionId: transaction.id,
+        receiptData,
+        accessToken,
+        expiresAt,
+      });
+
+      // Generate QR code and PDF
+      const qrCode = await qrService.generateQRCode(
+        `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/balance?code=${code}`
+      );
+
+      const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
+      await storage.updateReceiptPdfPath(receipt.id, pdfPath);
+
+      // Send email if recipient email provided
+      if (giftCard.recipientEmail) {
+        try {
+          await emailService.sendGiftCardEmail({
+            recipientEmail: giftCard.recipientEmail,
+            recipientName: giftCard.recipientName || 'Valued Customer',
+            senderName: giftCard.senderName || 'A Friend',
+            amount: parseFloat(giftCardData.initialAmount),
+            code: code,
+            customMessage: giftCard.customMessage || '',
+            receiptUrl: `/api/receipts/${accessToken}`,
+          });
+          await storage.markReceiptEmailSent(receipt.id);
+        } catch (emailError) {
+          console.error("Failed to send gift card email:", emailError);
+        }
+      }
+
+      // Broadcast revenue update
+      if ((global as any).broadcastRevenueUpdate) {
+        (global as any).broadcastRevenueUpdate(transaction);
+      }
+
+      res.json({
+        success: true,
+        code: giftCard.code,
+        giftCardId: giftCard.id,
+        receiptUrl: `/api/receipts/${accessToken}`,
+        amount: parseFloat(giftCardData.initialAmount),
+        design: giftCard.design,
+        paymentResult,
+      });
+    } catch (error) {
+      console.error("Error purchasing gift card:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to purchase gift card" });
     }
   });
 
@@ -736,6 +891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
+      ```
       
       // Get user's gift cards
       const giftCards = await storage.getGiftCardsByUser(user.id);
@@ -1098,7 +1254,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
-
       const feeData = {
         ...req.body,
         updatedBy: user.id
@@ -1508,7 +1663,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Health check
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      services: {
+        payments: paymentsService.isAvailable(),
+        square: !!process.env.SQUARE_ACCESS_TOKEN,
+        email: true
+      }
+    });
   });
 
   // Catch-all for API routes that don't exist
