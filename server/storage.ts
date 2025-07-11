@@ -447,7 +447,7 @@ export class DatabaseStorage implements IStorage {
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(giftCards)
-      .where(eq(giftCards.issuedBy, userId));
+      .where(eq(giftCards.issuedById, userId));
     
     const totalCount = Number(countResult[0]?.count || 0);
 
@@ -465,7 +465,7 @@ export class DatabaseStorage implements IStorage {
           eq(giftCardTransactions.type, 'purchase')
         )
       )
-      .where(eq(giftCards.issuedBy, userId))
+      .where(eq(giftCards.issuedById, userId))
       .orderBy(desc(giftCards.createdAt))
       .limit(pageSize)
       .offset(offset);
@@ -516,7 +516,7 @@ export class DatabaseStorage implements IStorage {
       )
       .where(and(
         eq(giftCards.id, orderId),
-        eq(giftCards.issuedBy, userId)
+        eq(giftCards.issuedById, userId)
       ));
 
     if (!result.length) {
