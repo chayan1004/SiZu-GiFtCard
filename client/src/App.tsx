@@ -14,6 +14,11 @@ import Redeem from "@/pages/Redeem";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import UserDashboard from "@/pages/UserDashboard";
+import AdminGiftCards from "@/pages/AdminGiftCards";
+import AdminUsers from "@/pages/AdminUsers";
+import AdminTransactions from "@/pages/AdminTransactions";
+import AdminAnalytics from "@/pages/AdminAnalytics";
+import AdminSecurity from "@/pages/AdminSecurity";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
@@ -97,6 +102,11 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/dashboard/user" component={UserDashboard} />
+          <Route path="/admin/gift-cards" component={AdminGiftCards} />
+          <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/transactions" component={AdminTransactions} />
+          <Route path="/admin/analytics" component={AdminAnalytics} />
+          <Route path="/admin/security" component={AdminSecurity} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />
