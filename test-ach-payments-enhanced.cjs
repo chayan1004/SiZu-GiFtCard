@@ -4,7 +4,45 @@
  * Aligned with official Square documentation
  */
 
-const fetch = require('node-fetch');
+const http = require('http');
+
+function fetch(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const parsedUrl = new URL(url);
+    const reqOptions = {
+      hostname: parsedUrl.hostname,
+      port: parsedUrl.port || 80,
+      path: parsedUrl.pathname + parsedUrl.search,
+      method: options.method || 'GET',
+      headers: options.headers || {}
+    };
+
+    const req = http.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          json: async () => {
+            try {
+              return JSON.parse(data);
+            } catch {
+              return data;
+            }
+          }
+        });
+      });
+    });
+
+    req.on('error', reject);
+    if (options.body) {
+      req.write(options.body);
+    }
+    req.end();
+  });
+}
+
 const baseUrl = 'http://localhost:5000';
 
 // ANSI color codes for output
