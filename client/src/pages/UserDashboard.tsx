@@ -19,7 +19,8 @@ import {
   DollarSign,
   Calendar,
   Clock,
-  Filter
+  Filter,
+  Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -140,6 +141,7 @@ export default function UserDashboard() {
   const navItems = [
     { icon: Home, label: 'Home', path: '/dashboard/user' },
     { icon: Wallet, label: 'Wallet', path: '/dashboard/user/wallet' },
+    { icon: Sparkles, label: 'Designer Studio', path: '/dashboard/user/designer' },
     { icon: Receipt, label: 'Transactions', path: '/dashboard/user/transactions' },
     { icon: FileText, label: 'Reports', path: '/dashboard/user/reports' },
     { icon: Bell, label: 'Notifications', path: '/dashboard/user/notifications' },

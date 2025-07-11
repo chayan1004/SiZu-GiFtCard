@@ -9,6 +9,7 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
+import SimpleShop from "@/pages/SimpleShop";
 import EnhancedShop from "@/pages/EnhancedShop";
 import Balance from "@/pages/Balance";
 import Redeem from "@/pages/Redeem";
@@ -118,7 +119,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/shop" component={EnhancedShop} />
+          <Route path="/shop" component={SimpleShop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
           <Route path="/recharge" component={Recharge} />
@@ -142,6 +143,7 @@ function Router() {
           <Route path="/dashboard/user/notifications" component={UserNotifications} />
           <Route path="/dashboard/user/support" component={UserSupport} />
           <Route path="/dashboard/user/settings" component={UserSettings} />
+          <Route path="/dashboard/user/designer" component={EnhancedShop} />
           <Route path="/revenue" component={Revenue} />
           <Route path="/fees" component={FeeManagement} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
