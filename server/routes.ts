@@ -168,9 +168,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Generate QR code
-      const qrCode = await qrService.generateQRCode(
-        `${process.env.REPLIT_DOMAINS?.split(',')[0]}/redeem?code=${code}`
-      );
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+        : `http://localhost:${process.env.PORT || 5000}`;
+      const qrCodeUrl = `${baseUrl}/redeem?code=${code}`;
+      console.log('Generating QR code for URL:', qrCodeUrl);
+      const qrCode = await qrService.generateQRCode(qrCodeUrl);
 
       // Generate PDF receipt
       const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
@@ -346,7 +349,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Receipt not found or expired" });
       }
 
-      res.json(receipt);
+      // Regenerate QR code for the gift card
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`
+        : `http://localhost:${process.env.PORT || 5000}`;
+      const qrCodeUrl = `${baseUrl}/redeem?code=${receipt.receiptData.giftCardCode}`;
+      const qrCode = await qrService.generateQRCode(qrCodeUrl);
+
+      res.json({
+        ...receipt,
+        qrCode
+      });
     } catch (error) {
       console.error("Error fetching receipt:", error);
       res.status(500).json({ message: "Failed to fetch receipt" });
