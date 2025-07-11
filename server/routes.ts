@@ -138,6 +138,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: 'Gift card issued',
       });
 
+      // Broadcast revenue update
+      if ((global as any).broadcastRevenueUpdate) {
+        (global as any).broadcastRevenueUpdate(transaction);
+      }
+
       // Generate receipt
       const receiptData = {
         giftCardCode: code,
@@ -256,6 +261,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         balanceAfter: newBalance.toString(),
         notes: 'Gift card redeemed',
       });
+
+      // Broadcast revenue update
+      if ((global as any).broadcastRevenueUpdate) {
+        (global as any).broadcastRevenueUpdate(transaction);
+      }
 
       // Generate receipt for redemption
       const receiptData = {
@@ -590,8 +600,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
 
-  // Export broadcast function for use in services
+  // Function to broadcast revenue updates to all connected clients
+  const broadcastRevenueUpdate = (transaction: any) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'transaction',
+          amount: parseFloat(transaction.amount),
+          transactionType: transaction.type,
+          timestamp: new Date().toISOString()
+        }));
+      }
+    });
+  };
+
+  // Export broadcast functions for use in services
   (global as any).broadcastFraudAlert = broadcastFraudAlert;
+  (global as any).broadcastRevenueUpdate = broadcastRevenueUpdate;
 
   return httpServer;
 }

@@ -14,7 +14,8 @@ import {
   Shield,
   Activity,
   CheckCircle,
-  XCircle
+  XCircle,
+  ChartBar
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,10 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import Navigation from "@/components/Navigation";
 import AdminStats from "@/components/AdminStats";
 import TransactionList from "@/components/TransactionList";
+import { RevenueChart } from "@/components/charts/RevenueChart";
+import { TransactionTrends } from "@/components/charts/TransactionTrends";
+import { CardDistribution } from "@/components/charts/CardDistribution";
+import { LiveRevenueTracker } from "@/components/charts/LiveRevenueTracker";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -71,6 +76,13 @@ export default function Dashboard() {
             description: `${data.data.alertType} - ${data.data.severity.toUpperCase()}`,
             variant: "destructive",
           });
+        } else if (data.type === 'transaction' || data.type === 'revenue_update') {
+          // Handle real-time transaction/revenue updates
+          setFraudAlerts(prev => [data, ...prev.slice(0, 4)]);
+          
+          // Refresh stats and transactions
+          queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/admin/transactions'] });
         }
       } catch (error) {
         console.error('Error parsing WebSocket message:', error);
@@ -220,6 +232,60 @@ export default function Dashboard() {
             />
           </motion.div>
 
+          {/* Live Revenue Tracker */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mb-12"
+          >
+            <LiveRevenueTracker 
+              wsData={fraudAlerts[0]} 
+              todayRevenue={dashboardStats?.totalSales || 0}
+              yesterdayRevenue={dashboardStats?.totalSales ? dashboardStats.totalSales * 0.9 : 0}
+            />
+          </motion.div>
+
+          {/* Revenue Chart */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mb-12"
+          >
+            <RevenueChart 
+              data={recentTransactions}
+              isLoading={transactionsLoading}
+              wsData={fraudAlerts[0]}
+            />
+          </motion.div>
+
+          {/* Transaction Trends */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mb-12"
+          >
+            <TransactionTrends 
+              data={recentTransactions}
+              isLoading={transactionsLoading}
+            />
+          </motion.div>
+
+          {/* Card Distribution */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="mb-12"
+          >
+            <CardDistribution 
+              data={dashboardStats}
+              isLoading={statsLoading}
+            />
+          </motion.div>
+
           {/* Main Content Tabs */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -227,14 +293,18 @@ export default function Dashboard() {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <Tabs defaultValue="transactions" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-md bg-white/10 border-white/20">
+              <TabsList className="grid w-full grid-cols-4 max-w-lg bg-white/10 border-white/20">
                 <TabsTrigger value="transactions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Transactions
                 </TabsTrigger>
+                <TabsTrigger value="charts" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <ChartBar className="w-4 h-4 mr-2" />
+                  Charts
+                </TabsTrigger>
                 <TabsTrigger value="fraud" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
                   <AlertTriangle className="w-4 h-4 mr-2" />
-                  Fraud Alerts
+                  Fraud
                 </TabsTrigger>
                 <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
                   <TrendingUp className="w-4 h-4 mr-2" />
@@ -431,6 +501,26 @@ export default function Dashboard() {
                           </span>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="charts" className="mt-6">
+                <div className="space-y-6">
+                  {/* Remove duplicate charts from here since they're already shown above */}
+                  <Card className="glassmorphism border-white/20">
+                    <CardHeader>
+                      <CardTitle className="text-white">
+                        <ChartBar className="w-5 h-5 inline mr-2" />
+                        Real-Time Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300">
+                        Charts are displayed above the tabs section for better visibility. 
+                        This tab provides a focused view on chart customization and analysis.
+                      </p>
                     </CardContent>
                   </Card>
                 </div>
