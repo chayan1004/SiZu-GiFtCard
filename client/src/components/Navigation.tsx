@@ -15,7 +15,7 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
-import { CreditCard, User, LogOut, Settings, BarChart3, Menu } from "lucide-react";
+import { CreditCard, User, LogOut, Settings, BarChart3, Menu, History } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface NavigationProps {
@@ -37,6 +37,11 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
     { path: '/balance', label: 'Balance' },
     { path: '/redeem', label: 'Redeem' },
   ];
+  
+  // Add Order History only for authenticated users
+  if (user) {
+    navItems.push({ path: '/orders', label: 'Orders' });
+  }
 
   if (showDashboard) {
     navItems.push({ path: '/dashboard', label: 'Dashboard' });
@@ -101,6 +106,12 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                     <DropdownMenuItem className="text-white hover:bg-white/10">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/orders">
+                    <DropdownMenuItem className="text-white hover:bg-white/10">
+                      <History className="mr-2 h-4 w-4" />
+                      <span>Order History</span>
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuItem className="text-white hover:bg-white/10">

@@ -74,6 +74,13 @@ export interface IStorage {
   deleteSavedCard(cardId: string, userId: string): Promise<void>;
   setDefaultCard(cardId: string, userId: string): Promise<void>;
   getDefaultCard(userId: string): Promise<SavedCard | undefined>;
+  
+  // Order History operations
+  getUserOrders(userId: string, page: number, pageSize: number): Promise<{
+    orders: any[];
+    totalCount: number;
+  }>;
+  getUserOrderDetails(userId: string, orderId: string): Promise<any | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -427,6 +434,134 @@ export class DatabaseStorage implements IStorage {
       ));
     
     return card;
+  }
+
+  // Order History operations
+  async getUserOrders(userId: string, page: number, pageSize: number): Promise<{
+    orders: any[];
+    totalCount: number;
+  }> {
+    const offset = (page - 1) * pageSize;
+
+    // Get total count
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(giftCards)
+      .where(eq(giftCards.issuedBy, userId));
+    
+    const totalCount = Number(countResult[0]?.count || 0);
+
+    // Get paginated orders with transaction data
+    const orders = await db
+      .select({
+        giftCard: giftCards,
+        transaction: giftCardTransactions
+      })
+      .from(giftCards)
+      .leftJoin(
+        giftCardTransactions,
+        and(
+          eq(giftCardTransactions.giftCardId, giftCards.id),
+          eq(giftCardTransactions.type, 'purchase')
+        )
+      )
+      .where(eq(giftCards.issuedBy, userId))
+      .orderBy(desc(giftCards.createdAt))
+      .limit(pageSize)
+      .offset(offset);
+
+    // Transform data to OrderHistoryItem format
+    const transformedOrders = orders.map(({ giftCard, transaction }) => {
+      // Calculate redeemed amount
+      const redeemedAmount = (
+        parseFloat(giftCard.initialAmount) - parseFloat(giftCard.currentBalance)
+      ).toFixed(2);
+
+      return {
+        id: giftCard.id,
+        code: giftCard.code,
+        amount: giftCard.initialAmount,
+        recipientName: giftCard.recipientName,
+        recipientEmail: giftCard.recipientEmail,
+        senderName: giftCard.senderName,
+        design: giftCard.design,
+        deliveryStatus: giftCard.deliveryStatus || 'sent',
+        paymentMethodLast4: transaction?.paymentMethodLast4,
+        paymentMethodType: transaction?.paymentMethodType,
+        createdAt: giftCard.createdAt,
+        isRedeemed: parseFloat(giftCard.currentBalance) < parseFloat(giftCard.initialAmount),
+        redeemedAmount: parseFloat(redeemedAmount) > 0 ? redeemedAmount : undefined
+      };
+    });
+
+    return {
+      orders: transformedOrders,
+      totalCount
+    };
+  }
+
+  async getUserOrderDetails(userId: string, orderId: string): Promise<any | undefined> {
+    const result = await db
+      .select({
+        giftCard: giftCards,
+        transaction: giftCardTransactions
+      })
+      .from(giftCards)
+      .leftJoin(
+        giftCardTransactions,
+        and(
+          eq(giftCardTransactions.giftCardId, giftCards.id),
+          eq(giftCardTransactions.type, 'purchase')
+        )
+      )
+      .where(and(
+        eq(giftCards.id, orderId),
+        eq(giftCards.issuedBy, userId)
+      ));
+
+    if (!result.length) {
+      return undefined;
+    }
+
+    const { giftCard, transaction } = result[0];
+    
+    // Get all transactions for this gift card
+    const transactions = await db
+      .select()
+      .from(giftCardTransactions)
+      .where(eq(giftCardTransactions.giftCardId, orderId))
+      .orderBy(desc(giftCardTransactions.createdAt));
+
+    // Calculate redeemed amount
+    const redeemedAmount = (
+      parseFloat(giftCard.initialAmount) - parseFloat(giftCard.currentBalance)
+    ).toFixed(2);
+
+    return {
+      id: giftCard.id,
+      code: giftCard.code,
+      amount: giftCard.initialAmount,
+      currentBalance: giftCard.currentBalance,
+      recipientName: giftCard.recipientName,
+      recipientEmail: giftCard.recipientEmail,
+      senderName: giftCard.senderName,
+      design: giftCard.design,
+      deliveryStatus: giftCard.deliveryStatus || 'sent',
+      customMessage: giftCard.customMessage,
+      paymentMethodLast4: transaction?.paymentMethodLast4,
+      paymentMethodType: transaction?.paymentMethodType,
+      createdAt: giftCard.createdAt,
+      isRedeemed: parseFloat(giftCard.currentBalance) < parseFloat(giftCard.initialAmount),
+      redeemedAmount: parseFloat(redeemedAmount) > 0 ? redeemedAmount : undefined,
+      transactions: transactions.map(t => ({
+        id: t.id,
+        type: t.type,
+        amount: t.amount,
+        balanceAfter: t.balanceAfter,
+        createdAt: t.createdAt,
+        notes: t.notes
+      }))
+    };
   }
 }
 

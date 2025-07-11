@@ -414,6 +414,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Order History Routes
+  
+  // Get user's order history (paginated)
+  app.get('/api/user/orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      
+      // Validate pagination parameters
+      if (page < 1 || pageSize < 1 || pageSize > 50) {
+        return res.status(400).json({ message: "Invalid pagination parameters" });
+      }
+      
+      const { orders, totalCount } = await storage.getUserOrders(userId, page, pageSize);
+      
+      res.json({
+        orders,
+        pagination: {
+          page,
+          pageSize,
+          totalCount,
+          totalPages: Math.ceil(totalCount / pageSize)
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({ message: "Failed to fetch order history" });
+    }
+  });
+  
+  // Get specific order details
+  app.get('/api/user/orders/:orderId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { orderId } = req.params;
+      
+      const orderDetails = await storage.getUserOrderDetails(userId, orderId);
+      
+      if (!orderDetails) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(orderDetails);
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      res.status(500).json({ message: "Failed to fetch order details" });
+    }
+  });
+
   // Saved Card Routes
   
   // List user's saved cards
