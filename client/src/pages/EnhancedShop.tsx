@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -255,6 +256,7 @@ const LivePreview = ({ form, previewMode }: { form: any, previewMode: string }) 
 
 export default function EnhancedShop() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { handleLogin } = useLogin();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
@@ -380,9 +382,7 @@ export default function EnhancedShop() {
     },
   });
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+
 
   const handleLogout = () => {
     toast({
@@ -930,34 +930,9 @@ export default function EnhancedShop() {
         )}
       </AnimatePresence>
 
-      {/* Add custom animations to CSS */}
+      {/* Pattern overlay styles */}
       <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        @keyframes wave {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
-        }
-        @keyframes twinkle {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-shimmer { 
-          background-size: 200% 100%;
-          animation: shimmer 3s linear infinite;
-        }
-        .animate-wave { animation: wave 4s linear infinite; }
-        .animate-twinkle { animation: twinkle 2s ease-in-out infinite; }
-        .animate-spin-slow { animation: spin 10s linear infinite; }
-        
-        /* Pattern overlays */
+        /* Pattern overlays - keep these as they're not animations */
         .pattern-dots {
           background-image: radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px);
           background-size: 20px 20px;

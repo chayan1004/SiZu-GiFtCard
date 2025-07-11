@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -141,6 +142,7 @@ const animationOptions = [
 
 export default function Shop() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { handleLogin } = useLogin();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
@@ -262,9 +264,7 @@ export default function Shop() {
     },
   });
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+
 
   const handleLogout = () => {
     toast({

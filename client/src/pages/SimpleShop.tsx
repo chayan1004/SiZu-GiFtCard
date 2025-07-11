@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -276,6 +277,7 @@ const quickAmounts = [10, 25, 50, 100, 250, 500];
 
 export default function SimpleShop() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { handleLogin } = useLogin();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDesign, setSelectedDesign] = useState<typeof giftCardDesigns[0] | null>(null);
@@ -339,9 +341,7 @@ export default function SimpleShop() {
     setShowPurchaseDialog(true);
   };
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+
 
   const handleLogout = () => {
     toast({

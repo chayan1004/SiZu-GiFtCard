@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ const PRESET_AMOUNTS = [10, 25, 50, 100, 250];
 
 export default function Recharge() {
   const { user, isAuthenticated } = useAuth();
+  const { handleLogin } = useLogin();
   const { toast } = useToast();
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [rechargeResult, setRechargeResult] = useState<any>(null);
@@ -117,9 +119,7 @@ export default function Recharge() {
     handleCodeChange(card.code);
   };
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+
 
   const handleLogout = () => {
     toast({

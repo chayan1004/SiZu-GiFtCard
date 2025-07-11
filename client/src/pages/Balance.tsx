@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import { useLogin } from "@/hooks/useLogin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import Navigation from "@/components/Navigation";
 
 export default function Balance() {
   const { user, isAuthenticated } = useAuth();
+  const { handleLogin } = useLogin();
   const { toast } = useToast();
   const [giftCardCode, setGiftCardCode] = useState('');
   const [balanceResult, setBalanceResult] = useState<any>(null);
@@ -40,9 +42,7 @@ export default function Balance() {
     },
   });
 
-  const handleLogin = () => {
-    window.location.href = '/api/login';
-  };
+
 
   const handleLogout = () => {
     toast({
