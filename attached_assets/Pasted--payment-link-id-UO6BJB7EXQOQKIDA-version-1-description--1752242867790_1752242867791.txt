@@ -1,0 +1,109 @@
+{
+  "payment_link": {
+    "id": "UO6BJB7EXQOQKIDA",
+    "version": 1,
+    "description": "",
+    "order_id": "0mKB0CULaS8SYRAJXaoIp1SUABZZY",
+    "checkout_options": {
+      "ask_for_shipping_address": true
+    },
+    "url": "https://sandbox.square.link/u/fTkKKauH",
+    "created_at": "2022-03-20T19:03:01Z"
+  },
+  "related_resources": {
+    "orders": [
+      {
+        "id": "C0DMgui6YFmgyURVSRtxr4EShheZY",
+        "location_id": "{{LOCATION_ID}}",
+        "source": {
+          "name": "Test Online Checkout Application"
+        },
+        "line_items": [
+          {
+            "uid": "8YX13D1U3jO7czP8JVrAR",
+            "name": "Auto Detailing",
+            "quantity": "1",
+            "item_type": "ITEM",
+            "base_price_money": {
+              "amount": 12500,
+              "currency": "USD"
+            },
+            "variation_total_price_money": {
+              "amount": 12500,
+              "currency": "USD"
+            },
+            "gross_sales_money": {
+              "amount": 12500,
+              "currency": "USD"
+            },
+            "total_tax_money": {
+              "amount": 0,
+              "currency": "USD"
+            },
+            "total_discount_money": {
+              "amount": 0,
+              "currency": "USD"
+            },
+            "total_money": {
+              "amount": 12500,
+              "currency": "USD"
+            }
+          }
+        ],
+        "fulfillments": [
+          {
+            "uid": "bBpNrxjdQxGQP16sTmdzi",
+            "type": "DIGITAL",
+            "state": "PROPOSED"
+          }
+        ],
+        "net_amounts": {
+          "total_money": {
+            "amount": 12500,
+            "currency": "USD"
+          },
+          "tax_money": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "discount_money": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "tip_money": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "service_charge_money": {
+            "amount": 0,
+            "currency": "USD"
+          }
+        },
+        "created_at": "2022-03-03T00:53:15.829Z",
+        "updated_at": "2022-03-03T00:53:15.829Z",
+        "state": "DRAFT",
+        "version": 1,
+        "total_money": {
+          "amount": 12500,
+          "currency": "USD"
+        },
+        "total_tax_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_discount_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_tip_money": {
+          "amount": 0,
+          "currency": "USD"
+        },
+        "total_service_charge_money": {
+          "amount": 0,
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

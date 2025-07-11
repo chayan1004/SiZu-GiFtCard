@@ -155,6 +155,17 @@ export class SquareWebhookService {
           await this.handleOnlineCheckoutMerchantSettingsUpdated(event);
           break;
 
+        // Customer events
+        case 'customer.created':
+          await this.handleCustomerCreated(event);
+          break;
+        case 'customer.updated':
+          await this.handleCustomerUpdated(event);
+          break;
+        case 'customer.deleted':
+          await this.handleCustomerDeleted(event);
+          break;
+
         default:
           console.log(`Unhandled webhook event type: ${event.type}`);
       }
@@ -512,6 +523,65 @@ export class SquareWebhookService {
     }
     
     console.log(`  Updated at: ${settings.updated_at}`);
+  }
+
+  // Customer event handlers
+  private async handleCustomerCreated(event: WebhookEvent) {
+    const customer = event.data.object.customer;
+    console.log(`Customer created: ${customer.id}`);
+    console.log(`  Name: ${customer.given_name} ${customer.family_name}`);
+    console.log(`  Email: ${customer.email_address}`);
+    console.log(`  Phone: ${customer.phone_number}`);
+    console.log(`  Creation Source: ${customer.creation_source}`);
+    
+    if (customer.address) {
+      console.log(`  Address: ${customer.address.address_line_1}, ${customer.address.locality}, ${customer.address.administrative_district_level_1} ${customer.address.postal_code}`);
+    }
+    
+    if (customer.birthday) {
+      console.log(`  Birthday: ${customer.birthday}`);
+    }
+    
+    if (customer.group_ids && customer.group_ids.length > 0) {
+      console.log(`  Groups: ${customer.group_ids.join(', ')}`);
+    }
+    
+    console.log(`  Created at: ${customer.created_at}`);
+  }
+
+  private async handleCustomerUpdated(event: WebhookEvent) {
+    const customer = event.data.object.customer;
+    console.log(`Customer updated: ${customer.id}`);
+    console.log(`  Name: ${customer.given_name} ${customer.family_name}`);
+    console.log(`  Email: ${customer.email_address}`);
+    console.log(`  Phone: ${customer.phone_number}`);
+    console.log(`  Version: ${customer.version}`);
+    console.log(`  Updated at: ${customer.updated_at}`);
+    
+    // Log the customer in our database if they have an email
+    if (customer.email_address) {
+      const existingUser = await storage.getUserByEmail(customer.email_address);
+      if (existingUser && !existingUser.squareCustomerId) {
+        await storage.updateUserSquareCustomerId(existingUser.id, customer.id);
+        console.log(`  Updated local user ${existingUser.id} with Square customer ID`);
+      }
+    }
+  }
+
+  private async handleCustomerDeleted(event: WebhookEvent) {
+    const customerId = event.data.id;
+    const customer = event.data.object.customer;
+    const isDeleted = event.data.deleted;
+    
+    console.log(`Customer deleted: ${customerId}`);
+    console.log(`  Deleted status: ${isDeleted}`);
+    
+    if (customer) {
+      console.log(`  Last known details:`);
+      console.log(`    Name: ${customer.given_name} ${customer.family_name}`);
+      console.log(`    Email: ${customer.email_address}`);
+      console.log(`    Version: ${customer.version}`);
+    }
   }
 
   /**

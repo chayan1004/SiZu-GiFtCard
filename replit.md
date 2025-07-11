@@ -132,6 +132,10 @@ Preferred communication style: Simple, everyday language.
 - **Online Checkout Webhook Processing**: 2 new webhook types for checkout configuration
   - online_checkout.location_settings.updated: Handles branding, tipping, coupons, and customer notes
   - online_checkout.merchant_settings.updated: Manages payment methods (Apple Pay, Google Pay, Cash App, Afterpay)
+- **Customer Webhook Processing**: 3 new webhook types for customer lifecycle management
+  - customer.created: Tracks new customers with full profile data (name, email, phone, address, birthday)
+  - customer.updated: Monitors profile changes and automatically links Square customer IDs to local users
+  - customer.deleted: Handles customer removal with data retention for audit purposes
 - **Database Connection Optimization**: Upgraded to Neon pooler URL
   - Changed from standard URL to pooler URL (`.neon.tech` to `-pooler.neon.tech`)
   - Reduced max connections from 20 to 10 for better pooler efficiency
