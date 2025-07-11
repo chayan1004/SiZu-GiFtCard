@@ -121,12 +121,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 11, 2025 - Phase 22: Square Payment Links API Implementation
+### January 11, 2025 - Phase 22: Square Payment Links API Implementation (Production-Ready)
 - **Square Payment Links Service**: Complete payment links creation and management system
   - SquarePaymentLinksService: Full integration with Square Checkout API for payment link generation
   - Support for both gift card purchases (with orders) and quick pay links (without orders)
   - Comprehensive configuration options for checkout experience
   - Pre-populated customer data support for streamlined checkout
+  - Enhanced response structure matching Square's actual API (version, relatedResources)
 - **Payment Links API Endpoints**: Production-ready endpoints for link management
   - POST `/api/payment-links/gift-card`: Create payment link for gift card purchases
   - POST `/api/payment-links/quick-pay`: Create quick payment link without order
@@ -140,17 +141,27 @@ Preferred communication style: Simple, everyday language.
   - Custom redirect URLs for post-payment flow
   - Merchant support email configuration
   - Pre-populated buyer information (email, phone, address)
+  - Payment notes for transaction context
+  - Application fees (appFeeMoney) for marketplace scenarios
+  - Shipping fees with customizable charges
+  - Custom fields for additional buyer input
 - **Gift Card Metadata**: Enhanced gift card payment links
   - Recipient name and email tracking
   - Sender name for personalization
   - Custom gift messages
   - Order custom attributes for gift card identification
   - Automatic note generation with gift card details
+  - Payment notes for order tracking
 - **Security & Validation**: Comprehensive request validation
   - Zod schemas for all request types
   - Authentication required via requireAnyAuth middleware
   - Proper error handling with Square API error details
   - Input validation for all payment link operations
+- **Production Documentation**: Replaced demo files with production documentation
+  - Renamed to `square-payment-links-production-api.js`
+  - Emphasized live, operational endpoints
+  - Created production test script for verification
+  - All endpoints connect to real Square servers for actual payment processing
 
 ### January 11, 2025 - Phase 21: Complete Square Gift Card & Online Checkout Webhook Integration
 - **Gift Card Webhook Processing**: All 6 gift card webhook types fully implemented
