@@ -70,7 +70,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
+  // Import AuthService
+  const { AuthService } = await import('./services/AuthService');
+
+  // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -79,6 +82,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Customer Authentication Routes
+  app.post('/api/auth/register', authRateLimit, validateInput, validateEmail, async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      const { user, verificationToken } = await AuthService.registerCustomer(email, password, firstName, lastName);
+      
+      // Send verification email (you can integrate this with your EmailService)
+      // await emailService.sendVerificationEmail(email, verificationToken);
+
+      res.status(201).json({ 
+        message: "Registration successful. Please check your email for verification.",
+        userId: user.id 
+      });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      res.status(400).json({ message: error.message || "Registration failed" });
+    }
+  });
+
+  app.post('/api/auth/login', authRateLimit, validateInput, async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const user = await AuthService.loginCustomer(email, password);
+      
+      // Create session
+      req.session.userId = user.id;
+      req.session.role = user.role;
+      
+      res.json({ 
+        message: "Login successful",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      });
+    } catch (error: any) {
+      console.error("Login error:", error);
+      res.status(400).json({ message: error.message || "Login failed" });
+    }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get('/api/auth/verify/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      await AuthService.verifyEmail(token);
+      res.json({ message: "Email verified successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Verification failed" });
+    }
+  });
+
+  app.post('/api/auth/forgot-password', authRateLimit, validateInput, validateEmail, async (req, res) => {
+    try {
+      const { email } = req.body;
+      const resetToken = await AuthService.requestPasswordReset(email);
+      
+      // Send reset email
+      // await emailService.sendPasswordResetEmail(email, resetToken);
+      
+      res.json({ message: "If that email exists, we've sent a password reset link" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Password reset request failed" });
+    }
+  });
+
+  app.post('/api/auth/reset-password', authRateLimit, validateInput, async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      
+      if (!password || password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      await AuthService.resetPassword(token, password);
+      res.json({ message: "Password reset successful" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Password reset failed" });
+    }
+  });
+
+  // Customer session check
+  app.get('/api/auth/customer', async (req: any, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== 'customer') {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Session check failed" });
     }
   });
 
