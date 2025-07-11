@@ -123,6 +123,10 @@ export class SquarePaymentsService {
       tipAmount?: number;
       // Accept partial authorization (useful with gift cards)
       acceptPartialAuthorization?: boolean;
+      // 3D Secure/SCA verification token from verifyBuyer()
+      verificationToken?: string;
+      // Buyer email address for receipts
+      buyerEmailAddress?: string;
     }
   ): Promise<PaymentCreationResult> {
     if (!this.isInitialized) {
@@ -156,7 +160,11 @@ export class SquarePaymentsService {
         // Accept partial authorization for gift card scenarios
         acceptPartialAuthorization: options?.acceptPartialAuthorization,
         // Statement description for buyer's bank statement
-        statementDescriptionIdentifier: options?.statementDescriptionIdentifier
+        statementDescriptionIdentifier: options?.statementDescriptionIdentifier,
+        // 3D Secure/SCA verification token from Web Payments SDK verifyBuyer()
+        verificationToken: options?.verificationToken,
+        // Buyer email address for digital receipts
+        buyerEmailAddress: options?.buyerEmailAddress
       };
 
       // Add application fee if specified

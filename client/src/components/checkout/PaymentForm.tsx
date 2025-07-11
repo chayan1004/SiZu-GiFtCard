@@ -208,7 +208,50 @@ export default function PaymentForm({
       const tokenResult = await paymentMethod.tokenize();
       
       if (tokenResult.status === 'OK') {
-        // Process payment on backend
+        let verificationToken: string | undefined;
+        
+        // For card payments, perform 3D Secure verification when required
+        if (selectedPaymentMethod === 'card' && window.Square?.payments) {
+          try {
+            // Get payments instance from Square
+            const configResponse = await fetch('/api/payments/config');
+            const config = await configResponse.json();
+            const payments = window.Square.payments(config.applicationId, config.locationId);
+            
+            // Prepare buyer details for verification
+            const verificationDetails = {
+              amount: String(data.amount),
+              billingContact: {
+                givenName: data.firstName,
+                familyName: data.lastName,
+                email: data.email,
+                country: data.billingAddress.country || 'US',
+                addressLines: data.billingAddress.addressLine1 ? [data.billingAddress.addressLine1] : [],
+                city: data.billingAddress.city || '',
+                state: data.billingAddress.state || '',
+                postalCode: data.billingAddress.postalCode || '',
+              },
+              currencyCode: 'USD',
+              intent: 'CHARGE'
+            };
+            
+            // Perform buyer verification (3D Secure/SCA)
+            const verificationResult = await payments.verifyBuyer(
+              tokenResult.token,
+              verificationDetails
+            );
+            
+            // Store verification token if successful
+            if (verificationResult?.token) {
+              verificationToken = verificationResult.token;
+            }
+          } catch (verifyError) {
+            // Log verification error but continue - verification might not be required
+            console.log('Buyer verification error (may not be required):', verifyError);
+          }
+        }
+        
+        // Process payment on backend with verification token
         const paymentRequest = {
           sourceId: tokenResult.token,
           amount: data.amount,
@@ -216,7 +259,9 @@ export default function PaymentForm({
           recipientEmail: recipientEmail || data.email,
           recipientName: recipientName || `${data.firstName} ${data.lastName}`,
           message: message || 'Thank you for your purchase!',
-          designType
+          designType,
+          verificationToken, // Include verification token for 3D Secure
+          buyerEmailAddress: data.email // Include buyer email for receipts
         };
 
         const response = await fetch('/api/payments/create', {

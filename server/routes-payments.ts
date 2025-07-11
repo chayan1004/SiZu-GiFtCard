@@ -78,7 +78,9 @@ router.post('/create',
         recipientEmail,
         recipientName,
         message,
-        designType
+        designType,
+        verificationToken, // 3D Secure verification token
+        buyerEmailAddress // Buyer's email for receipts
       } = req.body;
 
       if (!sourceId || !amount || !giftCardId) {
@@ -131,7 +133,11 @@ router.post('/create',
         orderResult.orderId,
         giftCardId, // referenceId
         `Gift card purchase: ${designType || 'Standard'} - ${recipientEmail || 'Self'}`,
-        false // no verification needed for gift card purchase
+        false, // no verification needed for gift card purchase
+        {
+          verificationToken, // 3D Secure/SCA verification token
+          buyerEmailAddress: buyerEmailAddress || userEmail // Use buyer email for receipts
+        }
       );
 
       if (!paymentResult.success || !paymentResult.paymentId) {

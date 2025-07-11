@@ -1,0 +1,273 @@
+{
+  "timestamp": "2025-07-11T15:59:36.109Z",
+  "totalTests": 41,
+  "passed": 27,
+  "failed": 10,
+  "warnings": 4,
+  "criticalIssues": [
+    "Server: CORS Configuration - CORS headers not configured - critical for frontend",
+    "Server: Rate Limiting Active - Rate limiting not working - security vulnerability",
+    "Database: Connection Pool Health - Failed",
+    "Database: Schema Integrity Complete - Missing critical tables: squarePayments, webhookEvents",
+    "Auth: Admin Protection Complete - /api/admin/users not protected (returned 404)",
+    "API: Public: GET /api/fees/active - Failed",
+    "Frontend: TypeScript Compilation - 1 TypeScript compilation errors",
+    "Frontend: React Query Setup - React Query not properly configured",
+    "Integration: Square API Integration - Square SDK not properly integrated",
+    "Code Quality: No Mock/Demo Code - server/routes.ts contains non-production code"
+  ],
+  "details": {
+    "Server": {
+      "Health Check Endpoint": {
+        "status": "passed",
+        "duration": "6ms",
+        "critical": true
+      },
+      "Environment Variables Complete": {
+        "status": "passed",
+        "duration": "0ms",
+        "critical": true
+      },
+      "CORS Configuration": {
+        "status": "failed",
+        "error": "CORS headers not configured - critical for frontend",
+        "duration": "6ms",
+        "critical": true
+      },
+      "Security Headers Complete": {
+        "status": "passed",
+        "duration": "7ms",
+        "critical": true
+      },
+      "Rate Limiting Active": {
+        "status": "failed",
+        "error": "Rate limiting not working - security vulnerability",
+        "duration": "59ms",
+        "critical": true
+      }
+    },
+    "Database": {
+      "Connection Pool Health": {
+        "status": "failed",
+        "error": "Failed",
+        "duration": "79ms",
+        "critical": true
+      },
+      "Schema Integrity Complete": {
+        "status": "failed",
+        "error": "Missing critical tables: squarePayments, webhookEvents",
+        "duration": "1ms",
+        "critical": true
+      },
+      "Relations & Indexes Defined": {
+        "status": "passed",
+        "duration": "1ms",
+        "critical": true
+      },
+      "Transaction Support": {
+        "status": "passed",
+        "duration": "1ms",
+        "critical": false
+      }
+    },
+    "Auth": {
+      "Admin Protection Complete": {
+        "status": "failed",
+        "error": "/api/admin/users not protected (returned 404)",
+        "duration": "5ms",
+        "critical": true
+      },
+      "Customer Protection Complete": {
+        "status": "passed",
+        "duration": "7ms",
+        "critical": true
+      },
+      "Session Management Working": {
+        "status": "passed",
+        "duration": "2ms",
+        "critical": true
+      },
+      "Input Validation on Auth": {
+        "status": "passed",
+        "duration": "11ms",
+        "critical": true
+      }
+    },
+    "API": {
+      "Public: GET /api/health": {
+        "status": "passed",
+        "duration": "1ms",
+        "critical": true
+      },
+      "Public: GET /api/fees/active": {
+        "status": "failed",
+        "error": "Failed",
+        "duration": "5ms",
+        "critical": true
+      },
+      "Public: POST /api/giftcards/check-balance": {
+        "status": "passed",
+        "duration": "9ms",
+        "critical": true
+      },
+      "Input Sanitization Complete": {
+        "status": "passed",
+        "duration": "13ms",
+        "critical": true
+      },
+      "Error Handling Consistent": {
+        "status": "passed",
+        "duration": "9ms",
+        "critical": true
+      }
+    },
+    "Frontend": {
+      "React App Loading": {
+        "status": "passed",
+        "duration": "8ms",
+        "critical": true
+      },
+      "Vite Dev Server Working": {
+        "status": "passed",
+        "duration": "27ms",
+        "critical": false
+      },
+      "TypeScript Compilation": {
+        "status": "failed",
+        "error": "1 TypeScript compilation errors",
+        "duration": "1450ms",
+        "critical": true
+      },
+      "React Query Setup": {
+        "status": "failed",
+        "error": "React Query not properly configured",
+        "duration": "0ms",
+        "critical": true
+      },
+      "Hook Imports Working": {
+        "status": "passed",
+        "duration": "2ms",
+        "critical": true
+      }
+    },
+    "Security": {
+      "SQL Injection Protection": {
+        "status": "passed",
+        "duration": "9ms",
+        "critical": true
+      },
+      "XSS Protection Complete": {
+        "status": "passed",
+        "duration": "10ms",
+        "critical": true
+      },
+      "CSRF Protection": {
+        "status": "passed",
+        "duration": "6ms",
+        "critical": true
+      },
+      "Authentication Bypass Attempts": {
+        "status": "passed",
+        "duration": "7ms",
+        "critical": true
+      }
+    },
+    "Performance": {
+      "API Response Times": {
+        "status": "passed",
+        "duration": "127ms",
+        "critical": false
+      },
+      "Memory Usage": {
+        "status": "passed",
+        "duration": "0ms",
+        "critical": false
+      },
+      "Concurrent Request Handling": {
+        "status": "passed",
+        "duration": "34ms",
+        "critical": true
+      }
+    },
+    "Production": {
+      "No Development Dependencies": {
+        "status": "warning",
+        "message": "Dev dependencies in production: @playwright/test, @types/supertest, @vitest/ui, supertest, vitest",
+        "duration": "7ms",
+        "critical": false
+      },
+      "Error Handling Complete": {
+        "status": "passed",
+        "duration": "7ms",
+        "critical": true
+      },
+      "Logging Configuration": {
+        "status": "passed",
+        "duration": "2ms",
+        "critical": false
+      },
+      "Environment Detection": {
+        "status": "warning",
+        "message": "NODE_ENV not set",
+        "duration": "0ms",
+        "critical": false
+      },
+      "SSL/HTTPS Ready": {
+        "status": "warning",
+        "message": "HTTPS security not fully configured",
+        "duration": "2ms",
+        "critical": false
+      }
+    },
+    "Integration": {
+      "Square API Integration": {
+        "status": "failed",
+        "error": "Square SDK not properly integrated",
+        "duration": "1ms",
+        "critical": true
+      },
+      "Webhook Endpoints Available": {
+        "status": "passed",
+        "duration": "17ms",
+        "critical": true
+      },
+      "Email Service Integration": {
+        "status": "passed",
+        "duration": "0ms",
+        "critical": true
+      }
+    },
+    "Code Quality": {
+      "TypeScript Strict Mode": {
+        "status": "passed",
+        "duration": "2ms",
+        "critical": false
+      },
+      "No Any Types": {
+        "status": "warning",
+        "message": "server/routes.ts contains 'any' types",
+        "duration": "1ms",
+        "critical": false
+      },
+      "No Mock/Demo Code": {
+        "status": "failed",
+        "error": "server/routes.ts contains non-production code",
+        "duration": "0ms",
+        "critical": true
+      }
+    }
+  },
+  "performanceMetrics": {
+    "healthCheckTime": 6,
+    "dbQueryTime": 79,
+    "avgApiResponseTime": 12.6,
+    "memoryUsageMB": 10,
+    "concurrentRequestHandling": {
+      "requests": 20,
+      "successful": 20,
+      "duration": "21ms"
+    }
+  },
+  "securityIssues": [],
+  "recommendations": []
+}
