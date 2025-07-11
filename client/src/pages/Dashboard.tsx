@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import { PageContainer, LoadingSpinner } from "@/components/DesignSystem";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -22,16 +23,20 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-      </div>
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner size="lg" />
+        </div>
+      </PageContainer>
     );
   }
 
   // Show loading while redirecting
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-    </div>
+    <PageContainer>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner size="lg" />
+      </div>
+    </PageContainer>
   );
 }
