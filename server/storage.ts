@@ -11,6 +11,7 @@ import {
   oauthStates,
   rateLimits,
   webhookEvents,
+  webhookSubscriptions,
   emailTemplates,
   giftCardDesigns,
   auditLogs,
@@ -145,6 +146,12 @@ export interface IStorage {
   // Webhook event operations
   createWebhookEvent(event: any): Promise<void>;
   getWebhookEvents(limit?: number): Promise<any[]>;
+  
+  // Webhook subscription operations
+  createWebhookSubscription(subscription: any): Promise<void>;
+  updateWebhookSubscription(id: string, updates: any): Promise<void>;
+  deleteWebhookSubscription(id: string): Promise<void>;
+  getWebhookSubscriptions(): Promise<any[]>;
   
   // Additional missing operations
   createEmailTemplate(template: any): Promise<any>;
@@ -991,6 +998,43 @@ export class DatabaseStorage implements IStorage {
       .from(webhookEvents)
       .orderBy(desc(webhookEvents.processedAt))
       .limit(limit);
+  }
+
+  // Webhook subscription operations
+  async createWebhookSubscription(subscription: any): Promise<void> {
+    await db.insert(webhookSubscriptions).values({
+      ...subscription,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  }
+
+  async updateWebhookSubscription(id: string, updates: any): Promise<void> {
+    await db
+      .update(webhookSubscriptions)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(webhookSubscriptions.id, id));
+  }
+
+  async deleteWebhookSubscription(id: string): Promise<void> {
+    await db
+      .update(webhookSubscriptions)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(webhookSubscriptions.id, id));
+  }
+
+  async getWebhookSubscriptions(): Promise<any[]> {
+    return await db
+      .select()
+      .from(webhookSubscriptions)
+      .where(eq(webhookSubscriptions.isActive, true))
+      .orderBy(desc(webhookSubscriptions.createdAt));
   }
 
   // Additional missing operations

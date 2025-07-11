@@ -18,6 +18,7 @@ import { paymentLinksRouter } from "./routes-payment-links";
 import { refundsRouter } from "./routes-refunds";
 import { disputesRouter } from "./routes-disputes";
 import { oauthRouter } from "./routes-oauth";
+import { webhookSubscriptionsRouter } from "./routes-webhooks-subscriptions";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -170,6 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add OAuth routes
   app.use('/api/oauth', oauthRouter);
+  
+  // Add webhook subscriptions routes
+  app.use('/api/webhook-subscriptions', webhookSubscriptionsRouter);
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
