@@ -253,24 +253,25 @@
   }
 }
 
-/* Blob animation */
+/* Blob animation - Optimized for performance */
 @keyframes blob {
   0% {
-    transform: translate(0px, 0px) scale(1);
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
   }
   33% {
-    transform: translate(30px, -50px) scale(1.1);
+    transform: translate(20px, -30px) scale(1.05) rotate(120deg);
   }
   66% {
-    transform: translate(-20px, 20px) scale(0.9);
+    transform: translate(-15px, 15px) scale(0.95) rotate(240deg);
   }
   100% {
-    transform: translate(0px, 0px) scale(1);
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
   }
 }
 
 .animate-blob {
-  animation: blob 7s infinite;
+  animation: blob 20s infinite cubic-bezier(0.39, 0.575, 0.565, 1);
+  will-change: transform;
 }
 
 .animation-delay-2000 {
@@ -279,6 +280,72 @@
 
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* Enhanced gradient animations */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 5s ease infinite;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch interactions on mobile */
+@media (hover: none) {
+  .hover\:scale-105:active {
+    transform: scale(1.05);
+  }
+  
+  .hover\:scale-110:active {
+    transform: scale(1.1);
+  }
+}
+
+/* Optimize animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Enhanced focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid hsl(263, 70%, 58%);
+  outline-offset: 2px;
+}
+
+/* Smooth card transitions */
+.card-transition {
+  transition: transform 0.2s cubic-bezier(0.39, 0.575, 0.565, 1),
+              box-shadow 0.2s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+/* Mobile-optimized font sizes */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.select-none {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Gradient animation */
