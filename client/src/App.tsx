@@ -19,6 +19,8 @@ import AdminUsers from "@/pages/AdminUsers";
 import AdminTransactions from "@/pages/AdminTransactions";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminSecurity from "@/pages/AdminSecurity";
+import AdminRevenue from "@/pages/AdminRevenue";
+import AdminFeeManagement from "@/pages/AdminFeeManagement";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
@@ -107,6 +109,8 @@ function Router() {
           <Route path="/admin/transactions" component={AdminTransactions} />
           <Route path="/admin/analytics" component={AdminAnalytics} />
           <Route path="/admin/security" component={AdminSecurity} />
+          <Route path="/admin/revenue" component={AdminRevenue} />
+          <Route path="/admin/fees" component={AdminFeeManagement} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />

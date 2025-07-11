@@ -34,8 +34,8 @@ export default function SideNavigation({ user, onLogout, isAdmin = false }: Side
     { path: '/admin/gift-cards', label: 'Gift Cards', icon: CreditCard },
     { path: '/admin/users', label: 'Users', icon: Users },
     { path: '/admin/transactions', label: 'Transactions', icon: Receipt },
-    { path: '/revenue', label: 'Revenue', icon: TrendingUp },
-    { path: '/fees', label: 'Fee Management', icon: DollarSign },
+    { path: '/admin/revenue', label: 'Revenue', icon: TrendingUp },
+    { path: '/admin/fees', label: 'Fee Management', icon: DollarSign },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin/security', label: 'Security', icon: Shield },
   ];

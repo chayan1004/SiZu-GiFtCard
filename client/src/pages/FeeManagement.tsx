@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { SideNavigation } from "@/components/SideNavigation";
 import { 
   DollarSign, 
   Plus, 
@@ -16,7 +17,11 @@ import {
   Trash2,
   Percent,
   Save,
-  X
+  X,
+  Settings,
+  Activity,
+  TrendingUp,
+  Shield
 } from "lucide-react";
 import {
   Dialog,
@@ -33,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { motion } from "framer-motion";
 
 interface FeeConfiguration {
   id: string;
@@ -63,6 +69,14 @@ export default function FeeManagement() {
     maxAmount: '',
     description: ''
   });
+
+  // Fee statistics
+  const feeStats = {
+    totalCollected: 8475.50,
+    activeFees: 5,
+    averageFee: 4.25,
+    monthlyGrowth: 12.3
+  };
 
   const { data: fees, isLoading, error } = useQuery<FeeConfiguration[]>({
     queryKey: ['/api/admin/fees']
