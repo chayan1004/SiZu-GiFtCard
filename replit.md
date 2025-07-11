@@ -635,3 +635,12 @@ Preferred communication style: Simple, everyday language.
   - State parameter validation to prevent CSRF attacks
   - Secure token storage with encryption support
   - OAuth best practices following Square's official documentation
+- **Square OAuth Credentials Configured**: Live sandbox credentials implemented
+  - Client ID: sandbox-sq0idb-l5OPb4gxToPCbEbXnfzXng
+  - Client Secret: Securely stored in environment variables
+  - Redirect URI: https://sizugiftcard.com/api/oauth/square/callback
+  - OAuth service successfully initialized for sandbox environment
+- **Apple Pay Domain Verification**: Successfully completed
+  - Domain verification file added to `.well-known` directory
+  - Apple has verified domain ownership
+  - Ready to accept Apple Pay payments through Square integration
