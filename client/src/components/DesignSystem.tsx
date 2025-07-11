@@ -229,19 +229,31 @@ interface FormContainerProps {
 
 export function FormContainer({ children, title, description }: FormContainerProps) {
   return (
-    <div className="max-w-2xl mx-auto">
-      <GlassCard>
-        <CardHeader>
-          <CardTitle className="text-2xl text-white text-center">{title}</CardTitle>
-          {description && (
-            <p className="text-gray-300 text-center">{description}</p>
-          )}
-        </CardHeader>
-        <CardContent className="p-6 pt-0">
-          {children}
-        </CardContent>
-      </GlassCard>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.2 }}
+      className="max-w-2xl mx-auto"
+    >
+      <div className="glassmorphism border-white/20 rounded-xl overflow-hidden">
+        <div className="p-6 space-y-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center mr-4">
+              <div className="w-5 h-5 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"></div>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">{title}</h2>
+              {description && (
+                <p className="text-sm text-gray-300 mt-1">{description}</p>
+              )}
+            </div>
+          </div>
+          <div className="space-y-4">
+            {children}
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
