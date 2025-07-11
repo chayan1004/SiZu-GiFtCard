@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -6,8 +7,59 @@ import { setupVite, serveStatic, log } from "./vite";
 process.env.BROWSERSLIST_IGNORE_OLD_DATA = 'true';
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Security middleware - helmet with custom CSP for development
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Vite HMR in development
+        "'unsafe-eval'", // Required for development
+        "https://js.squareup.com",
+        "https://sandbox.web.squarecdn.com",
+        "https://web.squarecdn.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Tailwind and Vite
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https:"
+      ],
+      connectSrc: [
+        "'self'",
+        "ws://localhost:*", // WebSocket for development HMR
+        "wss://localhost:*",
+        "https://pci-connect.squareup.com",
+        "https://pci-connect.squareupsandbox.com"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://js.squareup.com",
+        "https://sandbox.web.squarecdn.com"
+      ]
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Disable for Square SDK compatibility
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();
