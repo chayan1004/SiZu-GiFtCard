@@ -1,4 +1,5 @@
 import { SquareClient, SquareEnvironment } from "square";
+import { nanoid } from 'nanoid';
 
 export class SquareService {
   private client: SquareClient;
@@ -7,7 +8,7 @@ export class SquareService {
   constructor() {
     const accessToken = process.env.SQUARE_ACCESS_TOKEN || process.env.SQUARE_SANDBOX_ACCESS_TOKEN;
     const environment = process.env.SQUARE_ENVIRONMENT === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
-    
+
     if (!accessToken) {
       console.warn("Square access token not provided. Gift card features will be limited.");
     }
@@ -21,45 +22,68 @@ export class SquareService {
   }
 
   async createGiftCard(amount: number, externalId: string): Promise<any> {
-    try {
-      const giftCardsApi = this.client.giftCardsApi;
-      
-      const requestBody = {
-        idempotencyKey: `gift-card-${externalId}-${Date.now()}`,
-        locationId: this.locationId,
-        giftCard: {
-          type: 'DIGITAL',
-          giftCardActivityDetails: {
-            activateActivityDetails: {
-              amountMoney: {
-                amount: BigInt(Math.round(amount * 100)), // Convert to cents
-                currency: 'USD',
+    const maxRetries = 3;
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const giftCardsApi = this.client.giftCardsApi;
+
+        const requestBody = {
+          idempotencyKey: `gift-card-${externalId}-${Date.now()}`,
+          locationId: this.locationId,
+          giftCard: {
+            type: 'DIGITAL',
+            giftCardActivityDetails: {
+              activateActivityDetails: {
+                amountMoney: {
+                  amount: BigInt(Math.round(amount * 100)), // Convert to cents
+                  currency: 'USD',
+                },
               },
             },
           },
-        },
-      };
+        };
 
-      const response = await giftCardsApi.createGiftCard(requestBody);
-      
-      if (response.result.errors) {
-        throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
-      }
+        const response = await giftCardsApi.createGiftCard(requestBody);
 
-      return response.result.giftCard;
-    } catch (error: any) {
-      console.error("Square API error:", error);
-      if (error.errors) {
-        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
+        if (response.result.errors) {
+          throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
+        }
+
+        return response.result.giftCard;
+      } catch (error: any) {
+        lastError = error;
+        console.error(`Square API attempt ${attempt} failed:`, error);
+
+        // Don't retry on client errors (4xx)
+        if (error.statusCode >= 400 && error.statusCode < 500) {
+          break;
+        }
+
+        // Wait before retrying (exponential backoff)
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
       }
-      throw error;
+    }
+
+    // Categorize error for better handling
+    if (lastError?.statusCode === 401) {
+      throw new Error('Square API authentication failed. Check access token.');
+    } else if (lastError?.statusCode === 422) {
+      throw new Error('Invalid request to Square API. Check parameters.');
+    } else if (lastError?.statusCode >= 500) {
+      throw new Error('Square API server error. Please try again later.');
+    } else {
+      throw new Error(`Failed to create gift card with Square: ${lastError?.message || 'Unknown error'}`);
     }
   }
 
   async redeemGiftCard(giftCardId: string, amount: number): Promise<any> {
     try {
       const giftCardActivitiesApi = this.client.giftCardActivitiesApi;
-      
+
       const requestBody = {
         idempotencyKey: `redeem-${giftCardId}-${Date.now()}`,
         giftCardActivity: {
@@ -76,7 +100,7 @@ export class SquareService {
       };
 
       const response = await giftCardActivitiesApi.createGiftCardActivity(requestBody);
-      
+
       if (response.result.errors) {
         throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
       }
@@ -94,9 +118,9 @@ export class SquareService {
   async getGiftCardBalance(giftCardId: string): Promise<number> {
     try {
       const giftCardsApi = this.client.giftCardsApi;
-      
+
       const response = await giftCardsApi.retrieveGiftCard(giftCardId);
-      
+
       if (response.result.errors) {
         throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
       }
@@ -115,7 +139,7 @@ export class SquareService {
   async refundToGiftCard(giftCardId: string, amount: number, reason?: string): Promise<any> {
     try {
       const giftCardActivitiesApi = this.client.giftCardActivitiesApi;
-      
+
       const requestBody = {
         idempotencyKey: `refund-${giftCardId}-${Date.now()}`,
         giftCardActivity: {
@@ -132,7 +156,7 @@ export class SquareService {
       };
 
       const response = await giftCardActivitiesApi.createGiftCardActivity(requestBody);
-      
+
       if (response.result.errors) {
         throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
       }
@@ -150,12 +174,12 @@ export class SquareService {
   async getGiftCardActivities(giftCardId: string): Promise<any[]> {
     try {
       const giftCardActivitiesApi = this.client.giftCardActivitiesApi;
-      
+
       const response = await giftCardActivitiesApi.listGiftCardActivities({
         giftCardId,
         locationId: this.locationId,
       });
-      
+
       if (response.result.errors) {
         throw new Error(`Square API error: ${response.result.errors.map(e => e.detail).join(', ')}`);
       }

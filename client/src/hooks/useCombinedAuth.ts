@@ -9,12 +9,32 @@ interface CombinedAuthState {
 }
 
 export function useCombinedAuth() {
-  const adminAuth = useAuth();
-  const [customerAuth, setCustomerAuth] = useState<CombinedAuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-    userType: null
+  const { data: adminUser, isLoading: adminLoading, error: adminError } = useQuery({
+    queryKey: ['/api/auth/user'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/auth/user', { credentials: 'include' });
+        return res.ok ? res.json() : null;
+      } catch (error) {
+        console.error('Admin auth check failed:', error);
+        return null;
+      }
+    },
+    retry: false,
+  });
+
+  const { data: customerUser, isLoading: customerLoading, error: customerError } = useQuery({
+    queryKey: ['/api/auth/customer'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/auth/customer', { credentials: 'include' });
+        return res.ok ? res.json() : null;
+      } catch (error) {
+        console.error('Customer auth check failed:', error);
+        return null;
+      }
+    },
+    retry: false,
   });
 
   useEffect(() => {
@@ -24,7 +44,7 @@ export function useCombinedAuth() {
         const res = await fetch('/api/auth/customer', {
           credentials: 'include'
         });
-        
+
         if (res.ok) {
           const user = await res.json();
           setCustomerAuth({

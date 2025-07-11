@@ -205,11 +205,35 @@ export class PDFService {
       // Write PDF to file
       fs.writeFileSync(filepath, pdfBuffer);
       
+      // Schedule cleanup of old files (older than 30 days)
+      this.scheduleCleanup(receiptsDir);
+      
       return filepath;
     } catch (error) {
       console.error('Error generating PDF receipt:', error);
       throw new Error('Failed to generate PDF receipt');
     }
+  }
+
+  private scheduleCleanup(directory: string) {
+    setTimeout(() => {
+      try {
+        const files = fs.readdirSync(directory);
+        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        
+        files.forEach(file => {
+          const filepath = path.join(directory, file);
+          const stat = fs.statSync(filepath);
+          
+          if (stat.mtime.getTime() < thirtyDaysAgo) {
+            fs.unlinkSync(filepath);
+            console.log(`Cleaned up old PDF: ${file}`);
+          }
+        });
+      } catch (error) {
+        console.error('Error during PDF cleanup:', error);
+      }
+    }, 60000); // Run cleanup after 1 minute
   }
 
   async generateGiftCardPDF(giftCardData: any, qrCodeDataUrl?: string): Promise<string> {

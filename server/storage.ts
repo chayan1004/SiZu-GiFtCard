@@ -30,14 +30,14 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Customer authentication operations
   getUserByEmail(email: string): Promise<User | undefined>;
   createCustomer(userData: any): Promise<User>;
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   getUserByResetToken(token: string): Promise<User | undefined>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
-  
+
   // Gift Card operations
   createGiftCard(giftCard: InsertGiftCard & { code: string }): Promise<GiftCard>;
   getGiftCardByCode(code: string): Promise<GiftCard | undefined>;
@@ -46,25 +46,25 @@ export interface IStorage {
   updateGiftCardSquareId(id: string, squareGiftCardId: string): Promise<GiftCard>;
   getAllGiftCards(): Promise<GiftCard[]>;
   getGiftCardsByUser(userId: string): Promise<GiftCard[]>;
-  
+
   // Transaction operations
   createTransaction(transaction: InsertGiftCardTransaction & { balanceAfter: string }): Promise<GiftCardTransaction>;
   getTransactionsByGiftCard(giftCardId: string): Promise<GiftCardTransaction[]>;
   getAllTransactions(): Promise<GiftCardTransaction[]>;
   getRecentTransactions(limit: number): Promise<GiftCardTransaction[]>;
-  
+
   // Receipt operations
   createReceipt(receipt: InsertReceipt & { accessToken: string; expiresAt: Date }): Promise<Receipt>;
   getReceiptByToken(accessToken: string): Promise<Receipt | undefined>;
   updateReceiptPdfPath(id: string, pdfPath: string): Promise<Receipt>;
   markReceiptEmailSent(id: string): Promise<Receipt>;
-  
+
   // Fraud Alert operations
   createFraudAlert(alert: InsertFraudAlert): Promise<FraudAlert>;
   getFraudAlerts(): Promise<FraudAlert[]>;
   getUnresolvedFraudAlerts(): Promise<FraudAlert[]>;
   resolveFraudAlert(id: string, resolvedById: string): Promise<FraudAlert>;
-  
+
   // Analytics operations
   getTotalSales(): Promise<{ total: number; count: number }>;
   getTotalRedemptions(): Promise<{ total: number; count: number }>;
@@ -76,7 +76,7 @@ export interface IStorage {
     cardsIssued: number;
     redemptionsCount: number;
   }>;
-  
+
   // Saved Card operations
   updateUserSquareCustomerId(userId: string, squareCustomerId: string): Promise<User>;
   addSavedCard(card: InsertSavedCard): Promise<SavedCard>;
@@ -85,18 +85,18 @@ export interface IStorage {
   deleteSavedCard(cardId: string, userId: string): Promise<void>;
   setDefaultCard(cardId: string, userId: string): Promise<void>;
   getDefaultCard(userId: string): Promise<SavedCard | undefined>;
-  
+
   // Order History operations
   getUserOrders(userId: string, page: number, pageSize: number): Promise<{
     orders: any[];
     totalCount: number;
   }>;
   getUserOrderDetails(userId: string, orderId: string): Promise<any | undefined>;
-  
+
   // Revenue tracking operations
   getGiftCardRevenue(giftCardId: string): Promise<{ totalRedeemed: number; redemptionCount: number }>;
   getUserTotalSpending(email: string): Promise<{ totalSpent: number; purchaseCount: number }>;
-  
+
   // Fee Configuration operations
   getFeeConfigurations(): Promise<FeeConfiguration[]>;
   getFeeByType(feeType: string): Promise<FeeConfiguration | undefined>;
@@ -365,7 +365,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(giftCards)
       .where(eq(giftCards.isActive, true));
-    
+
     return result || { total: 0, count: 0 };
   }
 
@@ -377,7 +377,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(giftCardTransactions)
       .where(eq(giftCardTransactions.type, 'redeem'));
-    
+
     return result || { total: 0, count: 0 };
   }
 
@@ -391,7 +391,7 @@ export class DatabaseStorage implements IStorage {
         eq(giftCards.isActive, true),
         sql`CAST(${giftCards.currentBalance} AS NUMERIC) > 0`
       ));
-    
+
     return result?.balance || 0;
   }
 
@@ -427,11 +427,11 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, userId))
       .returning();
-    
+
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     return user;
   }
 
@@ -448,7 +448,7 @@ export class DatabaseStorage implements IStorage {
       .insert(savedCards)
       .values(card)
       .returning();
-    
+
     return savedCard;
   }
 
@@ -468,7 +468,7 @@ export class DatabaseStorage implements IStorage {
         eq(savedCards.id, cardId),
         eq(savedCards.userId, userId)
       ));
-    
+
     return card;
   }
 
@@ -487,7 +487,7 @@ export class DatabaseStorage implements IStorage {
       .update(savedCards)
       .set({ isDefault: false })
       .where(eq(savedCards.userId, userId));
-    
+
     // Then set the specified card as default
     await db
       .update(savedCards)
@@ -509,7 +509,7 @@ export class DatabaseStorage implements IStorage {
         eq(savedCards.userId, userId),
         eq(savedCards.isDefault, true)
       ));
-    
+
     return card;
   }
 
@@ -525,7 +525,7 @@ export class DatabaseStorage implements IStorage {
       .select({ count: sql<number>`count(*)` })
       .from(giftCards)
       .where(eq(giftCards.issuedById, userId));
-    
+
     const totalCount = Number(countResult[0]?.count || 0);
 
     // Get paginated orders with transaction data
@@ -601,7 +601,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const { giftCard, transaction } = result[0];
-    
+
     // Get all transactions for this gift card
     const transactions = await db
       .select()
@@ -652,9 +652,9 @@ export class DatabaseStorage implements IStorage {
         eq(giftCardTransactions.giftCardId, giftCardId),
         eq(giftCardTransactions.type, 'redemption')
       ));
-    
+
     const totalRedeemed = redemptions.reduce((sum, r) => sum + parseFloat(r.amount), 0);
-    
+
     return {
       totalRedeemed,
       redemptionCount: redemptions.length
@@ -667,11 +667,11 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.email, email));
-    
+
     if (!user) {
       return { totalSpent: 0, purchaseCount: 0 };
     }
-    
+
     // Get all gift cards purchased by this user
     const purchases = await db
       .select({
@@ -679,9 +679,9 @@ export class DatabaseStorage implements IStorage {
       })
       .from(giftCards)
       .where(eq(giftCards.issuedById, user.id));
-    
+
     const totalSpent = purchases.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-    
+
     return {
       totalSpent,
       purchaseCount: purchases.length

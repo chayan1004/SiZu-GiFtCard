@@ -12,8 +12,28 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Configure connection pooling for better performance
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  max: 20,                    // Maximum connections in pool
+  idleTimeoutMillis: 20000,          // Close idle connections after 20s
+  connectionTimeoutMillis: 60000,       // Fail after 60s if can't connect
+});
+
 export const db = drizzle({ client: pool, schema });
+
+// Graceful shutdown handler (optional, but recommended)
+process.on('SIGINT', async () => {
+  console.log('Closing database connections...');
+  await pool.end();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Closing database connections...');
+  await pool.end();
+  process.exit(0);
+});
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
