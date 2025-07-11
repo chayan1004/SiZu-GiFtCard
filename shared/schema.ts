@@ -34,6 +34,22 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("user").notNull(), // 'admin' or 'user'
+  squareCustomerId: varchar("square_customer_id").unique(), // Square Customer ID for saved cards
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Saved Cards table - stores Square card references only
+export const savedCards = pgTable("saved_cards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  squareCardId: varchar("square_card_id").notNull(), // Square's card ID
+  cardBrand: varchar("card_brand").notNull(), // VISA, MASTERCARD, etc.
+  last4: varchar("last_4", { length: 4 }).notNull(), // Last 4 digits only
+  expMonth: integer("exp_month").notNull(), // Expiration month
+  expYear: integer("exp_year").notNull(), // Expiration year
+  cardholderName: varchar("cardholder_name"),
+  isDefault: boolean("is_default").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -101,6 +117,14 @@ export const usersRelations = relations(users, ({ many }) => ({
   issuedGiftCards: many(giftCards),
   transactions: many(giftCardTransactions),
   resolvedAlerts: many(fraudAlerts),
+  savedCards: many(savedCards),
+}));
+
+export const savedCardsRelations = relations(savedCards, ({ one }) => ({
+  user: one(users, {
+    fields: [savedCards.userId],
+    references: [users.id],
+  }),
 }));
 
 export const giftCardsRelations = relations(giftCards, ({ one, many }) => ({
@@ -186,6 +210,17 @@ export const insertFraudAlertSchema = createInsertSchema(fraudAlerts).pick({
   metadata: true,
 });
 
+export const insertSavedCardSchema = createInsertSchema(savedCards).pick({
+  userId: true,
+  squareCardId: true,
+  cardBrand: true,
+  last4: true,
+  expMonth: true,
+  expYear: true,
+  cardholderName: true,
+  isDefault: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -201,6 +236,9 @@ export type Receipt = typeof receipts.$inferSelect;
 
 export type InsertFraudAlert = z.infer<typeof insertFraudAlertSchema>;
 export type FraudAlert = typeof fraudAlerts.$inferSelect;
+
+export type InsertSavedCard = z.infer<typeof insertSavedCardSchema>;
+export type SavedCard = typeof savedCards.$inferSelect;
 
 // Additional validation schemas
 export const redeemGiftCardSchema = z.object({
@@ -224,3 +262,21 @@ export const createGiftCardSchema = insertGiftCardSchema.extend({
 export type RedeemGiftCardInput = z.infer<typeof redeemGiftCardSchema>;
 export type CheckBalanceInput = z.infer<typeof checkBalanceSchema>;
 export type CreateGiftCardInput = z.infer<typeof createGiftCardSchema>;
+
+// Saved Card validation schemas
+export const addSavedCardSchema = z.object({
+  nonce: z.string().min(1, "Payment nonce is required"), // Square payment token
+  verification_token: z.string().optional(), // For 3DS verification
+});
+
+export const deleteSavedCardSchema = z.object({
+  cardId: z.string().uuid("Invalid card ID"),
+});
+
+export const setSavedCardDefaultSchema = z.object({
+  cardId: z.string().uuid("Invalid card ID"),
+});
+
+export type AddSavedCardInput = z.infer<typeof addSavedCardSchema>;
+export type DeleteSavedCardInput = z.infer<typeof deleteSavedCardSchema>;
+export type SetSavedCardDefaultInput = z.infer<typeof setSavedCardDefaultSchema>;
