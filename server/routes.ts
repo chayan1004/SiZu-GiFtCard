@@ -19,6 +19,11 @@ import { refundsRouter } from "./routes-refunds";
 import { disputesRouter } from "./routes-disputes";
 import { oauthRouter } from "./routes-oauth";
 import { webhookSubscriptionsRouter } from "./routes-webhooks-subscriptions";
+import { emailTemplatesRouter } from "./routes-email-templates";
+import { giftCardDesignsRouter } from "./routes-gift-card-designs";
+import { systemSettingsRouter } from "./routes-system-settings";
+import { auditLogsRouter } from "./routes-audit-logs";
+import { databaseToolsRouter } from "./routes-database-tools";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -174,6 +179,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add webhook subscriptions routes
   app.use('/api/webhook-subscriptions', webhookSubscriptionsRouter);
+  
+  // Add email templates routes
+  app.use('/api/email-templates', emailTemplatesRouter);
+  
+  // Add gift card designs routes
+  app.use('/api/gift-card-designs', giftCardDesignsRouter);
+  
+  // Add system settings routes
+  app.use('/api/system-settings', systemSettingsRouter);
+  
+  // Add audit logs routes
+  app.use('/api/audit-logs', auditLogsRouter);
+  
+  // Add database tools routes (admin only)
+  app.use('/api/admin/database', databaseToolsRouter);
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

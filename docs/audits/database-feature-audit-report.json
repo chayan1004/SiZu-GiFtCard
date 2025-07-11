@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-07-11T17:13:22.819Z",
+  "timestamp": "2025-07-11T17:22:50.269Z",
   "summary": {
     "implemented": 8,
     "placeholders": 0,
-    "missing": 61
+    "missing": 57
   },
   "placeholderImplementations": [],
   "missingFeatures": [
@@ -178,7 +178,7 @@
       "category": "Table Operations",
       "feature": "webhookSubscriptions",
       "type": "MISSING_OPERATIONS",
-      "details": "CREATE, READ, UPDATE, DELETE"
+      "details": "CREATE, READ, DELETE"
     },
     {
       "category": "Table Operations",
@@ -260,17 +260,7 @@
     },
     {
       "category": "Admin Page Endpoint",
-      "feature": "AdminEmailTemplates - /api/email-templates",
-      "type": "MISSING_ENDPOINT"
-    },
-    {
-      "category": "Admin Page Endpoint",
       "feature": "AdminEmailTemplates - /api/email-templates/:id",
-      "type": "MISSING_ENDPOINT"
-    },
-    {
-      "category": "Admin Page Endpoint",
-      "feature": "AdminGiftCardDesigns - /api/gift-card-designs",
       "type": "MISSING_ENDPOINT"
     },
     {
@@ -280,17 +270,7 @@
     },
     {
       "category": "Admin Page Endpoint",
-      "feature": "AdminSystemSettings - /api/system-settings",
-      "type": "MISSING_ENDPOINT"
-    },
-    {
-      "category": "Admin Page Endpoint",
       "feature": "AdminSystemSettings - /api/system-settings/:key",
-      "type": "MISSING_ENDPOINT"
-    },
-    {
-      "category": "Admin Page Endpoint",
-      "feature": "AdminAuditLogs - /api/audit-logs",
       "type": "MISSING_ENDPOINT"
     },
     {
