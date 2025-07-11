@@ -276,7 +276,7 @@ export class DatabaseStorage implements IStorage {
   async getTotalSales(): Promise<{ total: number; count: number }> {
     const [result] = await db
       .select({
-        total: sql`COALESCE(SUM(${giftCards.initialAmount}), 0)`.mapWith(Number),
+        total: sql`COALESCE(SUM(CAST(${giftCards.initialAmount} AS NUMERIC)), 0)`.mapWith(Number),
         count: sql`COUNT(*)`.mapWith(Number),
       })
       .from(giftCards)
@@ -288,7 +288,7 @@ export class DatabaseStorage implements IStorage {
   async getTotalRedemptions(): Promise<{ total: number; count: number }> {
     const [result] = await db
       .select({
-        total: sql`COALESCE(SUM(${giftCardTransactions.amount}), 0)`.mapWith(Number),
+        total: sql`COALESCE(SUM(CAST(${giftCardTransactions.amount} AS NUMERIC)), 0)`.mapWith(Number),
         count: sql`COUNT(*)`.mapWith(Number),
       })
       .from(giftCardTransactions)
@@ -300,12 +300,12 @@ export class DatabaseStorage implements IStorage {
   async getActiveBalance(): Promise<number> {
     const [result] = await db
       .select({
-        balance: sql`COALESCE(SUM(${giftCards.currentBalance}), 0)`.mapWith(Number),
+        balance: sql`COALESCE(SUM(CAST(${giftCards.currentBalance} AS NUMERIC)), 0)`.mapWith(Number),
       })
       .from(giftCards)
       .where(and(
         eq(giftCards.isActive, true),
-        sql`${giftCards.currentBalance} > 0`
+        sql`CAST(${giftCards.currentBalance} AS NUMERIC) > 0`
       ));
     
     return result?.balance || 0;
