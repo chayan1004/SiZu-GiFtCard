@@ -66,11 +66,15 @@ export const giftCards = pgTable("gift_cards", {
   recipientEmail: varchar("recipient_email"),
   recipientName: varchar("recipient_name"),
   senderName: varchar("sender_name"),
+  deliveryStatus: varchar("delivery_status").default("pending").notNull(), // 'pending', 'sent', 'delivered', 'failed'
   isActive: boolean("is_active").default(true).notNull(),
   issuedById: varchar("issued_by_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_gift_cards_issued_by").on(table.issuedById),
+  index("idx_gift_cards_created_at").on(table.createdAt),
+]);
 
 // Gift Card Transactions table
 export const giftCardTransactions = pgTable("gift_card_transactions", {
@@ -80,6 +84,8 @@ export const giftCardTransactions = pgTable("gift_card_transactions", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   balanceAfter: decimal("balance_after", { precision: 10, scale: 2 }).notNull(),
   squareTransactionId: varchar("square_transaction_id"),
+  paymentMethodLast4: varchar("payment_method_last4", { length: 4 }), // Last 4 digits of payment method
+  paymentMethodType: varchar("payment_method_type"), // 'VISA', 'MASTERCARD', 'AMEX', etc.
   notes: text("notes"),
   performedById: varchar("performed_by_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -187,12 +193,15 @@ export const insertGiftCardSchema = createInsertSchema(giftCards).pick({
   recipientEmail: true,
   recipientName: true,
   senderName: true,
+  deliveryStatus: true,
 });
 
 export const insertGiftCardTransactionSchema = createInsertSchema(giftCardTransactions).pick({
   giftCardId: true,
   type: true,
   amount: true,
+  paymentMethodLast4: true,
+  paymentMethodType: true,
   notes: true,
 });
 
@@ -280,3 +289,30 @@ export const setSavedCardDefaultSchema = z.object({
 export type AddSavedCardInput = z.infer<typeof addSavedCardSchema>;
 export type DeleteSavedCardInput = z.infer<typeof deleteSavedCardSchema>;
 export type SetSavedCardDefaultInput = z.infer<typeof setSavedCardDefaultSchema>;
+
+// Order History types
+export interface OrderHistoryItem {
+  id: string;
+  code: string;
+  amount: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  senderName?: string;
+  design: string;
+  deliveryStatus: string;
+  paymentMethodLast4?: string;
+  paymentMethodType?: string;
+  createdAt: Date;
+  isRedeemed: boolean;
+  redeemedAmount?: string;
+}
+
+export interface OrderHistoryResponse {
+  orders: OrderHistoryItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
+}
