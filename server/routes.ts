@@ -6,6 +6,15 @@ import session from "express-session";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
+import { 
+  requireAuth, 
+  requireAdmin, 
+  requireCustomerAuth, 
+  optionalAuth, 
+  requireOwnership, 
+  setAuthenticatedLimits,
+  validateSession 
+} from "./middleware/auth";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
@@ -44,6 +53,11 @@ import {
   generalRateLimit,
   authRateLimit,
   giftCardRateLimit,
+  adminRateLimit,
+  paymentRateLimit,
+  webhookRateLimit,
+  readRateLimit,
+  writeRateLimit,
   securityHeaders,
   httpsRedirect,
   validateInput,
@@ -96,6 +110,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(securityHeaders);
   app.use(cors(corsOptions));
 
+  // Session validation and auth middleware
+  app.use(validateSession);
+  app.use(setAuthenticatedLimits);
+
   app.use((req, res, next) => {
     const origin = req.get('origin');
     if (origin) {
@@ -111,6 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
+  // Apply appropriate rate limiting based on endpoint type
   app.use((req, res, next) => {
     if (process.env.NODE_ENV === 'development' && 
         (req.path.startsWith('/@') || 
@@ -118,7 +137,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
          req.path.startsWith('/node_modules'))) {
       return next();
     }
-    generalRateLimit(req, res, next);
+
+    // Apply specific rate limits based on endpoint
+    if (req.path.startsWith('/api/auth/')) {
+      authRateLimit(req, res, next);
+    } else if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/email-templates') || 
+               req.path.startsWith('/api/gift-card-designs') || req.path.startsWith('/api/system-settings') ||
+               req.path.startsWith('/api/audit-logs')) {
+      adminRateLimit(req, res, next);
+    } else if (req.path.startsWith('/api/payments/') || req.path.startsWith('/api/payment-links/') ||
+               req.path.startsWith('/api/refunds/') || req.path.startsWith('/api/disputes/')) {
+      paymentRateLimit(req, res, next);
+    } else if (req.path.startsWith('/api/webhooks/')) {
+      webhookRateLimit(req, res, next);
+    } else if (req.method === 'GET' && req.path.startsWith('/api/')) {
+      readRateLimit(req, res, next);
+    } else if ((req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') && 
+               req.path.startsWith('/api/')) {
+      writeRateLimit(req, res, next);
+    } else {
+      generalRateLimit(req, res, next);
+    }
   });
 
   // Apply input validation middleware except for webhook, payment-links, payments, and auth endpoints
@@ -159,41 +198,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import AuthService
   const { AuthService } = await import('./services/AuthService');
 
-  // Add payment routes
-  app.use('/api/payments', paymentsRouter);
+  // Add payment routes (require authentication for payments)
+  app.use('/api/payments', requireAnyAuth, paymentsRouter);
 
-  // Add webhook routes
+  // Add webhook routes (public for external webhooks, but with signature validation)
   app.use('/api/webhooks', webhooksRouter);
 
-  // Add payment links routes
-  app.use('/api/payment-links', paymentLinksRouter);
+  // Add payment links routes (require authentication)
+  app.use('/api/payment-links', requireAnyAuth, paymentLinksRouter);
 
-  // Add refunds routes
-  app.use('/api/refunds', refundsRouter);
+  // Add refunds routes (admin only)
+  app.use('/api/refunds', requireAdmin, refundsRouter);
 
-  // Add disputes routes
-  app.use('/api/disputes', disputesRouter);
+  // Add disputes routes (admin only)
+  app.use('/api/disputes', requireAdmin, disputesRouter);
 
-  // Add OAuth routes
-  app.use('/api/oauth', oauthRouter);
+  // Add OAuth routes (require authentication)
+  app.use('/api/oauth', requireAuth, oauthRouter);
 
-  // Add webhook subscriptions routes
-  app.use('/api/webhooks/subscriptions', webhookSubscriptionsRouter);
+  // Add webhook subscriptions routes (admin only)
+  app.use('/api/webhooks/subscriptions', requireAdmin, webhookSubscriptionsRouter);
 
-  // Add email templates routes
-  app.use('/api/email-templates', emailTemplatesRouter);
+  // Add email templates routes (admin only)
+  app.use('/api/email-templates', requireAdmin, emailTemplatesRouter);
 
-  // Add gift card designs routes
-  app.use('/api/gift-card-designs', giftCardDesignsRouter);
+  // Add gift card designs routes (admin only)
+  app.use('/api/gift-card-designs', requireAdmin, giftCardDesignsRouter);
 
-  // Add system settings routes
-  app.use('/api/system-settings', systemSettingsRouter);
+  // Add system settings routes (admin only)
+  app.use('/api/system-settings', requireAdmin, systemSettingsRouter);
 
-  // Add audit logs routes
-  app.use('/api/audit-logs', auditLogsRouter);
+  // Add audit logs routes (admin only)
+  app.use('/api/audit-logs', requireAdmin, auditLogsRouter);
 
   // Add database tools routes (admin only)
-  app.use('/api/admin/database', databaseToolsRouter);
+  app.use('/api/admin/database', requireAdmin, databaseToolsRouter);
 
   // Add missing critical endpoints
 
@@ -441,19 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin middleware
-  const requireAdmin = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== 'admin') {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      next();
-    } catch (error) {
-      res.status(500).json({ message: "Authorization check failed" });
-    }
-  };
+  // Note: requireAdmin middleware is imported from auth.ts
 
   // Gift Card Routes - Enhanced with payment integration
 
@@ -587,8 +614,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public gift card purchase with payment processing
-  app.post('/api/giftcards/purchase', giftCardRateLimit, async (req, res) => {
+  // Public gift card purchase with payment processing (requires authentication for payments)
+  app.post('/api/giftcards/purchase', paymentRateLimit, validateGiftCardAmount, validateEmail, requireCustomerAuth, async (req, res) => {
     try {
       const giftCardData = createGiftCardSchema.parse(req.body);
       const paymentData = req.body.paymentMethod;
@@ -777,8 +804,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Redeem gift card (Public)
-  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardCode, validateGiftCardAmount, async (req, res) => {
+  // Redeem gift card (requires authentication)
+  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardCode, validateGiftCardAmount, requireCustomerAuth, async (req, res) => {
     try {
       const { code, amount } = redeemGiftCardSchema.parse(req.body);
 
@@ -862,7 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all gift cards (Admin only)
-  app.get('/api/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/giftcards', readRateLimit, requireAdmin, async (req, res) => {
     try {
       const giftCards = await storage.getAllGiftCards();
       res.json(giftCards);
@@ -873,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint alias for consistency
-  app.get('/api/admin/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/giftcards', readRateLimit, requireAdmin, async (req, res) => {
     try {
       const giftCards = await storage.getAllGiftCards();
       res.json(giftCards);
@@ -884,7 +911,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's gift cards
-  app.get('/api/giftcards/mine', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/giftcards/mine', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -900,7 +927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get transactions for a specific gift card
-  app.get('/api/giftcards/:id/transactions', requireAnyAuth, validateId, async (req: any, res) => {
+  app.get('/api/giftcards/:id/transactions', readRateLimit, requireAnyAuth, requireOwnership('id'), validateId, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -978,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Dashboard Routes
-  app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/stats', adminRateLimit, requireAdmin, async (req, res) => {
     try {
       const stats = await storage.getDashboardStats();
       res.json(stats);
@@ -988,7 +1015,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/transactions', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/transactions', readRateLimit, requireAdmin, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const transactions = await storage.getRecentTransactions(limit);
@@ -999,7 +1026,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/fraud-alerts', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/fraud-alerts', readRateLimit, requireAdmin, async (req, res) => {
     try {
       const alerts = await storage.getUnresolvedFraudAlerts();
       res.json(alerts);
@@ -1009,7 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/fraud-alerts/:id/resolve', isAuthenticated, requireAdmin, validateId, async (req: any, res) => {
+  app.post('/api/admin/fraud-alerts/:id/resolve', writeRateLimit, requireAdmin, validateId, async (req: any, res) => {
     try {
       const { id } = req.params;
       const userId = req.user.claims.sub;
@@ -1023,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Users Route  
-  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/users', readRateLimit, requireAdmin, async (req, res) => {
     try {
       // Get all users from the database
       const users = await storage.getAllUsers();
@@ -1052,7 +1079,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Dashboard Routes
 
   // Get dashboard stats
-  app.get('/api/user/dashboard/stats', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/user/dashboard/stats', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1133,7 +1160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's transactions
-  app.get('/api/user/transactions', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/user/transactions', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1167,7 +1194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Order History Routes
 
   // Get user's order history (paginated)
-  app.get('/api/user/orders', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/user/orders', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1200,7 +1227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get specific order details
-  app.get('/api/user/orders/:orderId', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/user/orders/:orderId', readRateLimit, requireAnyAuth, requireOwnership('orderId'), async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1240,7 +1267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Saved Card Routes
 
   // List user's saved cards
-  app.get('/api/cards', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/cards', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1256,7 +1283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Alias endpoint for consistency with user namespace
-  app.get('/api/user/saved-cards', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/user/saved-cards', readRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1272,7 +1299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add a new card
-  app.post('/api/cards', authRateLimit, requireAnyAuth, async (req: any, res) => {
+  app.post('/api/cards', writeRateLimit, requireAnyAuth, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1356,7 +1383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete a saved card
-  app.delete('/api/cards/:id', requireAnyAuth, async (req: any, res) => {
+  app.delete('/api/cards/:id', writeRateLimit, requireAnyAuth, requireOwnership('id'), async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1391,7 +1418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Set card as default
-  app.put('/api/cards/:id/default', requireAnyAuth, async (req: any, res) => {
+  app.put('/api/cards/:id/default', writeRateLimit, requireAnyAuth, requireOwnership('id'), async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -1418,7 +1445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Fee Configuration Routes (Admin only)
 
   // Get all fee configurations
-  app.get('/api/admin/fees', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/fees', readRateLimit, requireAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || user.role !== 'admin') {
@@ -1434,7 +1461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create fee configuration
-  app.post('/api/admin/fees', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/fees', writeRateLimit, requireAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || user.role !== 'admin') {
@@ -1454,7 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update fee configuration
-  app.put('/api/admin/fees/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/fees/:id', writeRateLimit, requireAdmin, validateId, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || user.role !== 'admin') {
@@ -1476,7 +1503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete fee configuration
-  app.delete('/api/admin/fees/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/fees/:id', writeRateLimit, requireAdmin, validateId, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!user || user.role !== 'admin') {
@@ -1493,7 +1520,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public fee endpoint for shop
-  app.get('/api/fees/active', async (req, res) => {
+  app.get('/api/fees/active', readRateLimit, async (req, res) => {
     try {
       const fees = await storage.getFeeConfigurations();
       const activeFees = fees.filter(fee => fee.isActive);
@@ -1505,7 +1532,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Calculate fee for gift card amount
-  app.post('/api/fees/calculate', async (req, res) => {
+  app.post('/api/fees/calculate', readRateLimit, validateGiftCardAmount, async (req, res) => {
     try {
       const { amount, feeType = 'standard' } = req.body;
 
@@ -1531,7 +1558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Routes
 
   // AI Design Suggestion
-  app.post('/api/ai/suggest-design', async (req, res) => {
+  app.post('/api/ai/suggest-design', authRateLimit, validateInput, async (req, res) => {
     try {
       const { prompt } = req.body;
 
@@ -2033,43 +2060,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   (global as any).broadcastFraudAlert = broadcastFraudAlert;
   (global as any).broadcastRevenueUpdate = broadcastRevenueUpdate;
 
-  // Admin users endpoint
-  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-
-      // Remove sensitive data before sending
-      const sanitizedUsers = users.map(user => ({
-        id: user.id,
-        name: user.name || 'N/A',
-        email: user.email || 'N/A',
-        role: user.role || 'user',
-        createdAt: user.createdAt,
-        lastLogin: user.lastLogin || null,
-        isActive: user.isActive !== false,
-        hasProfilePicture: !!user.profilePicture,
-        giftCardCount: user.giftCardCount || 0,
-        totalSpent: user.totalSpent || 0
-      }));
-
-      res.json(sanitizedUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
-    }
-  });
-
-  // Public fee endpoint for shop
-  app.get('/api/fees/active', async (req, res) => {
-    try {
-      const fees = await storage.getFeeConfigurations();
-      const activeFees = fees.filter(fee => fee.isActive);
-      res.json(activeFees);
-    } catch (error) {
-      console.error("Error fetching active fees:", error);
-      res.status(500).json({ message: "Failed to fetch active fees" });
-    }
-  });
+  // Removed duplicate endpoints (already defined above)
 
   return httpServer;
 }
