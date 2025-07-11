@@ -12,12 +12,15 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Configure connection pooling for better performance
+// Configure connection pooling with Neon's pooler for better performance
+// Use Neon's connection pooler by replacing the domain pattern
+const poolerUrl = process.env.DATABASE_URL.replace('.neon.tech', '-pooler.neon.tech');
+
 export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 20,                    // Maximum connections in pool
+  connectionString: poolerUrl,
+  max: 10,                           // Reduced from 20 - pooler handles connection multiplexing
   idleTimeoutMillis: 20000,          // Close idle connections after 20s
-  connectionTimeoutMillis: 60000,       // Fail after 60s if can't connect
+  connectionTimeoutMillis: 60000,    // Fail after 60s if can't connect
 });
 
 export const db = drizzle({ client: pool, schema });

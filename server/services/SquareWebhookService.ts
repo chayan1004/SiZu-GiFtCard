@@ -94,6 +94,9 @@ export class SquareWebhookService {
         case 'gift_card.activity.created':
           await this.handleGiftCardActivityCreated(event);
           break;
+        case 'gift_card.activity.updated':
+          await this.handleGiftCardActivityUpdated(event);
+          break;
         case 'gift_card.customer_linked':
           await this.handleGiftCardCustomerLinked(event);
           break;
@@ -197,18 +200,24 @@ export class SquareWebhookService {
 
   // Gift card event handlers
   private async handleGiftCardCreated(event: WebhookEvent) {
-    const giftCard = event.data.object;
-    console.log(`Gift card created via webhook: ${giftCard.id}, GAN: ${giftCard.gan}`);
+    // Gift card data is nested inside data.object.gift_card
+    const giftCard = event.data.object.gift_card;
+    console.log(`Gift card created via webhook: ${giftCard.id}`);
+    console.log(`  GAN: ${giftCard.gan}`);
+    console.log(`  Type: ${giftCard.type}`);
+    console.log(`  State: ${giftCard.state}`);
+    console.log(`  Balance: $${giftCard.balance_money.amount / 100} ${giftCard.balance_money.currency}`);
   }
 
   private async handleGiftCardUpdated(event: WebhookEvent) {
-    const giftCard = event.data.object;
-    console.log(`Gift card updated: ${giftCard.id}, Balance: ${giftCard.balanceMoney?.amount}`);
+    // Gift card data is nested inside data.object.gift_card
+    const giftCard = event.data.object.gift_card;
+    console.log(`Gift card updated: ${giftCard.id}, Balance: $${giftCard.balance_money.amount / 100}`);
     
     // Update gift card balance in database
     if (giftCard.gan) {
-      const balance = giftCard.balanceMoney?.amount ? 
-        (Number(giftCard.balanceMoney.amount) / 100).toString() : '0';
+      const balance = giftCard.balance_money?.amount ? 
+        (Number(giftCard.balance_money.amount) / 100).toString() : '0';
       
       const localCard = await storage.getGiftCardByCode(giftCard.gan);
       if (localCard) {
@@ -218,32 +227,76 @@ export class SquareWebhookService {
   }
 
   private async handleGiftCardActivityCreated(event: WebhookEvent) {
-    const activity = event.data.object;
-    console.log(`Gift card activity created: ${activity.type} for card ${activity.giftCardId}`);
+    // Gift card activity data is nested inside data.object.gift_card_activity
+    const activity = event.data.object.gift_card_activity;
+    console.log(`Gift card activity created: ${activity.type} for card ${activity.gift_card_gan}`);
+    console.log(`  Activity ID: ${activity.id}`);
+    console.log(`  New Balance: $${activity.gift_card_balance_money.amount / 100}`);
+    
+    if (activity.activate_activity_details) {
+      console.log(`  Activation Amount: $${activity.activate_activity_details.amount_money.amount / 100}`);
+      console.log(`  Order ID: ${activity.activate_activity_details.order_id}`);
+    }
     
     // Log activity in database
-    const giftCard = await storage.getGiftCardById(activity.giftCardId);
-    if (giftCard) {
-      const amount = activity.giftCardBalanceMoney?.amount ?
-        (Number(activity.giftCardBalanceMoney.amount) / 100).toString() : '0';
-      
-      await storage.createTransaction({
-        giftCardId: giftCard.id,
-        type: activity.type.toLowerCase(),
-        amount: amount,
-        balanceAfter: amount,
-        description: `Square activity: ${activity.type}`,
+    if (activity.gift_card_gan) {
+      const localCard = await storage.getGiftCardByCode(activity.gift_card_gan);
+      if (localCard) {
+        const amount = activity.gift_card_balance_money?.amount ?
+          (Number(activity.gift_card_balance_money.amount) / 100).toString() : '0';
+        
+        await storage.createTransaction({
+          giftCardId: localCard.id,
+          type: activity.type.toLowerCase(),
+          amount: amount,
+          balanceAfter: amount,
+          description: `Square activity: ${activity.type}`,
         squareActivityId: activity.id
       });
     }
   }
 
+  private async handleGiftCardActivityUpdated(event: WebhookEvent) {
+    // Gift card activity data is nested inside data.object.gift_card_activity
+    const activity = event.data.object.gift_card_activity;
+    console.log(`Gift card activity updated: ${activity.type} for card ${activity.gift_card_gan}`);
+    console.log(`  Activity ID: ${activity.id}`);
+    console.log(`  New Balance: $${activity.gift_card_balance_money.amount / 100}`);
+    
+    if (activity.import_activity_details) {
+      console.log(`  Import Amount: $${activity.import_activity_details.amount_money.amount / 100}`);
+    }
+    
+    // Update balance in database
+    if (activity.gift_card_gan) {
+      const localCard = await storage.getGiftCardByCode(activity.gift_card_gan);
+      if (localCard) {
+        const balance = activity.gift_card_balance_money?.amount ?
+          (Number(activity.gift_card_balance_money.amount) / 100).toString() : '0';
+        await storage.updateGiftCardBalance(localCard.id, balance);
+      }
+    }
+  }
+
   private async handleGiftCardCustomerLinked(event: WebhookEvent) {
+    const giftCard = event.data.object.gift_card;
+    const linkedCustomerId = event.data.object.linked_customer_id;
+    
     console.log(`Gift card linked to customer:`, event.data);
+    console.log(`  Gift Card ID: ${giftCard.id}`);
+    console.log(`  GAN: ${giftCard.gan}`);
+    console.log(`  Linked Customer ID: ${linkedCustomerId}`);
+    console.log(`  Customer IDs: ${giftCard.customer_ids?.join(', ')}`);
   }
 
   private async handleGiftCardCustomerUnlinked(event: WebhookEvent) {
+    const giftCard = event.data.object.gift_card;
+    const unlinkedCustomerId = event.data.object.unlinked_customer_id;
+    
     console.log(`Gift card unlinked from customer:`, event.data);
+    console.log(`  Gift Card ID: ${giftCard.id}`);
+    console.log(`  GAN: ${giftCard.gan}`);
+    console.log(`  Unlinked Customer ID: ${unlinkedCustomerId}`);
   }
 
   // Refund event handlers

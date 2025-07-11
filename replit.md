@@ -121,6 +121,29 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 11, 2025 - Phase 21: Complete Square Gift Card Webhook Integration
+- **Gift Card Webhook Processing**: All 6 gift card webhook types fully implemented
+  - gift_card.created: Tracks new gift cards in NOT_ACTIVE state
+  - gift_card.updated: Monitors balance changes from $0 to $30
+  - gift_card.customer_linked: Links gift cards to customer IDs
+  - gift_card.customer_unlinked: Tracks customer disassociation
+  - gift_card.activity.created: Records ACTIVATE events with initial balance
+  - gift_card.activity.updated: Handles IMPORT and other activity updates
+- **Database Connection Optimization**: Upgraded to Neon pooler URL
+  - Changed from standard URL to pooler URL (`.neon.tech` to `-pooler.neon.tech`)
+  - Reduced max connections from 20 to 10 for better pooler efficiency
+  - Improved connection handling for production environments
+- **Enhanced Webhook Data Access**: Fixed nested data structure parsing
+  - Gift card data properly accessed via `event.data.object.gift_card`
+  - Activity data properly accessed via `event.data.object.gift_card_activity`
+  - Customer linking properly tracks linked/unlinked customer IDs
+  - All webhook handlers now display complete event details
+- **Production-Ready Gift Card Integration**: Complete lifecycle tracking
+  - GAN (Gift Account Number) syncing with local database
+  - Real-time balance updates from Square to local records
+  - Customer association tracking for personalized features
+  - Complete audit trail with activity logging
+
 ### January 11, 2025 - Phase 20: Square API Integration Complete - Production Ready
 - **Square Services Infrastructure**: Complete integration with Square APIs for payment processing
   - SquarePaymentsService: Full payment creation, status tracking, and customer management
