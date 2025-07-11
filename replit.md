@@ -121,6 +121,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 11, 2025 - Phase 9: Fee Management System Complete
+- **Database Schema**: Added fee_configurations table for dynamic fee management
+  - Supports both fixed amount and percentage-based fees
+  - Includes min/max amount constraints for percentage fees
+  - Tracks creation and update metadata with user attribution
+- **Backend Implementation**: Complete fee management infrastructure
+  - CRUD operations for fee configurations (admin-only)
+  - Public endpoint for active fees in shopping flow
+  - Integration with gift card purchase calculations
+- **Frontend Components**: Admin fee management interface
+  - Fee Management page with create, edit, delete, and toggle functionality
+  - Dynamic fee calculation in Shop page based on design selection
+  - Price breakdown showing itemized fees before purchase
+- **Default Fee Structure**: Pre-configured with 5 fee types
+  - Standard Processing Fee: $2.95 (classic/love designs)
+  - Premium Design Fee: $5.95 (premium designs)
+  - Corporate Volume Fee: 3.5% (bulk purchases)
+  - Rush Delivery Fee: $9.95 (expedited delivery)
+  - Video Message Fee: $4.95 (video messages)
+
 ### July 11, 2025 - Phase 8: Order History Feature Complete
 - **Database Schema Updates**: Added order tracking fields
   - Added `delivery_status` column to gift_cards table (pending/sent/delivered/failed)
