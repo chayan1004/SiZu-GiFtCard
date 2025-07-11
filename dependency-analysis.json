@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-07-11T21:38:27.136Z",
+  "safeUpdates": [
+    "@tanstack/react-query@5.83.0",
+    "@playwright/test@1.54.1",
+    "playwright@1.54.1",
+    "drizzle-orm@0.44.2",
+    "drizzle-kit@0.31.4",
+    "drizzle-zod@0.8.2",
+    "typescript@5.8.3",
+    "lucide-react@0.525.0",
+    "zod-validation-error@3.5.3",
+    "@hookform/resolvers@5.1.1",
+    "framer-motion@12.23.3"
+  ],
+  "riskyUpdates": [
+    "date-fns@4.1.0",
+    "react-day-picker@9.8.0",
+    "recharts@3.1.0",
+    "react-resizable-panels@3.0.3",
+    "tailwind-merge@3.3.1"
+  ],
+  "breakingUpdates": [
+    "react@19.1.0",
+    "react-dom@19.1.0",
+    "express@5.1.0",
+    "tailwindcss@4.1.11",
+    "vite@6.3.5",
+    "zod@4.0.5"
+  ],
+  "securityStatus": "good",
+  "recommendations": "Apply safe updates immediately, plan major updates carefully"
+}
