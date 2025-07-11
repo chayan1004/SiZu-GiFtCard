@@ -99,19 +99,20 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
-                className={`card-3d relative p-8 rounded-2xl ${design.gradient} border border-white/20 transform hover:scale-105 transition-all duration-300 cursor-pointer ${
-                  design.id === 'sakura-dreams' ? 'anime-glow-pink anime-card-sakura' : 
-                  design.id === 'neko-paradise' ? 'anime-glow-purple anime-card-neko' : 
-                  'anime-glow-cyan anime-card-cyber'
+                className={`card-3d relative rounded-2xl border border-white/20 transform hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden ${
+                  design.id === 'sakura-dreams' ? 'anime-bg-sakura anime-glow-pink' : 
+                  design.id === 'neko-paradise' ? 'anime-bg-neko anime-glow-purple' : 
+                  'anime-bg-cyber anime-glow-cyan'
                 } ${activeCard === index ? 'animate-pulse-glow' : ''}`}
                 onClick={() => setActiveCard(index)}
               >
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+                <div className="relative z-10 p-8">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-4">
                     {design.icon}
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">${design.amount}.00</h3>
-                  <p className="text-gray-300 text-sm">{design.description}</p>
+                  <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">${design.amount}.00</h3>
+                  <p className="text-white/90 text-sm drop-shadow-md">{design.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -251,34 +252,20 @@ export default function Landing() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 className="glassmorphism rounded-2xl p-6 hover:scale-105 transition-transform duration-300 card-hover-glow"
               >
-                <div className={`aspect-video ${design.gradient} rounded-xl mb-6 flex items-center justify-center relative overflow-hidden ${
-                  design.id === 'sakura-dreams' ? 'anime-glow-pink' : 
-                  design.id === 'neko-paradise' ? 'anime-glow-purple' : 
-                  'anime-glow-cyan'
+                <div className={`aspect-video rounded-xl mb-6 flex items-center justify-center relative overflow-hidden ${
+                  design.id === 'sakura-dreams' ? 'anime-bg-sakura anime-glow-pink' : 
+                  design.id === 'neko-paradise' ? 'anime-bg-neko anime-glow-purple' : 
+                  'anime-bg-cyber anime-glow-cyan'
                 }`}>
-                  <div className="text-center relative z-10">
+                  {/* Gift card overlay content */}
+                  <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+                  <div className="text-center relative z-10 bg-white/10 backdrop-blur-md rounded-lg p-4 border border-white/20">
                     <div className="w-12 h-12 text-white mx-auto mb-2">
                       {design.icon}
                     </div>
-                    <p className="text-white font-semibold">SiZu Gift Card</p>
+                    <p className="text-white font-bold text-lg">SiZu Gift Card</p>
+                    <p className="text-white/80 text-sm mt-1">${design.amount}.00</p>
                   </div>
-                  {/* Anime overlay effects */}
-                  {design.id === 'sakura-dreams' && (
-                    <div className="absolute inset-0 opacity-30">
-                      <div className="absolute top-4 left-4 w-8 h-8 bg-pink-300 rounded-full animate-pulse"></div>
-                      <div className="absolute bottom-4 right-4 w-6 h-6 bg-pink-400 rounded-full animate-bounce"></div>
-                    </div>
-                  )}
-                  {design.id === 'neko-paradise' && (
-                    <div className="absolute inset-0 opacity-30">
-                      <div className="absolute top-8 right-8 text-4xl animate-bounce">😺</div>
-                    </div>
-                  )}
-                  {design.id === 'cyber-tokyo' && (
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/50 to-transparent"></div>
-                    </div>
-                  )}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{design.name}</h3>
                 <p className="text-gray-300 mb-4">{design.description}</p>
