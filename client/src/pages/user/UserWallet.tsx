@@ -65,7 +65,7 @@ interface Transaction {
 
 export default function UserWallet() {
   const [, setLocation] = useLocation();
-  const { user } = useCustomerAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

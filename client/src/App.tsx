@@ -40,11 +40,7 @@ import OrderDetails from "@/pages/OrderDetails";
 import Revenue from "@/pages/Revenue";
 import FeeManagement from "@/pages/FeeManagement";
 import ReceiptView from "@/pages/ReceiptView";
-import CustomerLogin from "@/pages/CustomerLogin";
-import CustomerRegister from "@/pages/CustomerRegister";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import VerifyOTP from "@/pages/VerifyOTP";
+// Customer authentication components removed - using Replit Auth only
 import UserWallet from "@/pages/user/UserWallet";
 import UserTransactions from "@/pages/user/UserTransactions";
 import UserReports from "@/pages/user/UserReports";
@@ -114,10 +110,10 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/login" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/register" component={CustomerRegister} />
-          <Route path="/verify-otp" component={VerifyOTP} />
-          <Route path="/forgot-password" component={ForgotPassword} />
-          <Route path="/reset-password/:token" component={ResetPassword} />
+          <Route path="/register" component={() => { window.location.href = '/api/login'; return null; }} />
+          <Route path="/verify-otp" component={() => { window.location.href = '/api/login'; return null; }} />
+          <Route path="/forgot-password" component={() => { window.location.href = '/api/login'; return null; }} />
+          <Route path="/reset-password/:token" component={() => { window.location.href = '/api/login'; return null; }} />
           <Route path="/admin-login" component={Login} />
           <Route path="/dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
           <Route path="/user-dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
