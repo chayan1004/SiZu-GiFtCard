@@ -57,26 +57,26 @@ export default function Shop() {
 
   // Calculate total price based on selected design and amount
   const calculateTotalPrice = () => {
-    const amount = form.watch('initialAmount') || 0;
+    const amount = Number(form.watch('initialAmount')) || 0;
     const design = form.watch('design');
     let totalFees = 0;
 
-    if (activeFees.length > 0) {
+    if (activeFees && activeFees.length > 0) {
       // Add design-specific fee
       if (design === 'premium') {
         const premiumFee = activeFees.find((fee: any) => fee.feeType === 'premium');
-        if (premiumFee) {
-          totalFees += parseFloat(premiumFee.feeAmount);
+        if (premiumFee && premiumFee.feeAmount) {
+          totalFees += parseFloat(premiumFee.feeAmount) || 0;
         }
       } else if (design === 'classic' || design === 'love') {
         const standardFee = activeFees.find((fee: any) => fee.feeType === 'standard');
-        if (standardFee) {
-          totalFees += parseFloat(standardFee.feeAmount);
+        if (standardFee && standardFee.feeAmount) {
+          totalFees += parseFloat(standardFee.feeAmount) || 0;
         }
       }
     }
 
-    return amount + totalFees;
+    return Number(amount + totalFees);
   };
 
   const createGiftCardMutation = useMutation({
@@ -385,7 +385,7 @@ export default function Shop() {
                         <div className="border-t border-white/20 pt-4 space-y-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-300">Gift Card Amount:</span>
-                            <span className="text-white">${form.watch('initialAmount') || 0}</span>
+                            <span className="text-white">${Number(form.watch('initialAmount') || 0).toFixed(2)}</span>
                           </div>
                           {activeFees.length > 0 && (
                             <>

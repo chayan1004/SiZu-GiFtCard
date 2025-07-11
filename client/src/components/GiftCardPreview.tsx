@@ -58,7 +58,7 @@ export default function GiftCardPreview({
         {/* Amount */}
         <div className="text-center">
           <div className="text-4xl font-bold mb-2">
-            ${amount.toFixed(2)}
+            ${Number(amount || 0).toFixed(2)}
           </div>
           <div className="text-sm opacity-80">Gift Card Value</div>
         </div>
