@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Gift, CreditCard, Scan, Shield, Sparkles, Star, Search, ArrowDownCircle, Plus, History } from "lucide-react";
 import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import GiftCardPreview from "@/components/GiftCardPreview";
 import { useLogin } from "@/hooks/useLogin";
-import { 
-  PageContainer, 
-  GradientButton,
-  GlassCard,
-  Section 
-} from "@/components/DesignSystem";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function Landing() {
   const { handleLogin } = useLogin();
@@ -58,7 +53,7 @@ export default function Landing() {
   }, []);
 
   return (
-    <PageContainer>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation onLogin={handleLogin} />
       
       {/* Hero Section */}
@@ -78,19 +73,19 @@ export default function Landing() {
               Send the perfect gift instantly. Powered by Square, secured by blockchain technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <GradientButton 
+              <Button 
                 onClick={() => window.location.href = '/shop'}
-                className="px-8 py-4 text-lg font-semibold"
+                className="gradient-primary text-white px-8 py-4 text-lg font-semibold hover:scale-105 transition-transform neon-glow btn-hover-lift"
               >
                 Shop Gift Cards
-              </GradientButton>
-              <GradientButton 
+              </Button>
+              <Button 
                 variant="outline" 
-                className="px-8 py-4 text-lg font-semibold"
+                className="glassmorphism text-white border-white/20 px-8 py-4 text-lg font-semibold hover:scale-105 transition-transform"
                 onClick={() => window.location.href = '/balance'}
               >
                 Check Balance
-              </GradientButton>
+              </Button>
             </div>
           </motion.div>
           
@@ -777,12 +772,12 @@ export default function Landing() {
       </footer>
 
       {/* Floating Action Button */}
-      <GradientButton 
+      <Button 
         onClick={handleLogin}
-        className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-lg hover:scale-110 transition-transform"
+        className="fixed bottom-8 right-8 w-16 h-16 gradient-primary rounded-full shadow-lg hover:scale-110 transition-transform neon-glow"
       >
         <Gift className="w-8 h-8 text-white" />
-      </GradientButton>
-    </PageContainer>
+      </Button>
+    </div>
   );
 }

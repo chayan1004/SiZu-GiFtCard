@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { useLogin } from "@/hooks/useLogin";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,16 +26,6 @@ import GiftCardPreview from "@/components/GiftCardPreview";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { 
-  PageContainer, 
-  PageHeader, 
-  FormContainer, 
-  GradientButton,
-  GlassCard,
-  LoadingSpinner,
-  Section 
-} from "@/components/DesignSystem";
-import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 // Extended schema with advanced customization options
 const createGiftCardSchema = z.object({

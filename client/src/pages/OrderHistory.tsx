@@ -1,219 +1,218 @@
-import { useState } from 'react';
-import { useAuth } from "@/hooks/useAuth";
-import { useLogin } from "@/hooks/useLogin";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, CreditCard, Download, Eye, Search, Filter } from "lucide-react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
-import Navigation from "@/components/Navigation";
-import { 
-  PageContainer, 
-  PageHeader, 
-  GradientButton,
-  GlassCard,
-  LoadingSpinner 
-} from "@/components/DesignSystem";
-import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { ChevronLeft, ChevronRight, Package, CreditCard, User, Calendar, Gift } from "lucide-react";
+import { OrderHistoryResponse } from "@shared/schema";
 
 export default function OrderHistory() {
-  const { user, isAuthenticated } = useAuth();
-  const { handleLogin } = useLogin();
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [, setLocation] = useLocation();
+  const pageSize = 10;
 
-  // Fetch orders
-  const { data: orders, isLoading } = useQuery({
-    queryKey: ['/api/user/orders', page, searchTerm, statusFilter],
-    enabled: isAuthenticated,
-    retry: false,
+  const { data, isLoading, isError } = useQuery<OrderHistoryResponse>({
+    queryKey: ["/api/user/orders", page, pageSize],
+    queryFn: async () => {
+      const response = await fetch(`/api/user/orders?page=${page}&pageSize=${pageSize}`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch order history");
+      }
+      return response.json();
+    },
   });
 
-  const handleLogout = () => {
-    toast({
-      title: "Logging out...",
-      description: "You will be redirected to the login page.",
-    });
-    setTimeout(() => {
-      window.location.href = '/api/logout';
-    }, 1000);
+  const getDeliveryStatusBadge = (status: string) => {
+    const statusMap: Record<string, { variant: "default" | "secondary" | "success" | "destructive", label: string }> = {
+      pending: { variant: "secondary", label: "Pending" },
+      sent: { variant: "success", label: "Sent" },
+      delivered: { variant: "success", label: "Delivered" },
+      failed: { variant: "destructive", label: "Failed" },
+    };
+    
+    const statusInfo = statusMap[status] || { variant: "default", label: status };
+    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
 
-  const handleViewOrder = (orderId: string) => {
-    window.location.href = `/orders/${orderId}`;
+  const getDesignBadge = (design: string) => {
+    const designMap: Record<string, { variant: "default" | "secondary" | "outline", label: string }> = {
+      classic: { variant: "default", label: "Classic" },
+      love: { variant: "secondary", label: "Love" },
+      premium: { variant: "outline", label: "Premium" },
+    };
+    
+    const designInfo = designMap[design] || { variant: "default", label: design };
+    return <Badge variant={designInfo.variant}>{designInfo.label}</Badge>;
   };
 
-  const handleDownloadReceipt = (orderId: string) => {
-    window.open(`/api/receipts/${orderId}/download`, '_blank');
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'failed': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getDeliveryStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered': return 'bg-green-500';
-      case 'sent': return 'bg-blue-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'failed': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  if (!isAuthenticated) {
+  if (isLoading) {
     return (
-      <PageContainer>
-        <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpinner size="lg" />
+      <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold">Order History</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">View your past gift card purchases</p>
         </div>
-      </PageContainer>
+        <div className="space-y-3 sm:space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 sm:p-6">
+                <Skeleton className="h-16 sm:h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
+  if (isError) {
+    return (
+      <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
+        <Card>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <p className="text-muted-foreground text-sm sm:text-base">Failed to load order history. Please try again later.</p>
+            <Button 
+              className="mt-3 sm:mt-4 h-9 sm:h-11 text-sm sm:text-base px-4 sm:px-6" 
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const { orders, pagination } = data || { orders: [], pagination: { page: 1, pageSize: 10, totalCount: 0, totalPages: 0 } };
+
   return (
-    <PageContainer>
-      <Navigation 
-        user={user} 
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-        showDashboard={user?.role === 'admin'}
-      />
-      
-      <div className="pt-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <PageHeader
-            title="Order History"
-            subtitle="View and manage your gift card orders"
-          />
+    <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">Order History</h1>
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">View your past gift card purchases</p>
+      </div>
 
-          {/* Filters */}
-          <div className="mb-8 flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                placeholder="Search orders..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder-gray-400"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48 bg-white/10 border-white/20 text-white">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Orders</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
-          ) : orders && orders.length > 0 ? (
-            <div className="space-y-4">
-              {orders.map((order: any) => (
-                <GlassCard key={order.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
-                          <CreditCard className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">
-                            {order.design} Gift Card
-                          </h3>
-                          <p className="text-gray-300 text-sm">
-                            Order #{order.id} • {new Date(order.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge className={`${getStatusColor(order.status)} text-white`}>
-                          {order.status}
-                        </Badge>
-                        <Badge className={`${getDeliveryStatusColor(order.deliveryStatus)} text-white`}>
-                          {order.deliveryStatus}
-                        </Badge>
-                      </div>
+      {orders.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 sm:p-12 text-center">
+            <Package className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-2">No orders yet</h3>
+            <p className="text-muted-foreground mb-3 sm:mb-4 text-sm sm:text-base">
+              You haven't purchased any gift cards yet.
+            </p>
+            <Button onClick={() => setLocation("/shop")} className="h-9 sm:h-11 text-sm sm:text-base px-4 sm:px-6">
+              Shop Gift Cards
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3 sm:space-y-4">
+          {orders.map((order) => (
+            <Card key={order.id} className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setLocation(`/orders/${order.id}`)}>
+              <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg sm:text-xl">
+                      ${order.amount}
+                    </CardTitle>
+                    <CardDescription className="mt-0.5 sm:mt-1 text-xs sm:text-sm">
+                      Order #{order.code}
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
+                    {getDesignBadge(order.design)}
+                    {getDeliveryStatusBadge(order.deliveryStatus)}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Date:</span>
+                      <span>{format(new Date(order.createdAt), "MMM d, yyyy")}</span>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <p className="text-gray-400 text-sm">Amount</p>
-                        <p className="text-white font-semibold">${order.initialAmount.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Current Balance</p>
-                        <p className="text-white font-semibold">${order.currentBalance.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 text-sm">Recipient</p>
-                        <p className="text-white">{order.recipientEmail || 'Self'}</p>
-                      </div>
-                    </div>
-
-                    {order.customMessage && (
-                      <div className="mb-4 p-3 bg-white/5 rounded-lg">
-                        <p className="text-gray-400 text-sm mb-1">Message</p>
-                        <p className="text-white">{order.customMessage}</p>
+                    
+                    {order.recipientName && (
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Recipient:</span>
+                        <span>{order.recipientName}</span>
                       </div>
                     )}
-
-                    <div className="flex justify-end space-x-2">
-                      <GradientButton
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewOrder(order.id)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Details
-                      </GradientButton>
-                      <GradientButton
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadReceipt(order.id)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Receipt
-                      </GradientButton>
-                    </div>
-                  </CardContent>
-                </GlassCard>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Orders Found</h3>
-              <p className="text-gray-300 mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? "No orders match your search criteria" 
-                  : "You haven't made any orders yet"}
-              </p>
-              <GradientButton onClick={() => window.location.href = '/shop'}>
-                Shop Gift Cards
-              </GradientButton>
-            </div>
-          )}
+                    
+                    {order.senderName && (
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                        <Gift className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">From:</span>
+                        <span>{order.senderName}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-1.5 sm:space-y-2">
+                    {order.paymentMethodLast4 && (
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                        <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Payment:</span>
+                        <span>
+                          {order.paymentMethodType} •••• {order.paymentMethodLast4}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {order.isRedeemed && order.redeemedAmount && (
+                      <div className="text-xs sm:text-sm">
+                        <span className="text-muted-foreground">Redeemed:</span>
+                        <span className="ml-1.5 sm:ml-2 text-orange-500 font-medium">
+                          ${order.redeemedAmount} used
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
-    </PageContainer>
+      )}
+
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 sm:gap-4 mt-6 sm:mt-8">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="h-8 sm:h-9 text-xs sm:text-sm px-2 sm:px-3"
+          >
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Previous</span>
+          </Button>
+          
+          <div className="text-xs sm:text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === pagination.totalPages}
+            onClick={() => setPage(page + 1)}
+            className="h-8 sm:h-9 text-xs sm:text-sm px-2 sm:px-3"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
