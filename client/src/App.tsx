@@ -109,7 +109,7 @@ function Router() {
           <Route path="/admin-login" component={Login} />
           <Route path="/dashboard" component={CustomerLogin} />
           <Route path="/user-dashboard" component={CustomerLogin} />
-          <Route path="/shop" component={PublicShop} />
+          <Route path="/shop" component={SimpleShop} />
           <Route path="/balance" component={PublicBalance} />
           <Route path="/redeem" component={PublicRedeem} />
           <Route path="/recharge" component={PublicRecharge} />
