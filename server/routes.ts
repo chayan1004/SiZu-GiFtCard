@@ -231,6 +231,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to check balance" });
     }
   });
+  
+  // Alternative check balance endpoint (Public) 
+  app.post('/api/giftcards/check-balance', giftCardRateLimit, async (req, res) => {
+    try {
+      const { code } = checkBalanceSchema.parse(req.body);
+      
+      const giftCard = await storage.getGiftCardByCode(code);
+      if (!giftCard) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+
+      if (!giftCard.isActive) {
+        return res.status(400).json({ message: "Gift card is not active" });
+      }
+
+      res.json({
+        code: giftCard.code,
+        balance: parseFloat(giftCard.currentBalance),
+        isActive: giftCard.isActive,
+      });
+    } catch (error) {
+      console.error("Error checking balance:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to check balance" });
+    }
+  });
 
   // Redeem gift card (Public)
   app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardAmount, async (req, res) => {
@@ -318,6 +346,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all gift cards (Admin only)
   app.get('/api/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const giftCards = await storage.getAllGiftCards();
+      res.json(giftCards);
+    } catch (error) {
+      console.error("Error fetching gift cards:", error);
+      res.status(500).json({ message: "Failed to fetch gift cards" });
+    }
+  });
+  
+  // Admin endpoint alias for consistency
+  app.get('/api/admin/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const giftCards = await storage.getAllGiftCards();
       res.json(giftCards);
@@ -507,6 +546,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // List user's saved cards
   app.get('/api/cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cards = await storage.getUserSavedCards(userId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching saved cards:", error);
+      res.status(500).json({ message: "Failed to fetch saved cards" });
+    }
+  });
+  
+  // Alias endpoint for consistency with user namespace
+  app.get('/api/user/saved-cards', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const cards = await storage.getUserSavedCards(userId);

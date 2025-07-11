@@ -81,30 +81,39 @@ export const httpsRedirect = (req: Request, res: Response, next: NextFunction) =
 export const validateInput = (req: Request, res: Response, next: NextFunction) => {
   const body = req.body;
   
-  // Check for common injection patterns
+  // Check for common injection patterns with specific error messages
   const dangerousPatterns = [
-    /('|\\')|(;|\\;)|\||\*/,
-    /<script[^>]*>.*?<\/script>/gi,
-    /javascript\s*:/gi,
-    /vbscript\s*:/gi,
-    /onload\s*=/gi,
-    /onerror\s*=/gi,
+    { pattern: /('|\\')|(;|\\;)|\||\*/, message: 'SQL injection characters detected. Please remove special characters like quotes, semicolons, or pipes.' },
+    { pattern: /<script[^>]*>.*?<\/script>/gi, message: 'Script tags are not allowed. Please remove any HTML script elements.' },
+    { pattern: /javascript\s*:/gi, message: 'JavaScript protocol is not allowed in input fields.' },
+    { pattern: /vbscript\s*:/gi, message: 'VBScript protocol is not allowed in input fields.' },
+    { pattern: /onload\s*=/gi, message: 'Event handlers are not allowed. Please remove "onload" attributes.' },
+    { pattern: /onerror\s*=/gi, message: 'Event handlers are not allowed. Please remove "onerror" attributes.' },
   ];
 
-  const checkValue = (value: any): boolean => {
+  const checkValue = (value: any): string | null => {
     if (typeof value === 'string') {
-      return dangerousPatterns.some(pattern => pattern.test(value));
+      for (const { pattern, message } of dangerousPatterns) {
+        if (pattern.test(value)) {
+          return message;
+        }
+      }
     }
     if (typeof value === 'object' && value !== null) {
-      return Object.values(value).some(checkValue);
+      for (const val of Object.values(value)) {
+        const result = checkValue(val);
+        if (result) return result;
+      }
     }
-    return false;
+    return null;
   };
 
-  if (checkValue(body)) {
+  const errorMessage = checkValue(body);
+  if (errorMessage) {
     return res.status(400).json({ 
       error: 'Invalid input detected',
-      message: 'Request contains potentially dangerous content'
+      message: errorMessage,
+      suggestion: 'Please ensure your input contains only regular text and numbers without special characters or code.'
     });
   }
 
