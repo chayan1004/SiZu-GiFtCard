@@ -291,6 +291,90 @@
     to { transform: translateY(100%); }
   }
   
+  /* Premium 3D Card Effects */
+  .card-3d-premium {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+  
+  .glassmorphism-premium {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 8px 32px 0 rgba(31, 38, 135, 0.37),
+      inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  }
+  
+  .rotate-3d {
+    animation: rotate3d 4s ease-in-out infinite;
+  }
+  
+  @keyframes rotate3d {
+    0%, 100% { transform: rotateY(0deg) rotateX(0deg); }
+    25% { transform: rotateY(15deg) rotateX(5deg); }
+    50% { transform: rotateY(0deg) rotateX(-5deg); }
+    75% { transform: rotateY(-15deg) rotateX(5deg); }
+  }
+  
+  .premium-card-float {
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.3),
+      0 0 120px rgba(147, 51, 234, 0.2);
+  }
+  
+  /* Grid Pattern Background */
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
+  /* Animated Delay Utility */
+  .delay-1000 {
+    animation-delay: 1s;
+  }
+  
+  /* Premium Hover Effects */
+  .glassmorphism-premium:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 12px 48px 0 rgba(31, 38, 135, 0.45),
+      inset 0 2px 8px rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  /* Interactive 3D Transform */
+  @keyframes float3d {
+    0%, 100% { 
+      transform: translateY(0) rotateX(0) rotateY(0); 
+    }
+    33% { 
+      transform: translateY(-10px) rotateX(5deg) rotateY(5deg); 
+    }
+    66% { 
+      transform: translateY(-5px) rotateX(-5deg) rotateY(-5deg); 
+    }
+  }
+  
+  .interactive-3d {
+    animation: float3d 6s ease-in-out infinite;
+  }
+  
+  /* Luxury Gradient Overlays */
+  .luxury-gradient {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 215, 0, 0.1) 0%,
+      rgba(192, 192, 192, 0.1) 25%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(192, 192, 192, 0.1) 75%,
+      rgba(255, 215, 0, 0.1) 100%
+    );
+  }
+  
   .card-3d {
     transform-style: preserve-3d;
     perspective: 1000px;

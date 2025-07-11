@@ -399,6 +399,283 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Premium 3D Feature Cards Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black/40 to-purple-900/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">
+              Premium Features
+              <span className="text-gradient block text-3xl md:text-4xl mt-2">Next-Gen Gift Card Platform</span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">Experience the future of digital gifting with our cutting-edge technology and stunning visual effects</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <Shield className="w-10 h-10" />,
+                title: "Military-Grade Security",
+                description: "256-bit encryption with biometric authentication and real-time fraud detection powered by AI",
+                gradient: "from-cyan-500 to-blue-600",
+                delay: 0
+              },
+              {
+                icon: <Sparkles className="w-10 h-10" />,
+                title: "Instant Global Delivery",
+                description: "Lightning-fast worldwide delivery with smart timezone detection and multi-language support",
+                gradient: "from-purple-500 to-pink-600",
+                delay: 0.2
+              },
+              {
+                icon: <Star className="w-10 h-10" />,
+                title: "AI-Powered Personalization",
+                description: "Smart design recommendations based on recipient preferences and occasion analysis",
+                gradient: "from-orange-500 to-red-600",
+                delay: 0.4
+              }
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, rotateY: -30, z: -100 }}
+                whileInView={{ opacity: 1, rotateY: 0, z: 0 }}
+                transition={{ duration: 1, delay: feature.delay }}
+                whileHover={{ rotateY: 10, scale: 1.05 }}
+                className="card-3d-premium relative"
+              >
+                <div className="glassmorphism-premium rounded-3xl p-8 h-full border border-white/20 backdrop-blur-xl relative overflow-hidden group">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
+                  <div className="relative z-10">
+                    <div className={`w-20 h-20 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3d`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">{feature.title}</h3>
+                    <p className="text-gray-300 leading-relaxed">{feature.description}</p>
+                  </div>
+                  <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-gradient-to-br from-white/5 to-white/10 rounded-full blur-3xl"></div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Animated Luxury Features Gallery */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black/30 relative">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Luxury Experience</h2>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">Every detail crafted for the ultimate premium gifting experience</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Left side - Floating 3D cards */}
+            <motion.div 
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1 }}
+              className="relative h-[600px]"
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-80 h-80">
+                  {[0, 1, 2].map((index) => (
+                    <motion.div
+                      key={index}
+                      className="absolute inset-0"
+                      initial={{ rotateZ: index * 20, scale: 1 - index * 0.1 }}
+                      animate={{ 
+                        rotateZ: [index * 20, index * 20 + 10, index * 20],
+                        y: [0, -20, 0]
+                      }}
+                      transition={{ duration: 4, repeat: Infinity, delay: index * 0.5 }}
+                    >
+                      <div className={`w-full h-full rounded-3xl ${
+                        index === 0 ? 'anime-bg-sakura' : 
+                        index === 1 ? 'anime-bg-neko' : 
+                        'anime-bg-cyber'
+                      } shadow-2xl border border-white/20 premium-card-float`}>
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-3xl"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <h3 className="text-2xl font-bold mb-2">Premium Gift Card</h3>
+                            <p className="text-4xl font-bold">${(index + 1) * 100}.00</p>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right side - Feature list */}
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1 }}
+              className="space-y-6"
+            >
+              {[
+                {
+                  title: "Holographic Effects",
+                  description: "Stunning holographic animations that react to mouse movement",
+                  icon: "✨"
+                },
+                {
+                  title: "AR Preview",
+                  description: "Preview gift cards in augmented reality before sending",
+                  icon: "🔮"
+                },
+                {
+                  title: "Voice Messages",
+                  description: "Add personalized voice messages to your gift cards",
+                  icon: "🎤"
+                },
+                {
+                  title: "Blockchain Verified",
+                  description: "Every transaction secured and verified on the blockchain",
+                  icon: "🔗"
+                },
+                {
+                  title: "NFT Integration",
+                  description: "Convert your gift cards into collectible NFTs",
+                  icon: "🎨"
+                },
+                {
+                  title: "Multi-Currency",
+                  description: "Support for 150+ currencies including crypto",
+                  icon: "💱"
+                }
+              ].map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ x: 10 }}
+                  className="glassmorphism rounded-2xl p-6 border border-white/10 hover:border-white/30 transition-all group"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">{feature.icon}</div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-gradient transition-all">{feature.title}</h3>
+                      <p className="text-gray-400">{feature.description}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive 3D Showcase */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-purple-900/20 to-black/40 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Interactive Experience</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">Immerse yourself in our revolutionary 3D gift card customization studio</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "3D Card Designer", value: "360°", description: "Full rotation preview" },
+              { title: "Animation Library", value: "100+", description: "Premium animations" },
+              { title: "Sound Effects", value: "50+", description: "Immersive audio" },
+              { title: "AR Filters", value: "25+", description: "Reality effects" }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, rotateZ: 2 }}
+                className="glassmorphism-premium rounded-3xl p-8 text-center border border-white/20 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-cyan-600/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <h3 className="text-5xl font-bold text-gradient mb-2">{stat.value}</h3>
+                <h4 className="text-xl font-semibold text-white mb-2">{stat.title}</h4>
+                <p className="text-gray-400">{stat.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Statistics Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-black/40 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Platform Excellence</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">Join thousands of satisfied customers experiencing the future of digital gifting</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                metric: "99.9%",
+                label: "Uptime Guarantee",
+                description: "Enterprise-grade reliability",
+                icon: "🛡️"
+              },
+              {
+                metric: "< 100ms",
+                label: "Transaction Speed",
+                description: "Lightning-fast processing",
+                icon: "⚡"
+              },
+              {
+                metric: "4.9/5",
+                label: "Customer Rating",
+                description: "From 50,000+ reviews",
+                icon: "⭐"
+              }
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
+                className="text-center"
+              >
+                <div className="glassmorphism-premium rounded-3xl p-10 border border-white/20 relative overflow-hidden group hover:scale-105 transition-transform">
+                  <div className="text-6xl mb-4">{item.icon}</div>
+                  <h3 className="text-5xl font-bold text-gradient mb-2">{item.metric}</h3>
+                  <h4 className="text-2xl font-semibold text-white mb-2">{item.label}</h4>
+                  <p className="text-gray-400">{item.description}</p>
+                  <div className="absolute inset-0 luxury-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black/20">
         <div className="max-w-7xl mx-auto">
