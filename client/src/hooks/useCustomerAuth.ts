@@ -71,7 +71,8 @@ export function useCustomerAuth() {
           description: "You have successfully logged in."
         });
         
-        setLocation("/dashboard/user");
+        // Force a page refresh to update the routing after login
+        window.location.href = "/dashboard/user";
         return response.user;
       }
     } catch (error: any) {
@@ -126,7 +127,8 @@ export function useCustomerAuth() {
         description: "You have been successfully logged out."
       });
       
-      setLocation("/");
+      // Force a page refresh to update the routing after logout
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
     }
