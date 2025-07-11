@@ -8,7 +8,6 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { requireCustomerAuth, requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
-import { SquarePaymentsService } from "./services/SquarePaymentsService";
 import { PDFService } from "./services/PDFService";
 import { EmailService } from "./services/EmailService";
 import { QRService } from "./services/QRService";
@@ -51,7 +50,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const squareService = new SquareService();
   const squareCustomerService = new SquareCustomerService();
-  const paymentsService = new SquarePaymentsService();
+  
+  // Initialize payments service only if Square access token is available
+  let paymentsService: any = null;
+  try {
+    if (process.env.SQUARE_ACCESS_TOKEN) {
+      const { SquarePaymentsService } = await import('./services/SquarePaymentsService');
+      paymentsService = new SquarePaymentsService();
+    }
+  } catch (error) {
+    console.log('Square payments service not available - Square access token not provided');
+  }
 
   // Configure secure sessions
   app.use(session({
@@ -891,7 +900,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Authentication required" });
       }
-      ```
       
       // Get user's gift cards
       const giftCards = await storage.getGiftCardsByUser(user.id);

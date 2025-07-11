@@ -11,7 +11,16 @@ import {
 import { z } from 'zod';
 
 const router = Router();
-const paymentsService = new SquarePaymentsService();
+
+// Initialize payments service only if Square access token is available
+let paymentsService: SquarePaymentsService | null = null;
+try {
+  if (process.env.SQUARE_ACCESS_TOKEN) {
+    paymentsService = new SquarePaymentsService();
+  }
+} catch (error) {
+  console.log('Square payments service not available - Square access token not provided');
+}
 
 // Payment request schema
 const paymentRequestSchema = z.object({
@@ -56,7 +65,7 @@ router.post('/process',
     try {
       const paymentData = paymentRequestSchema.parse(req.body);
       
-      if (!paymentsService.isAvailable()) {
+      if (!paymentsService || !paymentsService.isAvailable()) {
         return res.status(503).json({
           success: false,
           errorMessage: 'Payment processing temporarily unavailable',
