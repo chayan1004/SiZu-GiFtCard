@@ -12,8 +12,7 @@ import { nanoid } from 'nanoid';
 
 const router = Router();
 
-// Temporary store for OAuth states (in production, use Redis or database)
-const oauthStates = new Map<string, { userId: string; expiresAt: Date }>();
+// OAuth states are now stored in database via storage interface
 
 // OAuth initiate schema
 const oauthInitiateSchema = z.object({
@@ -63,11 +62,12 @@ router.get('/square/authorize',
       const state = squareOAuthService.generateState();
       const sessionId = nanoid();
 
-      // Store state with expiration (5 minutes)
-      oauthStates.set(state, {
+      // Store state with expiration (5 minutes) in database
+      await storage.createOAuthState(
+        state,
         userId,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-      });
+        new Date(Date.now() + 5 * 60 * 1000)
+      );
 
       // Get authorization URL
       const scopes = squareOAuthService.getRequiredScopes();
@@ -117,11 +117,12 @@ router.post('/connect',
       const state = squareOAuthService.generateState();
       const sessionId = nanoid();
 
-      // Store state with expiration (5 minutes)
-      oauthStates.set(state, {
+      // Store state with expiration (5 minutes) in database
+      await storage.createOAuthState(
+        state,
         userId,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
-      });
+        new Date(Date.now() + 5 * 60 * 1000)
+      );
 
       // Get authorization URL
       const authScopes = scopes || squareOAuthService.getRequiredScopes();
@@ -169,15 +170,17 @@ router.get('/callback',
         return res.redirect('/oauth/error?error=service_unavailable');
       }
 
-      // Validate state
-      const stateData = oauthStates.get(state);
+      // Validate state from database
+      const stateData = await storage.getOAuthState(state);
       if (!stateData || stateData.expiresAt < new Date()) {
-        oauthStates.delete(state);
+        if (stateData) {
+          await storage.deleteOAuthState(state);
+        }
         return res.redirect('/oauth/error?error=invalid_state');
       }
 
-      // Clean up state
-      oauthStates.delete(state);
+      // Clean up state from database
+      await storage.deleteOAuthState(state);
 
       // Exchange code for token
       const tokenResult = await squareOAuthService.exchangeCodeForToken(code);
@@ -493,13 +496,12 @@ router.get('/scopes',
   }
 );
 
-// Clean up expired states periodically
-setInterval(() => {
-  const now = new Date();
-  for (const [state, data] of oauthStates.entries()) {
-    if (data.expiresAt < now) {
-      oauthStates.delete(state);
-    }
+// Clean up expired states periodically from database
+setInterval(async () => {
+  try {
+    await storage.cleanupExpiredOAuthStates();
+  } catch (error) {
+    console.error('Failed to cleanup expired OAuth states:', error);
   }
 }, 60 * 1000); // Every minute
 

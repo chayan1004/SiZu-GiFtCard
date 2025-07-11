@@ -495,6 +495,37 @@ export type InsertSquarePayment = typeof squarePayments.$inferInsert;
 export type WebhookEvent = typeof webhookEvents.$inferSelect;
 export type InsertWebhookEvent = typeof webhookEvents.$inferInsert;
 
+// OAuth States table (for temporary OAuth flow states)
+export const oauthStates = pgTable("oauth_states", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  state: varchar("state").notNull().unique(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+}, (table) => [
+  index("idx_oauth_states_state").on(table.state),
+  index("idx_oauth_states_expires").on(table.expiresAt),
+]);
+
+export type OAuthState = typeof oauthStates.$inferSelect;
+export type InsertOAuthState = typeof oauthStates.$inferInsert;
+
+// Rate Limiting table (for API and WebSocket rate limiting)
+export const rateLimits = pgTable("rate_limits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  identifier: varchar("identifier").notNull(), // IP address or user ID
+  endpoint: varchar("endpoint").notNull(),
+  count: integer("count").default(0).notNull(),
+  windowStart: timestamp("window_start").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_rate_limits_identifier").on(table.identifier),
+  index("idx_rate_limits_window").on(table.windowStart),
+]);
+
+export type RateLimit = typeof rateLimits.$inferSelect;
+export type InsertRateLimit = typeof rateLimits.$inferInsert;
+
 // Additional validation schemas
 export const redeemGiftCardSchema = z.object({
   code: z.string().min(1, "Gift card code is required"),

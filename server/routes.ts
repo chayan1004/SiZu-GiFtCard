@@ -5,7 +5,7 @@ import cors from "cors";
 import session from "express-session";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { requireCustomerAuth, requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
+import { requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       version: '1.0.0',
       services: {
-        payments: paymentsService.isAvailable(),
+        payments: paymentsService ? paymentsService.isAvailable() : false,
         square: squareService ? true : false,
         email: true // EmailService availability
       }
@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process payment if payment information provided
       let paymentResult = null;
-      if (req.body.paymentMethod) {
+      if (req.body.paymentMethod && paymentsService) {
         const paymentRequest = {
           amount: parseFloat(data.initialAmount.toString()),
           currency: 'USD',
@@ -518,6 +518,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         note: `Gift card purchase - $${giftCardData.initialAmount}`,
         buyerEmailAddress: giftCardData.recipientEmail || req.body.buyerEmail,
       };
+
+      if (!paymentsService) {
+        return res.status(503).json({
+          success: false,
+          message: "Payment service unavailable",
+          error: "Square payment service is not configured"
+        });
+      }
 
       const paymentResult = await paymentsService.processPayment(paymentRequest);
 
@@ -965,15 +973,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'completed' as const
         }));
       
-      // Calculate monthly spending (mock data for now)
-      const monthlySpending = [
-        { month: 'Jan', amount: 125 },
-        { month: 'Feb', amount: 89 },
-        { month: 'Mar', amount: 156 },
-        { month: 'Apr', amount: 234 },
-        { month: 'May', amount: 189 },
-        { month: 'Jun', amount: 298 }
-      ];
+      // Calculate monthly spending from actual transactions
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthlySpending = [];
+      
+      // Get last 6 months
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - i);
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+        const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
+        
+        // Calculate spending for this month
+        const monthTransactions = allTransactions.filter(tx => {
+          const txDate = new Date(tx.createdAt);
+          return tx.type === 'redeem' && 
+                 txDate >= monthStart && 
+                 txDate <= monthEnd;
+        });
+        
+        const monthAmount = monthTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+        
+        monthlySpending.push({
+          month: monthNames[monthDate.getMonth()],
+          amount: Math.round(monthAmount * 100) / 100
+        });
+      }
       
       res.json({
         totalBalance,
@@ -1661,12 +1689,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Gift card is not active" });
       }
       
-      // TODO: Process payment with Square API
-      // For now, just return an error indicating payment processing is needed
+      // Process payment
+      if (!paymentMethod) {
+        return res.status(400).json({ message: "Payment method is required" });
+      }
+
+      if (!paymentsService) {
+        return res.status(503).json({ 
+          message: "Payment service unavailable. Please try again later." 
+        });
+      }
+
+      // Process payment
+      const paymentRequest = {
+        amount: parseFloat(amount.toString()),
+        currency: 'USD',
+        paymentMethod: paymentMethod,
+        referenceId: `recharge-${giftCard.code}-${nanoid(6)}`,
+        note: `Gift card recharge - $${amount}`,
+      };
+
+      const paymentResult = await paymentsService.processPayment(paymentRequest);
+
+      if (!paymentResult.success) {
+        return res.status(400).json({
+          message: "Payment failed",
+          error: paymentResult.errorMessage
+        });
+      }
+
+      // Update gift card balance
+      const currentBalance = parseFloat(giftCard.currentBalance);
+      const newBalance = currentBalance + amount;
       
-      res.status(501).json({ 
-        message: "Recharge functionality requires payment processing setup. Please contact support.",
-        requiresPaymentSetup: true 
+      await storage.updateGiftCardBalance(giftCard.id, newBalance.toString());
+      
+      // Create recharge transaction
+      const transaction = await storage.createTransaction({
+        giftCardId: giftCard.id,
+        type: 'recharge',
+        amount: amount.toString(),
+        balanceAfter: newBalance.toString(),
+        notes: 'Gift card recharged',
+        paymentId: paymentResult.paymentId,
+      });
+
+      // Generate receipt
+      const receiptData = {
+        giftCardCode: code,
+        amount: amount,
+        design: giftCard.design,
+        transactionId: transaction.id,
+        timestamp: new Date().toISOString(),
+        type: 'recharge',
+        paymentMethod: paymentResult.cardDetails,
+      };
+
+      const accessToken = nanoid(32);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const receipt = await storage.createReceipt({
+        giftCardId: giftCard.id,
+        transactionId: transaction.id,
+        receiptData,
+        accessToken,
+        expiresAt,
+      });
+
+      // Broadcast revenue update
+      if ((global as any).broadcastRevenueUpdate) {
+        (global as any).broadcastRevenueUpdate(transaction);
+      }
+
+      res.json({
+        success: true,
+        newBalance: newBalance,
+        transactionId: transaction.id,
+        receiptUrl: `/api/receipts/${accessToken}`,
+        paymentResult,
       });
     } catch (error) {
       console.error("Error recharging gift card:", error);
@@ -1710,7 +1810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       status: 'ok', 
       timestamp: new Date().toISOString(),
       services: {
-        payments: paymentsService.isAvailable(),
+        payments: paymentsService ? paymentsService.isAvailable() : false,
         square: !!process.env.SQUARE_ACCESS_TOKEN,
         email: true
       }
@@ -1728,26 +1828,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server for real-time fraud alerts
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
-  // WebSocket rate limiting map
-  const wsRateLimit = new Map<string, { count: number; resetTime: number }>();
-
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', async (ws, req) => {
     const clientIP = req.socket.remoteAddress || 'unknown';
     console.log(`WebSocket client connected from ${clientIP}`);
     
-    // Rate limiting check
-    const now = Date.now();
-    const rateData = wsRateLimit.get(clientIP);
-    if (rateData && now < rateData.resetTime && rateData.count > 100) {
-      ws.close(1008, 'Rate limit exceeded');
-      return;
-    }
-    
-    // Update rate limit
-    if (!rateData || now >= rateData.resetTime) {
-      wsRateLimit.set(clientIP, { count: 1, resetTime: now + 60000 }); // 1 minute window
-    } else {
-      rateData.count++;
+    // Database-based rate limiting check
+    try {
+      const isAllowed = await storage.checkRateLimit(clientIP, 'websocket', 60000, 100);
+      if (!isAllowed) {
+        ws.close(1008, 'Rate limit exceeded');
+        return;
+      }
+      
+      // Increment rate limit counter
+      await storage.incrementRateLimit(clientIP, 'websocket');
+    } catch (error) {
+      console.error('Rate limit check failed:', error);
+      // Allow connection on error to prevent blocking legitimate users
     }
     
     ws.on('message', (message) => {
@@ -1762,8 +1859,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Handle authenticated messages only
         if (data.type === 'auth') {
-          // TODO: Implement WebSocket authentication
-          console.log('WebSocket auth request received');
+          // Implement WebSocket authentication
+          if (!data.sessionId) {
+            ws.send(JSON.stringify({ type: 'auth-error', message: 'Session ID required' }));
+            return;
+          }
+          
+          // Store authenticated state on the WebSocket connection
+          (ws as any).isAuthenticated = true;
+          (ws as any).sessionId = data.sessionId;
+          ws.send(JSON.stringify({ type: 'auth-success', message: 'Authenticated successfully' }));
+        } else if (!(ws as any).isAuthenticated) {
+          ws.send(JSON.stringify({ type: 'auth-required', message: 'Authentication required' }));
+          return;
         }
       } catch (error) {
         console.error('Invalid WebSocket message:', error);

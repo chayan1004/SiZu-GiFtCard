@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-07-11T16:51:49.212Z",
+  "timestamp": "2025-07-11T17:05:22.514Z",
   "summary": {
     "implemented": 8,
     "placeholders": 0,
-    "missing": 60
+    "missing": 62
   },
   "placeholderImplementations": [],
   "missingFeatures": [
@@ -177,7 +177,7 @@
       "category": "Table Operations",
       "feature": "disputes",
       "type": "MISSING_OPERATIONS",
-      "details": "CREATE, READ, UPDATE, DELETE"
+      "details": "CREATE, READ, DELETE"
     },
     {
       "category": "Table Operations",
@@ -189,19 +189,19 @@
       "category": "Table Operations",
       "feature": "emailTemplates",
       "type": "MISSING_OPERATIONS",
-      "details": "CREATE, READ, UPDATE, DELETE"
+      "details": "CREATE, READ, DELETE"
     },
     {
       "category": "Table Operations",
       "feature": "giftCardDesigns",
       "type": "MISSING_OPERATIONS",
-      "details": "CREATE, READ, UPDATE, DELETE"
+      "details": "CREATE, READ, DELETE"
     },
     {
       "category": "Table Operations",
       "feature": "auditLogs",
       "type": "MISSING_OPERATIONS",
-      "details": "CREATE, READ, UPDATE, DELETE"
+      "details": "CREATE, UPDATE, DELETE"
     },
     {
       "category": "Table Operations",
@@ -218,6 +218,18 @@
     {
       "category": "Table Operations",
       "feature": "webhookEvents",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "oauthStates",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "rateLimits",
       "type": "MISSING_OPERATIONS",
       "details": "CREATE, READ, UPDATE, DELETE"
     },

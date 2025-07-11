@@ -8,6 +8,15 @@ import {
   feeConfigurations,
   merchantConnections,
   squarePayments,
+  oauthStates,
+  rateLimits,
+  webhookEvents,
+  emailTemplates,
+  giftCardDesigns,
+  auditLogs,
+  systemSettings,
+  refunds,
+  disputes,
   type User,
   type UpsertUser,
   type GiftCard,
@@ -28,7 +37,7 @@ import {
   type InsertSquarePayment,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
+import { eq, desc, and, sql, gte, lte, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 // Interface for storage operations
@@ -121,6 +130,49 @@ export interface IStorage {
   getMerchantConnections(userId: string): Promise<any[]>;
   updateMerchantConnection(id: string, updates: any): Promise<any>;
   deleteMerchantConnection(id: string): Promise<void>;
+  
+  // OAuth state operations
+  createOAuthState(state: string, userId: string, expiresAt: Date): Promise<void>;
+  getOAuthState(state: string): Promise<{ userId: string; expiresAt: Date } | undefined>;
+  deleteOAuthState(state: string): Promise<void>;
+  cleanupExpiredOAuthStates(): Promise<void>;
+  
+  // Rate limiting operations
+  checkRateLimit(identifier: string, endpoint: string, windowMs: number, maxRequests: number): Promise<boolean>;
+  incrementRateLimit(identifier: string, endpoint: string): Promise<void>;
+  cleanupExpiredRateLimits(): Promise<void>;
+  
+  // Webhook event operations
+  createWebhookEvent(event: any): Promise<void>;
+  getWebhookEvents(limit?: number): Promise<any[]>;
+  
+  // Additional missing operations
+  createEmailTemplate(template: any): Promise<any>;
+  updateEmailTemplate(id: string, updates: any): Promise<any>;
+  getEmailTemplates(): Promise<any[]>;
+  getEmailTemplate(id: string): Promise<any | undefined>;
+  deleteEmailTemplate(id: string): Promise<void>;
+  
+  createGiftCardDesign(design: any): Promise<any>;
+  updateGiftCardDesign(id: string, updates: any): Promise<any>;
+  getGiftCardDesigns(): Promise<any[]>;
+  getGiftCardDesign(id: string): Promise<any | undefined>;
+  deleteGiftCardDesign(id: string): Promise<void>;
+  
+  createAuditLog(log: any): Promise<void>;
+  getAuditLogs(limit?: number, filters?: any): Promise<any[]>;
+  
+  getSystemSetting(key: string): Promise<any | undefined>;
+  setSystemSetting(key: string, value: any): Promise<void>;
+  
+  createRefund(refund: any): Promise<any>;
+  getRefunds(): Promise<any[]>;
+  getRefund(id: string): Promise<any | undefined>;
+  
+  createDispute(dispute: any): Promise<any>;
+  getDisputes(): Promise<any[]>;
+  getDispute(id: string): Promise<any | undefined>;
+  updateDispute(id: string, updates: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -859,6 +911,305 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(merchantConnections.id, id));
+  }
+
+  // OAuth state operations
+  async createOAuthState(state: string, userId: string, expiresAt: Date): Promise<void> {
+    await db.insert(oauthStates).values({
+      state,
+      userId,
+      expiresAt
+    });
+  }
+
+  async getOAuthState(state: string): Promise<{ userId: string; expiresAt: Date } | undefined> {
+    const [result] = await db
+      .select()
+      .from(oauthStates)
+      .where(eq(oauthStates.state, state));
+    return result;
+  }
+
+  async deleteOAuthState(state: string): Promise<void> {
+    await db.delete(oauthStates).where(eq(oauthStates.state, state));
+  }
+
+  async cleanupExpiredOAuthStates(): Promise<void> {
+    await db
+      .delete(oauthStates)
+      .where(lt(oauthStates.expiresAt, new Date()));
+  }
+
+  // Rate limiting operations
+  async checkRateLimit(identifier: string, endpoint: string, windowMs: number, maxRequests: number): Promise<boolean> {
+    const windowStart = new Date(Date.now() - windowMs);
+    
+    // Count requests in the window
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(rateLimits)
+      .where(and(
+        eq(rateLimits.identifier, identifier),
+        eq(rateLimits.endpoint, endpoint),
+        gte(rateLimits.timestamp, windowStart)
+      ));
+
+    const requestCount = result?.count || 0;
+    return requestCount < maxRequests;
+  }
+
+  async incrementRateLimit(identifier: string, endpoint: string): Promise<void> {
+    await db.insert(rateLimits).values({
+      identifier,
+      endpoint,
+      timestamp: new Date()
+    });
+  }
+
+  async cleanupExpiredRateLimits(): Promise<void> {
+    // Clean up rate limits older than 24 hours
+    const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await db
+      .delete(rateLimits)
+      .where(lt(rateLimits.timestamp, cutoffTime));
+  }
+
+  // Webhook event operations  
+  async createWebhookEvent(event: any): Promise<void> {
+    await db.insert(webhookEvents).values({
+      eventId: event.id || nanoid(),
+      eventType: event.type,
+      eventData: event,
+      merchantId: event.merchant_id,
+      processedAt: new Date()
+    });
+  }
+
+  async getWebhookEvents(limit: number = 100): Promise<any[]> {
+    return await db
+      .select()
+      .from(webhookEvents)
+      .orderBy(desc(webhookEvents.processedAt))
+      .limit(limit);
+  }
+
+  // Additional missing operations
+  async createEmailTemplate(template: any): Promise<any> {
+    const [result] = await db
+      .insert(emailTemplates)
+      .values({
+        ...template,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return result;
+  }
+
+  async updateEmailTemplate(id: string, updates: any): Promise<any> {
+    const [result] = await db
+      .update(emailTemplates)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return result;
+  }
+
+  async getEmailTemplates(): Promise<any[]> {
+    return await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.isActive, true))
+      .orderBy(emailTemplates.name);
+  }
+
+  async getEmailTemplate(id: string): Promise<any | undefined> {
+    const [template] = await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.id, id));
+    return template;
+  }
+
+  async deleteEmailTemplate(id: string): Promise<void> {
+    await db
+      .update(emailTemplates)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(emailTemplates.id, id));
+  }
+
+  async createGiftCardDesign(design: any): Promise<any> {
+    const [result] = await db
+      .insert(giftCardDesigns)
+      .values({
+        ...design,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return result;
+  }
+
+  async updateGiftCardDesign(id: string, updates: any): Promise<any> {
+    const [result] = await db
+      .update(giftCardDesigns)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(giftCardDesigns.id, id))
+      .returning();
+    return result;
+  }
+
+  async getGiftCardDesigns(): Promise<any[]> {
+    return await db
+      .select()
+      .from(giftCardDesigns)
+      .where(eq(giftCardDesigns.isActive, true))
+      .orderBy(giftCardDesigns.sortOrder);
+  }
+
+  async getGiftCardDesign(id: string): Promise<any | undefined> {
+    const [design] = await db
+      .select()
+      .from(giftCardDesigns)
+      .where(eq(giftCardDesigns.id, id));
+    return design;
+  }
+
+  async deleteGiftCardDesign(id: string): Promise<void> {
+    await db
+      .update(giftCardDesigns)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(giftCardDesigns.id, id));
+  }
+
+  async createAuditLog(log: any): Promise<void> {
+    await db.insert(auditLogs).values({
+      ...log,
+      createdAt: new Date()
+    });
+  }
+
+  async getAuditLogs(limit: number = 100, filters?: any): Promise<any[]> {
+    let query = db.select().from(auditLogs);
+    
+    if (filters?.userId) {
+      query = query.where(eq(auditLogs.userId, filters.userId));
+    }
+    
+    if (filters?.action) {
+      query = query.where(eq(auditLogs.action, filters.action));
+    }
+    
+    if (filters?.entityType) {
+      query = query.where(eq(auditLogs.entityType, filters.entityType));
+    }
+    
+    return await query
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit);
+  }
+
+  async getSystemSetting(key: string): Promise<any | undefined> {
+    const [setting] = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, key));
+    return setting?.value;
+  }
+
+  async setSystemSetting(key: string, value: any): Promise<void> {
+    await db
+      .insert(systemSettings)
+      .values({
+        key,
+        value,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: {
+          value,
+          updatedAt: new Date()
+        }
+      });
+  }
+
+  async createRefund(refund: any): Promise<any> {
+    const [result] = await db
+      .insert(refunds)
+      .values({
+        ...refund,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return result;
+  }
+
+  async getRefunds(): Promise<any[]> {
+    return await db
+      .select()
+      .from(refunds)
+      .orderBy(desc(refunds.createdAt));
+  }
+
+  async getRefund(id: string): Promise<any | undefined> {
+    const [refund] = await db
+      .select()
+      .from(refunds)
+      .where(eq(refunds.id, id));
+    return refund;
+  }
+
+  async createDispute(dispute: any): Promise<any> {
+    const [result] = await db
+      .insert(disputes)
+      .values({
+        ...dispute,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return result;
+  }
+
+  async getDisputes(): Promise<any[]> {
+    return await db
+      .select()
+      .from(disputes)
+      .orderBy(desc(disputes.createdAt));
+  }
+
+  async getDispute(id: string): Promise<any | undefined> {
+    const [dispute] = await db
+      .select()
+      .from(disputes)
+      .where(eq(disputes.id, id));
+    return dispute;
+  }
+
+  async updateDispute(id: string, updates: any): Promise<any> {
+    const [result] = await db
+      .update(disputes)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(disputes.id, id))
+      .returning();
+    return result;
   }
 }
 

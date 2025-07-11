@@ -1,0 +1,3421 @@
+{
+  "timestamp": "2025-07-11T16:57:57.478Z",
+  "summary": {
+    "inMemorySystems": 4,
+    "fallbackSystems": 284,
+    "criticalSystems": 279
+  },
+  "inMemorySystems": [
+    {
+      "file": "/home/runner/workspace/server/replitAuth.ts",
+      "line": 15,
+      "code": "memoize(",
+      "type": "Memoization",
+      "variable": "unknown"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes-oauth.ts",
+      "line": 16,
+      "code": "const oauthStates = new Map<",
+      "type": "In-Memory Collection",
+      "variable": "oauthStates"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1732,
+      "code": "const wsRateLimit = new Map<",
+      "type": "In-Memory Collection",
+      "variable": "wsRateLimit"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1732,
+      "code": "RateLimit = new Map",
+      "type": "Rate Limiting",
+      "variable": "unknown"
+    }
+  ],
+  "fallbackSystems": [
+    {
+      "file": "/home/runner/workspace/server/routes-oauth.ts",
+      "line": 15,
+      "code": "// Temporary store for OAuth states (in production, use Redis or database)",
+      "type": "Temporary"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 968,
+      "code": "// Calculate monthly spending (mock data for now)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1646,
+      "code": "// Public Recharge Gift Card (placeholder - requires payment integration)",
+      "type": "Placeholder"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1664,
+      "code": "// TODO: Process payment with Square API",
+      "type": "TODO"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1765,
+      "code": "// TODO: Implement WebSocket authentication",
+      "type": "TODO"
+    },
+    {
+      "file": "/home/runner/workspace/server/services/SquareWebhookService.ts",
+      "line": 371,
+      "code": "console.log(`  Version: ${order_created.version}`);",
+      "type": "Console Storage"
+    },
+    {
+      "file": "/home/runner/workspace/server/services/SquareWebhookSubscriptionsService.ts",
+      "line": 396,
+      "code": "eventType: eventType || 'payment.created' // Default test event",
+      "type": "Default Fallback"
+    },
+    {
+      "file": "/home/runner/workspace/server/services/aiService.ts",
+      "line": 98,
+      "code": "// Fallback to OpenAI if Perplexity is not available",
+      "type": "Fallback Comment"
+    },
+    {
+      "file": "/home/runner/workspace/server/services/aiService.ts",
+      "line": 176,
+      "code": "// Fallback to OpenAI",
+      "type": "Fallback Comment"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 11,
+      "code": "// Mock storage",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 12,
+      "code": "vi.mock('@server/storage', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 19,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 19,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 21,
+      "code": "// Mock authentication middleware",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 22,
+      "code": "const mockAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 34,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 39,
+      "code": "const mockUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 49,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 63,
+      "code": "expect(response.body).toEqual(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 64,
+      "code": "expect(mockStorage.getUser).toHaveBeenCalledWith('test-user-id');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 68,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 68,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 70,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 88,
+      "code": "mockStorage.getUser.mockRejectedValue(new Error('Database error'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 88,
+      "code": "mockStorage.getUser.mockRejectedValue(new Error('Database error'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 90,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 123,
+      "code": "const mockAdminUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 131,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 143,
+      "code": "const mockRegularUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 151,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 163,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 163,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 165,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 3,
+      "code": "* Tests all gift card endpoints with mocked Square integration",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 13,
+      "code": "// Mock all services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 14,
+      "code": "vi.mock('@server/storage');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 15,
+      "code": "vi.mock('@server/services/SquareService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 16,
+      "code": "vi.mock('nanoid');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 18,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 18,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 19,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 19,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 20,
+      "code": "const mockNanoid = vi.mocked(nanoid);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 20,
+      "code": "const mockNanoid = vi.mocked(nanoid);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 25,
+      "code": "const mockAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 31,
+      "code": "const mockAdminAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 40,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 42,
+      "code": "// Mock nanoid to return predictable codes",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 43,
+      "code": "mockNanoid.mockReturnValue('ABCDEFGHIJKL');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 43,
+      "code": "mockNanoid.mockReturnValue('ABCDEFGHIJKL');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 57,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 71,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 81,
+      "code": "const mockReceipt = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 85,
+      "code": "accessToken: 'mock-access-token',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 90,
+      "code": "// Mock admin user",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 91,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 91,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 112,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 132,
+      "code": "receiptUrl: `/api/receipts/mock-access-token`,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 133,
+      "code": "qrCode: 'data:image/png;base64,mock-qr-code'",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 146,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 147,
+      "code": "receiptUrl: '/api/receipts/mock-access-token',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 148,
+      "code": "qrCode: 'data:image/png;base64,mock-qr-code'",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 151,
+      "code": "expect(mockStorage.createGiftCard).toHaveBeenCalledWith({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 164,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 164,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 174,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 195,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'user-id', role: 'user' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 195,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'user-id', role: 'user' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 205,
+      "code": "app.post('/api/giftcards', mockAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 220,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 265,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 265,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 295,
+      "code": "const mockInactiveGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 338,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 345,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 357,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 357,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 358,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 362,
+      "code": "app.post('/api/giftcards/redeem', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 416,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 425,
+      "code": "app.post('/api/giftcards/redeem', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 7,
+      "code": "// Mock authentication middleware for testing",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 8,
+      "code": "vi.mock('../../replitAuth', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 16,
+      "code": "// Mock Square Customer Service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 17,
+      "code": "vi.mock('../../services/SquareCustomerService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 18,
+      "code": "SquareCustomerService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 20,
+      "code": "createCustomer: vi.fn().mockResolvedValue({ id: 'square-customer-123' }),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 21,
+      "code": "addCardToCustomer: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 29,
+      "code": "deleteCard: vi.fn().mockResolvedValue(undefined),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 30,
+      "code": "parseCardForStorage: vi.fn().mockReturnValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 3,
+      "code": "* Tests complete workflows with Square integration mocked",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 15,
+      "code": "// Mock all services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 16,
+      "code": "vi.mock('@server/storage');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 17,
+      "code": "vi.mock('@server/services/SquareService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 18,
+      "code": "vi.mock('@server/services/EmailService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 19,
+      "code": "vi.mock('@server/services/PDFService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 20,
+      "code": "vi.mock('@server/services/QRService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 22,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 22,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 23,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 23,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 24,
+      "code": "const mockEmailService = vi.mocked(EmailService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 24,
+      "code": "const mockEmailService = vi.mocked(EmailService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 25,
+      "code": "const mockPDFService = vi.mocked(PDFService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 25,
+      "code": "const mockPDFService = vi.mocked(PDFService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 26,
+      "code": "const mockQRService = vi.mocked(QRService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 26,
+      "code": "const mockQRService = vi.mocked(QRService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 31,
+      "code": "const mockAdminAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 37,
+      "code": "const mockUserAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 46,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 51,
+      "code": "// Mock admin user",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 52,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 52,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 58,
+      "code": "// Mock gift card creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 59,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 72,
+      "code": "// Mock Square service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 73,
+      "code": "const mockSquareGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 81,
+      "code": "// Mock transaction creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 82,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 93,
+      "code": "// Mock receipt creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 94,
+      "code": "const mockReceipt = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 107,
+      "code": "// Mock services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 108,
+      "code": "mockQRService.prototype.generateQRCode.mockResolvedValue('qr-code-data');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 108,
+      "code": "mockQRService.prototype.generateQRCode.mockResolvedValue('qr-code-data');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 109,
+      "code": "mockPDFService.prototype.generateReceiptPDF.mockResolvedValue('/path/to/receipt.pdf');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 109,
+      "code": "mockPDFService.prototype.generateReceiptPDF.mockResolvedValue('/path/to/receipt.pdf');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 110,
+      "code": "mockEmailService.prototype.sendGiftCardEmail.mockResolvedValue(true);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 110,
+      "code": "mockEmailService.prototype.sendGiftCardEmail.mockResolvedValue(true);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 121,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 191,
+      "code": "expect(mockSquareService.prototype.createGiftCard).toHaveBeenCalledWith(100, 'GCTEST123456');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 192,
+      "code": "expect(mockPDFService.prototype.generateReceiptPDF).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 193,
+      "code": "expect(mockEmailService.prototype.sendGiftCardEmail).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 194,
+      "code": "expect(mockQRService.prototype.generateQRCode).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 200,
+      "code": "// Mock gift card",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 201,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 210,
+      "code": "// Mock Square redemption",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 211,
+      "code": "mockSquareService.prototype.redeemGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 211,
+      "code": "mockSquareService.prototype.redeemGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 217,
+      "code": "// Mock transaction and balance update",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 218,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 228,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 228,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 229,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 233,
+      "code": "// Mock fraud detection (no alerts)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 234,
+      "code": "mockStorage.getRecentTransactions.mockResolvedValue([]);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 234,
+      "code": "mockStorage.getRecentTransactions.mockResolvedValue([]);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 236,
+      "code": "app.post('/api/giftcards/redeem', mockUserAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 307,
+      "code": "expect(mockSquareService.prototype.redeemGiftCard).toHaveBeenCalledWith('gc-123', 25);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 313,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 313,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 314,
+      "code": "mockStorage.createGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 314,
+      "code": "mockStorage.createGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 319,
+      "code": "// Mock Square API failure",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 320,
+      "code": "mockSquareService.prototype.createGiftCard.mockRejectedValue(",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 320,
+      "code": "mockSquareService.prototype.createGiftCard.mockRejectedValue(",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 332,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 369,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 369,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 370,
+      "code": "mockStorage.createGiftCard.mockRejectedValue(new Error('Database connection failed'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 370,
+      "code": "mockStorage.createGiftCard.mockRejectedValue(new Error('Database connection failed'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 380,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 404,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 404,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 405,
+      "code": "mockStorage.getDashboardStats.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 405,
+      "code": "mockStorage.getDashboardStats.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 421,
+      "code": "app.get('/api/admin/stats', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 16,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 390,
+      "code": "const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 420,
+      "code": "logSpy.mockRestore();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 3,
+      "code": "* Initializes test environment with mocked services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 8,
+      "code": "// Mock environment variables",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 13,
+      "code": "// Mock Square service to avoid hitting live API",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 14,
+      "code": "vi.mock('@server/services/SquareService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 15,
+      "code": "SquareService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 16,
+      "code": "createGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 17,
+      "code": "id: 'mock-square-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 21,
+      "code": "redeemGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 22,
+      "code": "id: 'mock-square-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 26,
+      "code": "getGiftCardBalance: vi.fn().mockResolvedValue(5000),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 27,
+      "code": "refundToGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 28,
+      "code": "id: 'mock-refund-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 31,
+      "code": "getGiftCardActivities: vi.fn().mockResolvedValue([])",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 35,
+      "code": "// Mock Email service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 36,
+      "code": "vi.mock('@server/services/EmailService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 37,
+      "code": "EmailService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 38,
+      "code": "sendGiftCardEmail: vi.fn().mockResolvedValue(true),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 39,
+      "code": "sendRedemptionEmail: vi.fn().mockResolvedValue(true),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 40,
+      "code": "sendFraudAlertEmail: vi.fn().mockResolvedValue(true)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 44,
+      "code": "// Mock PDF service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 45,
+      "code": "vi.mock('@server/services/PDFService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 46,
+      "code": "PDFService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 47,
+      "code": "generateReceiptPDF: vi.fn().mockResolvedValue('/path/to/mock-receipt.pdf'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 47,
+      "code": "generateReceiptPDF: vi.fn().mockResolvedValue('/path/to/mock-receipt.pdf'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 48,
+      "code": "generateGiftCardPDF: vi.fn().mockResolvedValue('/path/to/mock-giftcard.pdf')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 48,
+      "code": "generateGiftCardPDF: vi.fn().mockResolvedValue('/path/to/mock-giftcard.pdf')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 52,
+      "code": "// Mock QR service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 53,
+      "code": "vi.mock('@server/services/QRService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 54,
+      "code": "QRService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 55,
+      "code": "generateQRCode: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 55,
+      "code": "generateQRCode: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 56,
+      "code": "generateQRCodeBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-qr')),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 56,
+      "code": "generateQRCodeBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-qr')),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 57,
+      "code": "generateQRCodeSVG: vi.fn().mockResolvedValue('<svg>mock-qr</svg>'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 57,
+      "code": "generateQRCodeSVG: vi.fn().mockResolvedValue('<svg>mock-qr</svg>'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 58,
+      "code": "parseQRCodeData: vi.fn().mockReturnValue({ type: 'redeem', data: { code: 'TEST123' } }),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 59,
+      "code": "generateRedemptionQRData: vi.fn().mockReturnValue('mock-redemption-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 59,
+      "code": "generateRedemptionQRData: vi.fn().mockReturnValue('mock-redemption-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 60,
+      "code": "generateReceiptQRData: vi.fn().mockReturnValue('mock-receipt-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 60,
+      "code": "generateReceiptQRData: vi.fn().mockReturnValue('mock-receipt-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 61,
+      "code": "generateBalanceCheckQRData: vi.fn().mockReturnValue('mock-balance-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 61,
+      "code": "generateBalanceCheckQRData: vi.fn().mockReturnValue('mock-balance-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 62,
+      "code": "generateGiftCardQRData: vi.fn().mockReturnValue('mock-giftcard-data')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 62,
+      "code": "generateGiftCardQRData: vi.fn().mockReturnValue('mock-giftcard-data')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 75,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    }
+  ],
+  "criticalSystems": [
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1732,
+      "code": "RateLimit = new Map",
+      "type": "Rate Limiting",
+      "variable": "unknown"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 968,
+      "code": "// Calculate monthly spending (mock data for now)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 1646,
+      "code": "// Public Recharge Gift Card (placeholder - requires payment integration)",
+      "type": "Placeholder"
+    },
+    {
+      "file": "/home/runner/workspace/server/services/SquareWebhookService.ts",
+      "line": 371,
+      "code": "console.log(`  Version: ${order_created.version}`);",
+      "type": "Console Storage"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 11,
+      "code": "// Mock storage",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 12,
+      "code": "vi.mock('@server/storage', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 19,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 19,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 21,
+      "code": "// Mock authentication middleware",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 22,
+      "code": "const mockAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 34,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 39,
+      "code": "const mockUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 47,
+      "code": "mockStorage.getUser.mockResolvedValue(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 49,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 63,
+      "code": "expect(response.body).toEqual(mockUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 64,
+      "code": "expect(mockStorage.getUser).toHaveBeenCalledWith('test-user-id');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 68,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 68,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 70,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 88,
+      "code": "mockStorage.getUser.mockRejectedValue(new Error('Database error'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 88,
+      "code": "mockStorage.getUser.mockRejectedValue(new Error('Database error'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 90,
+      "code": "app.get('/api/auth/user', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 123,
+      "code": "const mockAdminUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 129,
+      "code": "mockStorage.getUser.mockResolvedValue(mockAdminUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 131,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 143,
+      "code": "const mockRegularUser = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 149,
+      "code": "mockStorage.getUser.mockResolvedValue(mockRegularUser);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 151,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 163,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 163,
+      "code": "mockStorage.getUser.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/auth.test.ts",
+      "line": 165,
+      "code": "app.get('/api/admin/test', mockAuth, requireAdmin, (req, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 3,
+      "code": "* Tests all gift card endpoints with mocked Square integration",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 13,
+      "code": "// Mock all services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 14,
+      "code": "vi.mock('@server/storage');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 15,
+      "code": "vi.mock('@server/services/SquareService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 16,
+      "code": "vi.mock('nanoid');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 18,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 18,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 19,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 19,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 20,
+      "code": "const mockNanoid = vi.mocked(nanoid);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 20,
+      "code": "const mockNanoid = vi.mocked(nanoid);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 25,
+      "code": "const mockAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 31,
+      "code": "const mockAdminAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 40,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 42,
+      "code": "// Mock nanoid to return predictable codes",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 43,
+      "code": "mockNanoid.mockReturnValue('ABCDEFGHIJKL');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 43,
+      "code": "mockNanoid.mockReturnValue('ABCDEFGHIJKL');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 57,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 71,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 81,
+      "code": "const mockReceipt = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 85,
+      "code": "accessToken: 'mock-access-token',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 90,
+      "code": "// Mock admin user",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 91,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 91,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 96,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 97,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 98,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 99,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 100,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 101,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 112,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 132,
+      "code": "receiptUrl: `/api/receipts/mock-access-token`,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 133,
+      "code": "qrCode: 'data:image/png;base64,mock-qr-code'",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 146,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 147,
+      "code": "receiptUrl: '/api/receipts/mock-access-token',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 148,
+      "code": "qrCode: 'data:image/png;base64,mock-qr-code'",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 151,
+      "code": "expect(mockStorage.createGiftCard).toHaveBeenCalledWith({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 164,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 164,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 174,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 195,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'user-id', role: 'user' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 195,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'user-id', role: 'user' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 205,
+      "code": "app.post('/api/giftcards', mockAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 220,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 227,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 265,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 265,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(undefined);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 295,
+      "code": "const mockInactiveGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 302,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockInactiveGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 338,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 345,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 355,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 356,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 357,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 357,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 358,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 362,
+      "code": "app.post('/api/giftcards/redeem', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 416,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 423,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/giftcards.test.ts",
+      "line": 425,
+      "code": "app.post('/api/giftcards/redeem', mockAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 7,
+      "code": "// Mock authentication middleware for testing",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 8,
+      "code": "vi.mock('../../replitAuth', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 16,
+      "code": "// Mock Square Customer Service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 17,
+      "code": "vi.mock('../../services/SquareCustomerService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 18,
+      "code": "SquareCustomerService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 20,
+      "code": "createCustomer: vi.fn().mockResolvedValue({ id: 'square-customer-123' }),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 21,
+      "code": "addCardToCustomer: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 29,
+      "code": "deleteCard: vi.fn().mockResolvedValue(undefined),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration/savedCards.test.ts",
+      "line": 30,
+      "code": "parseCardForStorage: vi.fn().mockReturnValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 3,
+      "code": "* Tests complete workflows with Square integration mocked",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 15,
+      "code": "// Mock all services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 16,
+      "code": "vi.mock('@server/storage');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 17,
+      "code": "vi.mock('@server/services/SquareService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 18,
+      "code": "vi.mock('@server/services/EmailService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 19,
+      "code": "vi.mock('@server/services/PDFService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 20,
+      "code": "vi.mock('@server/services/QRService');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 22,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 22,
+      "code": "const mockStorage = vi.mocked(storage);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 23,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 23,
+      "code": "const mockSquareService = vi.mocked(SquareService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 24,
+      "code": "const mockEmailService = vi.mocked(EmailService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 24,
+      "code": "const mockEmailService = vi.mocked(EmailService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 25,
+      "code": "const mockPDFService = vi.mocked(PDFService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 25,
+      "code": "const mockPDFService = vi.mocked(PDFService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 26,
+      "code": "const mockQRService = vi.mocked(QRService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 26,
+      "code": "const mockQRService = vi.mocked(QRService);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 31,
+      "code": "const mockAdminAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 37,
+      "code": "const mockUserAuth = (req: any, res: any, next: any) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 46,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 51,
+      "code": "// Mock admin user",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 52,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 52,
+      "code": "mockStorage.getUser.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 58,
+      "code": "// Mock gift card creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 59,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 69,
+      "code": "mockStorage.createGiftCard.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 70,
+      "code": "mockStorage.updateGiftCardSquareId.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 72,
+      "code": "// Mock Square service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 73,
+      "code": "const mockSquareGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 79,
+      "code": "mockSquareService.prototype.createGiftCard.mockResolvedValue(mockSquareGiftCard);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 81,
+      "code": "// Mock transaction creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 82,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 91,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 93,
+      "code": "// Mock receipt creation",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 94,
+      "code": "const mockReceipt = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 103,
+      "code": "mockStorage.createReceipt.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 104,
+      "code": "mockStorage.updateReceiptPdfPath.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 105,
+      "code": "mockStorage.markReceiptEmailSent.mockResolvedValue(mockReceipt as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 107,
+      "code": "// Mock services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 108,
+      "code": "mockQRService.prototype.generateQRCode.mockResolvedValue('qr-code-data');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 108,
+      "code": "mockQRService.prototype.generateQRCode.mockResolvedValue('qr-code-data');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 109,
+      "code": "mockPDFService.prototype.generateReceiptPDF.mockResolvedValue('/path/to/receipt.pdf');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 109,
+      "code": "mockPDFService.prototype.generateReceiptPDF.mockResolvedValue('/path/to/receipt.pdf');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 110,
+      "code": "mockEmailService.prototype.sendGiftCardEmail.mockResolvedValue(true);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 110,
+      "code": "mockEmailService.prototype.sendGiftCardEmail.mockResolvedValue(true);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 121,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 191,
+      "code": "expect(mockSquareService.prototype.createGiftCard).toHaveBeenCalledWith(100, 'GCTEST123456');",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 192,
+      "code": "expect(mockPDFService.prototype.generateReceiptPDF).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 193,
+      "code": "expect(mockEmailService.prototype.sendGiftCardEmail).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 194,
+      "code": "expect(mockQRService.prototype.generateQRCode).toHaveBeenCalled();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 200,
+      "code": "// Mock gift card",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 201,
+      "code": "const mockGiftCard = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 208,
+      "code": "mockStorage.getGiftCardByCode.mockResolvedValue(mockGiftCard as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 210,
+      "code": "// Mock Square redemption",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 211,
+      "code": "mockSquareService.prototype.redeemGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 211,
+      "code": "mockSquareService.prototype.redeemGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 217,
+      "code": "// Mock transaction and balance update",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 218,
+      "code": "const mockTransaction = {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 227,
+      "code": "mockStorage.createTransaction.mockResolvedValue(mockTransaction as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 228,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 228,
+      "code": "mockStorage.updateGiftCardBalance.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 229,
+      "code": "...mockGiftCard,",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 233,
+      "code": "// Mock fraud detection (no alerts)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 234,
+      "code": "mockStorage.getRecentTransactions.mockResolvedValue([]);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 234,
+      "code": "mockStorage.getRecentTransactions.mockResolvedValue([]);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 236,
+      "code": "app.post('/api/giftcards/redeem', mockUserAuth, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 307,
+      "code": "expect(mockSquareService.prototype.redeemGiftCard).toHaveBeenCalledWith('gc-123', 25);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 313,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 313,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 314,
+      "code": "mockStorage.createGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 314,
+      "code": "mockStorage.createGiftCard.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 319,
+      "code": "// Mock Square API failure",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 320,
+      "code": "mockSquareService.prototype.createGiftCard.mockRejectedValue(",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 320,
+      "code": "mockSquareService.prototype.createGiftCard.mockRejectedValue(",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 332,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 369,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 369,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 370,
+      "code": "mockStorage.createGiftCard.mockRejectedValue(new Error('Database connection failed'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 370,
+      "code": "mockStorage.createGiftCard.mockRejectedValue(new Error('Database connection failed'));",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 380,
+      "code": "app.post('/api/giftcards', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 404,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 404,
+      "code": "mockStorage.getUser.mockResolvedValue({ id: 'admin-user-id', role: 'admin' } as any);",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 405,
+      "code": "mockStorage.getDashboardStats.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 405,
+      "code": "mockStorage.getDashboardStats.mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/integration.test.ts",
+      "line": 421,
+      "code": "app.get('/api/admin/stats', mockAdminAuth, requireAdmin, async (req: any, res) => {",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 16,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 390,
+      "code": "const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/security.test.ts",
+      "line": 420,
+      "code": "logSpy.mockRestore();",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 3,
+      "code": "* Initializes test environment with mocked services",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 8,
+      "code": "// Mock environment variables",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 13,
+      "code": "// Mock Square service to avoid hitting live API",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 14,
+      "code": "vi.mock('@server/services/SquareService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 15,
+      "code": "SquareService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 16,
+      "code": "createGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 17,
+      "code": "id: 'mock-square-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 21,
+      "code": "redeemGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 22,
+      "code": "id: 'mock-square-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 26,
+      "code": "getGiftCardBalance: vi.fn().mockResolvedValue(5000),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 27,
+      "code": "refundToGiftCard: vi.fn().mockResolvedValue({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 28,
+      "code": "id: 'mock-refund-id',",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 31,
+      "code": "getGiftCardActivities: vi.fn().mockResolvedValue([])",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 35,
+      "code": "// Mock Email service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 36,
+      "code": "vi.mock('@server/services/EmailService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 37,
+      "code": "EmailService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 38,
+      "code": "sendGiftCardEmail: vi.fn().mockResolvedValue(true),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 39,
+      "code": "sendRedemptionEmail: vi.fn().mockResolvedValue(true),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 40,
+      "code": "sendFraudAlertEmail: vi.fn().mockResolvedValue(true)",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 44,
+      "code": "// Mock PDF service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 45,
+      "code": "vi.mock('@server/services/PDFService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 46,
+      "code": "PDFService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 47,
+      "code": "generateReceiptPDF: vi.fn().mockResolvedValue('/path/to/mock-receipt.pdf'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 47,
+      "code": "generateReceiptPDF: vi.fn().mockResolvedValue('/path/to/mock-receipt.pdf'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 48,
+      "code": "generateGiftCardPDF: vi.fn().mockResolvedValue('/path/to/mock-giftcard.pdf')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 48,
+      "code": "generateGiftCardPDF: vi.fn().mockResolvedValue('/path/to/mock-giftcard.pdf')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 52,
+      "code": "// Mock QR service",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 53,
+      "code": "vi.mock('@server/services/QRService', () => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 54,
+      "code": "QRService: vi.fn().mockImplementation(() => ({",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 55,
+      "code": "generateQRCode: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 55,
+      "code": "generateQRCode: vi.fn().mockResolvedValue('data:image/png;base64,mock-qr-code'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 56,
+      "code": "generateQRCodeBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-qr')),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 56,
+      "code": "generateQRCodeBuffer: vi.fn().mockResolvedValue(Buffer.from('mock-qr')),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 57,
+      "code": "generateQRCodeSVG: vi.fn().mockResolvedValue('<svg>mock-qr</svg>'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 57,
+      "code": "generateQRCodeSVG: vi.fn().mockResolvedValue('<svg>mock-qr</svg>'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 58,
+      "code": "parseQRCodeData: vi.fn().mockReturnValue({ type: 'redeem', data: { code: 'TEST123' } }),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 59,
+      "code": "generateRedemptionQRData: vi.fn().mockReturnValue('mock-redemption-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 59,
+      "code": "generateRedemptionQRData: vi.fn().mockReturnValue('mock-redemption-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 60,
+      "code": "generateReceiptQRData: vi.fn().mockReturnValue('mock-receipt-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 60,
+      "code": "generateReceiptQRData: vi.fn().mockReturnValue('mock-receipt-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 61,
+      "code": "generateBalanceCheckQRData: vi.fn().mockReturnValue('mock-balance-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 61,
+      "code": "generateBalanceCheckQRData: vi.fn().mockReturnValue('mock-balance-data'),",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 62,
+      "code": "generateGiftCardQRData: vi.fn().mockReturnValue('mock-giftcard-data')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 62,
+      "code": "generateGiftCardQRData: vi.fn().mockReturnValue('mock-giftcard-data')",
+      "type": "Mock Data"
+    },
+    {
+      "file": "/home/runner/workspace/server/tests/setup.ts",
+      "line": 75,
+      "code": "vi.clearAllMocks();",
+      "type": "Mock Data"
+    }
+  ]
+}
