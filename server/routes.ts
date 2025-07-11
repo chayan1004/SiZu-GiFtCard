@@ -1022,6 +1022,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Users Route  
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      // Get all users from the database
+      const users = await storage.getAllUsers();
+      
+      // Remove sensitive data before sending
+      const sanitizedUsers = users.map(user => ({
+        id: user.id,
+        name: user.name || 'N/A',
+        email: user.email || 'N/A',
+        role: user.role || 'user',
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin || null,
+        isActive: user.isActive !== false,
+        hasProfilePicture: !!user.profilePicture,
+        giftCardCount: user.giftCardCount || 0,
+        totalSpent: user.totalSpent || 0
+      }));
+      
+      res.json(sanitizedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
   // User Dashboard Routes
   
   // Get dashboard stats
