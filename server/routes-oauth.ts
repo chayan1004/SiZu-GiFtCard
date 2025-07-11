@@ -34,7 +34,55 @@ const tokenRefreshSchema = z.object({
   merchantId: z.string()
 });
 
-// Initiate OAuth flow
+// Direct OAuth authorization redirect (for admin UI)
+router.get('/square/authorize',
+  requireAnyAuth,
+  async (req, res) => {
+    try {
+      if (!squareOAuthService.isAvailable()) {
+        return res.status(503).json({
+          success: false,
+          error: 'OAuth service temporarily unavailable'
+        });
+      }
+
+      // Get user information
+      const user = req.user as any;
+      const userId = user.id || user.claims?.sub;
+      const userRole = user.role || user.claims?.role;
+
+      // Only admins can connect Square accounts
+      if (userRole !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          error: 'Only administrators can connect Square accounts'
+        });
+      }
+
+      // Generate state for CSRF protection
+      const state = squareOAuthService.generateState();
+      const sessionId = nanoid();
+
+      // Store state with expiration (5 minutes)
+      oauthStates.set(state, {
+        userId,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+      });
+
+      // Get authorization URL
+      const scopes = squareOAuthService.getRequiredScopes();
+      const authUrl = squareOAuthService.getAuthorizationUrl(state, scopes, sessionId);
+
+      // Redirect to Square OAuth
+      res.redirect(authUrl);
+    } catch (error: any) {
+      console.error('OAuth authorization error:', error);
+      res.redirect('/oauth/error?error=authorization_failed');
+    }
+  }
+);
+
+// Initiate OAuth flow (API endpoint)
 router.post('/connect',
   requireAnyAuth,
   generalRateLimit,

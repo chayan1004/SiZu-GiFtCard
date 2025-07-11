@@ -37,9 +37,10 @@ export class SquareOAuthService {
   private isInitialized: boolean = false;
 
   constructor() {
-    const clientId = process.env.SQUARE_OAUTH_CLIENT_ID;
-    const clientSecret = process.env.SQUARE_OAUTH_CLIENT_SECRET;
-    const redirectUri = process.env.SQUARE_OAUTH_REDIRECT_URI || '';
+    // Use provided sandbox credentials for testing
+    const clientId = process.env.SQUARE_OAUTH_CLIENT_ID || 'sandbox-sq0idb-l5OPb4gxToPCbEbXnfzXng';
+    const clientSecret = process.env.SQUARE_OAUTH_CLIENT_SECRET || 'sandbox-sq0csb-ROiGcg6ivcsgjHb6ym4JDiN0rpYKlZU7rygi5_UwWLs';
+    const redirectUri = process.env.SQUARE_OAUTH_REDIRECT_URI || 'https://sizugiftcard.com/api/oauth/square/callback';
 
     if (!clientId || !clientSecret) {
       console.warn("Square OAuth credentials not provided. OAuth features will be limited.");
