@@ -6,11 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
 import Balance from "@/pages/Balance";
 import Redeem from "@/pages/Redeem";
-import Dashboard from "@/pages/Dashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
+import UserDashboard from "@/pages/UserDashboard";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
@@ -77,6 +79,9 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/dashboard" component={Login} />
+          <Route path="/user-dashboard" component={Login} />
           <Route path="/shop" component={Shop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
@@ -88,7 +93,8 @@ function Router() {
           <Route path="/shop" component={Shop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
-          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/dashboard" component={AdminDashboard} />
+          <Route path="/user-dashboard" component={UserDashboard} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />

@@ -118,14 +118,16 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
-                  {showDashboard && (
+                  {/* Dashboard Link - Different based on role */}
+                  <Link href={user?.role === 'admin' ? "/dashboard" : "/user-dashboard"}>
+                    <DropdownMenuItem className="text-white hover:bg-white/10">
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  {/* Admin-only links */}
+                  {user?.role === 'admin' && (
                     <>
-                      <Link href="/dashboard">
-                        <DropdownMenuItem className="text-white hover:bg-white/10">
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
-                        </DropdownMenuItem>
-                      </Link>
                       <Link href="/revenue">
                         <DropdownMenuItem className="text-white hover:bg-white/10">
                           <TrendingUp className="mr-2 h-4 w-4" />

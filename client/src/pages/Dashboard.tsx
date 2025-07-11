@@ -3,19 +3,24 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  BarChart3, 
-  AlertTriangle, 
+  CreditCard, 
   TrendingUp, 
+  TrendingDown,
   Users, 
-  CreditCard,
-  Download,
-  Shield,
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
   Activity,
-  CheckCircle,
-  XCircle,
-  ChartBar
+  Wallet,
+  ShoppingBag,
+  Plus,
+  AlertTriangle,
+  Eye,
+  Calendar,
+  Clock,
+  MoreVertical
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,19 +28,30 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import Navigation from "@/components/Navigation";
-import AdminStats from "@/components/AdminStats";
-import TransactionList from "@/components/TransactionList";
-import { RevenueChart } from "@/components/charts/RevenueChart";
-import { TransactionTrends } from "@/components/charts/TransactionTrends";
-import { CardDistribution } from "@/components/charts/CardDistribution";
-import { LiveRevenueTracker } from "@/components/charts/LiveRevenueTracker";
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from 'recharts';
+
+const CARD_GRADIENTS = [
+  'bg-gradient-to-br from-pink-500 via-rose-500 to-red-500',
+  'bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500', 
+  'bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600',
+  'bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500'
+];
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [wsConnected, setWsConnected] = useState(false);
-  const [fraudAlerts, setFraudAlerts] = useState<any[]>([]);
+  const [selectedCard, setSelectedCard] = useState(0);
 
   // Check if user is admin
   useEffect(() => {
