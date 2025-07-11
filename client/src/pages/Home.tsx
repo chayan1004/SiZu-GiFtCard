@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Gift, CreditCard, TrendingUp, User, Settings, LogOut } from "lucide-react";
+import { Gift, CreditCard, TrendingUp, User, Settings, LogOut, Plus, Search, ArrowDownCircle, History, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -157,15 +157,15 @@ export default function Home() {
             className="mb-12"
           >
             <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               <Link href="/shop">
                 <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform duration-300 card-hover-glow cursor-pointer">
                   <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Gift className="w-8 h-8 text-white" />
+                    <div className="w-14 h-14 bg-purple-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <ShoppingBag className="w-7 h-7 text-purple-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Buy Gift Cards</h3>
-                    <p className="text-gray-300">Purchase digital gift cards for any occasion</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Shop</h3>
+                    <p className="text-sm text-gray-400">Buy gift cards</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -173,11 +173,11 @@ export default function Home() {
               <Link href="/balance">
                 <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform duration-300 card-hover-glow cursor-pointer">
                   <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 gradient-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CreditCard className="w-8 h-8 text-white" />
+                    <div className="w-14 h-14 bg-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Search className="w-7 h-7 text-blue-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Check Balance</h3>
-                    <p className="text-gray-300">View your gift card balance and history</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Balance</h3>
+                    <p className="text-sm text-gray-400">Check balance</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -185,11 +185,35 @@ export default function Home() {
               <Link href="/redeem">
                 <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform duration-300 card-hover-glow cursor-pointer">
                   <CardContent className="p-6 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <TrendingUp className="w-8 h-8 text-white" />
+                    <div className="w-14 h-14 bg-pink-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <ArrowDownCircle className="w-7 h-7 text-pink-400" />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Redeem Cards</h3>
-                    <p className="text-gray-300">Redeem your gift cards instantly</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">Redeem</h3>
+                    <p className="text-sm text-gray-400">Use cards</p>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/recharge">
+                <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform duration-300 card-hover-glow cursor-pointer">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-14 h-14 bg-green-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Plus className="w-7 h-7 text-green-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-1">Recharge</h3>
+                    <p className="text-sm text-gray-400">Add funds</p>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/order-history">
+                <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform duration-300 card-hover-glow cursor-pointer">
+                  <CardContent className="p-6 text-center">
+                    <div className="w-14 h-14 bg-amber-600/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <History className="w-7 h-7 text-amber-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-1">Orders</h3>
+                    <p className="text-sm text-gray-400">View history</p>
                   </CardContent>
                 </Card>
               </Link>

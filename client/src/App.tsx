@@ -11,6 +11,7 @@ import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
 import Balance from "@/pages/Balance";
 import Redeem from "@/pages/Redeem";
+import Recharge from "@/pages/Recharge";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import UserDashboard from "@/pages/UserDashboard";
@@ -116,11 +117,11 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/shop" component={PublicShop} />
-          <Route path="/balance" component={PublicBalance} />
-          <Route path="/redeem" component={PublicRedeem} />
-          <Route path="/recharge" component={PublicRecharge} />
-          <Route path="/order-history" component={PublicOrderHistory} />
+          <Route path="/shop" component={Shop} />
+          <Route path="/balance" component={Balance} />
+          <Route path="/redeem" component={Redeem} />
+          <Route path="/recharge" component={Recharge} />
+          <Route path="/order-history" component={OrderHistory} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/dashboard/user" component={UserDashboard} />
