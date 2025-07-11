@@ -271,4 +271,142 @@ export class EmailService {
       </html>
     `;
   }
+
+  async sendVerificationEmail(email: string, verificationToken: string): Promise<void> {
+    try {
+      const verificationUrl = `${process.env.APP_URL || 'http://localhost:5000'}/api/auth/verify/${verificationToken}`;
+      
+      const mailOptions = {
+        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
+        to: email,
+        subject: 'Verify Your SiZu GiftCard Account',
+        html: this.generateVerificationEmailHTML(email, verificationUrl),
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Verification email sent:', info.messageId);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      throw new Error('Failed to send verification email');
+    }
+  }
+
+  async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+    try {
+      const resetUrl = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password/${resetToken}`;
+      
+      const mailOptions = {
+        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
+        to: email,
+        subject: 'Reset Your SiZu GiftCard Password',
+        html: this.generatePasswordResetEmailHTML(email, resetUrl),
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Password reset email sent:', info.messageId);
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      throw new Error('Failed to send password reset email');
+    }
+  }
+
+  private generateVerificationEmailHTML(email: string, verificationUrl: string): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Email</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to SiZu GiftCard!</h1>
+          </div>
+          
+          <div class="content">
+            <p>Hi there,</p>
+            
+            <p>Thank you for creating an account with SiZu GiftCard. To complete your registration, please verify your email address by clicking the button below:</p>
+            
+            <div style="text-align: center;">
+              <a href="${verificationUrl}" class="button">Verify My Email</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #7C3AED;">${verificationUrl}</p>
+            
+            <p>This link will expire in 24 hours for security reasons.</p>
+            
+            <p>If you didn't create an account with us, please ignore this email.</p>
+          </div>
+          
+          <div class="footer">
+            <p>This email was sent to ${email}. If you have any questions, please contact our support team.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private generatePasswordResetEmailHTML(email: string, resetUrl: string): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Your Password</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #EF4444 0%, #F59E0B 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: linear-gradient(135deg, #EF4444 0%, #F59E0B 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Password Reset Request</h1>
+          </div>
+          
+          <div class="content">
+            <p>Hi there,</p>
+            
+            <p>We received a request to reset the password for your SiZu GiftCard account. If you made this request, click the button below to reset your password:</p>
+            
+            <div style="text-align: center;">
+              <a href="${resetUrl}" class="button">Reset My Password</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #EF4444;">${resetUrl}</p>
+            
+            <p>This link will expire in 1 hour for security reasons.</p>
+            
+            <p>If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
+            
+            <p><strong>Security Tip:</strong> Never share your password with anyone. SiZu GiftCard staff will never ask for your password.</p>
+          </div>
+          
+          <div class="footer">
+            <p>This email was sent to ${email}. If you have any questions, please contact our support team.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+  }
 }

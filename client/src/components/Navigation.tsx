@@ -153,12 +153,23 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button 
-                onClick={onLogin}
-                className="hidden md:block gradient-primary text-white hover:opacity-90 transition-opacity"
-              >
-                Login
-              </Button>
+              <div className="flex items-center space-x-3">
+                <Link href="/login">
+                  <Button 
+                    className="hidden md:block gradient-primary text-white hover:opacity-90 transition-opacity"
+                  >
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button 
+                    variant="outline"
+                    className="hidden md:block border-white/20 text-white hover:bg-white/10"
+                  >
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             )}
 
             {/* Mobile Menu Button */}
@@ -189,15 +200,25 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                       </Link>
                     ))}
                     {!user && (
-                      <Button 
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onLogin?.();
-                        }}
-                        className="gradient-primary text-white hover:opacity-90 transition-opacity"
-                      >
-                        Login
-                      </Button>
+                      <div className="space-y-3">
+                        <Link href="/login">
+                          <Button 
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="w-full gradient-primary text-white hover:opacity-90 transition-opacity"
+                          >
+                            Login
+                          </Button>
+                        </Link>
+                        <Link href="/register">
+                          <Button 
+                            onClick={() => setMobileMenuOpen(false)}
+                            variant="outline"
+                            className="w-full border-white/20 text-white hover:bg-white/10"
+                          >
+                            Sign Up
+                          </Button>
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </SheetContent>

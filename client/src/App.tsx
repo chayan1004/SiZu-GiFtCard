@@ -27,6 +27,10 @@ import OrderDetails from "@/pages/OrderDetails";
 import Revenue from "@/pages/Revenue";
 import FeeManagement from "@/pages/FeeManagement";
 import ReceiptView from "@/pages/ReceiptView";
+import CustomerLogin from "@/pages/CustomerLogin";
+import CustomerRegister from "@/pages/CustomerRegister";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -87,9 +91,13 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/dashboard" component={Login} />
-          <Route path="/user-dashboard" component={Login} />
+          <Route path="/login" component={CustomerLogin} />
+          <Route path="/register" component={CustomerRegister} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/reset-password/:token" component={ResetPassword} />
+          <Route path="/admin-login" component={Login} />
+          <Route path="/dashboard" component={CustomerLogin} />
+          <Route path="/user-dashboard" component={CustomerLogin} />
           <Route path="/shop" component={Shop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />

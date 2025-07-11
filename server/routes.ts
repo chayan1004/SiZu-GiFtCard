@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import cors from "cors";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { requireCustomerAuth, requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
@@ -100,8 +101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { user, verificationToken } = await AuthService.registerCustomer(email, password, firstName, lastName);
       
-      // Send verification email (you can integrate this with your EmailService)
-      // await emailService.sendVerificationEmail(email, verificationToken);
+      // Send verification email
+      await emailService.sendVerificationEmail(email, verificationToken);
 
       res.status(201).json({ 
         message: "Registration successful. Please check your email for verification.",
@@ -168,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetToken = await AuthService.requestPasswordReset(email);
       
       // Send reset email
-      // await emailService.sendPasswordResetEmail(email, resetToken);
+      await emailService.sendPasswordResetEmail(email, resetToken);
       
       res.json({ message: "If that email exists, we've sent a password reset link" });
     } catch (error: any) {
