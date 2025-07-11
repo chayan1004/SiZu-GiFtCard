@@ -30,11 +30,12 @@ export function useCustomerAuth() {
   const checkAuthStatus = async () => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await apiRequest('/api/auth/customer', {
-        method: 'GET',
+      const res = await fetch('/api/auth/customer', {
+        credentials: 'include'
       });
       
-      if (response.id) {
+      if (res.ok) {
+        const response = await res.json();
         setAuthState({
           user: response,
           isAuthenticated: true,
@@ -55,11 +56,8 @@ export function useCustomerAuth() {
   const login = async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      const res = await apiRequest('POST', '/api/auth/login', { email, password });
+      const response = await res.json();
 
       if (response.user) {
         setAuthState({
@@ -90,11 +88,8 @@ export function useCustomerAuth() {
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
     try {
-      const response = await apiRequest('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName, lastName })
-      });
+      const res = await apiRequest('POST', '/api/auth/register', { email, password, firstName, lastName });
+      const response = await res.json();
 
       if (response.userId) {
         toast({
@@ -118,9 +113,7 @@ export function useCustomerAuth() {
 
   const logout = async () => {
     try {
-      await apiRequest('/api/auth/logout', {
-        method: 'POST'
-      });
+      await apiRequest('POST', '/api/auth/logout');
       
       setAuthState({
         user: null,
@@ -141,11 +134,7 @@ export function useCustomerAuth() {
 
   const forgotPassword = async (email: string) => {
     try {
-      await apiRequest('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+      await apiRequest('POST', '/api/auth/forgot-password', { email });
       
       toast({
         title: "Password reset email sent",
@@ -165,11 +154,7 @@ export function useCustomerAuth() {
 
   const resetPassword = async (token: string, password: string) => {
     try {
-      await apiRequest('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password })
-      });
+      await apiRequest('POST', '/api/auth/reset-password', { token, password });
       
       toast({
         title: "Password reset successful",
