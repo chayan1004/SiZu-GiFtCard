@@ -121,6 +121,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 11, 2025 - Phase 7: Saved Payment Cards Feature Complete
+- **Database Schema Updates**: Extended user profiles with payment card management
+  - Added `squareCustomerId` column to users table for Square integration
+  - Created `saved_cards` table with secure token storage (never raw card data)
+  - Implemented proper foreign key relationships and indexes
+- **Backend Infrastructure**: Complete saved cards management system
+  - Storage layer: Full CRUD operations with ownership validation
+  - Square Customer Service: Integration with Square Customers & Cards APIs
+  - API endpoints: List, add, delete cards and set default payment method
+  - Security: PCI-compliant tokenization, rate limiting on card addition
+- **Frontend Components**: User-friendly payment card management UI
+  - SavedCardsList: Display saved cards with default indicator
+  - AddCardForm: Secure card addition form (requires Square SDK integration)
+  - Profile page: Complete user profile with payment methods tab
+  - Navigation: Added profile link to user dropdown menu
+- **Testing & Documentation**: Comprehensive test coverage and API docs
+  - Integration tests: Complete test suite for all card endpoints
+  - API documentation: Full endpoint reference with examples
+  - Security considerations: PCI compliance and data protection
+
 ### July 11, 2025 - Phase 6: Testing & Deployment Complete
 - **Comprehensive Testing Infrastructure**: Complete test suite with 100+ tests
   - Backend unit tests: Authentication, gift cards, security, integration

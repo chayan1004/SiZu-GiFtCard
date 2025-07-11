@@ -97,10 +97,12 @@ export default function Navigation({ user, onLogin, onLogout, showDashboard }: N
                     </div>
                   </div>
                   <DropdownMenuSeparator className="bg-white/20" />
-                  <DropdownMenuItem className="text-white hover:bg-white/10">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
+                  <Link href="/profile">
+                    <DropdownMenuItem className="text-white hover:bg-white/10">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuItem className="text-white hover:bg-white/10">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>

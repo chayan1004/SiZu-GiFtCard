@@ -221,6 +221,11 @@ export const corsOptions = {
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
 
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
     // Allow Replit domains
     const allowedOrigins = [
       'https://replit.com',
