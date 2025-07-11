@@ -58,6 +58,9 @@ export class SquarePaymentsService {
       return;
     }
 
+    // Use provided location ID or get from API
+    this.locationId = process.env.SQUARE_LOCATION_ID || '';
+
     // Determine environment based on token
     const environment = process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox') 
       ? SquareEnvironment.Sandbox 
@@ -68,12 +71,20 @@ export class SquarePaymentsService {
       environment: environment
     });
 
-    // Get first available location
+    // Initialize location
     this.initializeLocation();
   }
 
   private async initializeLocation() {
     try {
+      // If location ID is provided, use it directly
+      if (this.locationId) {
+        this.isInitialized = true;
+        console.log(`Square Payments Service initialized with location: ${this.locationId}`);
+        return;
+      }
+
+      // Otherwise, get first available location
       const locationsApi = this.client.locationsApi;
       const response = await locationsApi.listLocations();
       
