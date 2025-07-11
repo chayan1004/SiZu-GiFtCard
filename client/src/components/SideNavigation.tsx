@@ -38,6 +38,7 @@ export default function SideNavigation({ user, onLogout, isAdmin = false }: Side
     { path: '/admin/fees', label: 'Fee Management', icon: DollarSign },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin/security', label: 'Security', icon: Shield },
+    { path: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 
   const userNavItems = [

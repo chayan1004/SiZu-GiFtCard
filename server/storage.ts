@@ -108,6 +108,13 @@ export interface IStorage {
   // Payment record operations (for webhook processing)
   createPaymentRecord(payment: any): Promise<any>;
   updateTransactionStatus(orderId: string, status: string): Promise<void>;
+
+  // Merchant connection operations (for OAuth)
+  createMerchantConnection(connection: any): Promise<any>;
+  getMerchantConnection(userId: string, merchantId: string): Promise<any | undefined>;
+  getMerchantConnections(userId: string): Promise<any[]>;
+  updateMerchantConnection(id: string, updates: any): Promise<any>;
+  deleteMerchantConnection(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -786,6 +793,59 @@ export class DatabaseStorage implements IStorage {
     // 1. Find the transaction by Square order ID (stored in metadata)
     // 2. Update the transaction status
     // 3. Trigger any necessary actions (send emails, activate gift cards, etc.)
+  }
+
+  // Merchant connection operations (for OAuth)
+  async createMerchantConnection(connection: any): Promise<any> {
+    // Store merchant OAuth connection
+    // In production, this would be stored in a merchant_connections table
+    console.log('Creating merchant connection:', {
+      userId: connection.userId,
+      merchantId: connection.merchantId,
+      scopes: connection.scopes
+    });
+    
+    return {
+      id: nanoid(),
+      ...connection,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
+  async getMerchantConnection(userId: string, merchantId: string): Promise<any | undefined> {
+    // Retrieve merchant OAuth connection
+    // In production, this would query a merchant_connections table
+    console.log(`Getting merchant connection for user: ${userId}, merchant: ${merchantId}`);
+    
+    // Return mock data for development
+    return undefined;
+  }
+
+  async getMerchantConnections(userId: string): Promise<any[]> {
+    // Get all merchant connections for a user
+    // In production, this would query a merchant_connections table
+    console.log(`Getting all merchant connections for user: ${userId}`);
+    
+    return [];
+  }
+
+  async updateMerchantConnection(id: string, updates: any): Promise<any> {
+    // Update merchant OAuth connection (refresh tokens, etc.)
+    // In production, this would update a merchant_connections table
+    console.log(`Updating merchant connection: ${id}`, updates);
+    
+    return {
+      id,
+      ...updates,
+      updatedAt: new Date()
+    };
+  }
+
+  async deleteMerchantConnection(id: string): Promise<void> {
+    // Delete merchant OAuth connection
+    // In production, this would delete from a merchant_connections table
+    console.log(`Deleting merchant connection: ${id}`);
   }
 }
 

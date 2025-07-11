@@ -24,6 +24,7 @@ import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminSecurity from "@/pages/AdminSecurity";
 import AdminRevenue from "@/pages/AdminRevenue";
 import AdminFeeManagement from "@/pages/AdminFeeManagement";
+import AdminSettings from "@/pages/admin/AdminSettings";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
@@ -46,6 +47,8 @@ import PublicRecharge from "@/pages/PublicRecharge";
 import PublicRedeem from "@/pages/PublicRedeem";
 import PublicBalance from "@/pages/PublicBalance";
 import PublicOrderHistory from "@/pages/PublicOrderHistory";
+import OAuthSuccess from "@/pages/OAuthSuccess";
+import OAuthError from "@/pages/OAuthError";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -115,6 +118,8 @@ function Router() {
           <Route path="/recharge" component={PublicRecharge} />
           <Route path="/order-history" component={PublicOrderHistory} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
+          <Route path="/oauth/success" component={OAuthSuccess} />
+          <Route path="/oauth/error" component={OAuthError} />
         </>
       ) : (
         <>
@@ -134,6 +139,7 @@ function Router() {
           <Route path="/admin/security" component={AdminSecurity} />
           <Route path="/admin/revenue" component={AdminRevenue} />
           <Route path="/admin/fees" component={AdminFeeManagement} />
+          <Route path="/admin/settings" component={AdminSettings} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />

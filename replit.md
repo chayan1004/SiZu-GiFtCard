@@ -608,3 +608,30 @@ Preferred communication style: Simple, everyday language.
   - Environment variable BROWSERSLIST_IGNORE_OLD_DATA=true
   - Resolved regex syntax errors and dependency conflicts
   - Modern browser features working correctly
+
+### January 11, 2025 - Phase 25: Square OAuth Multi-Merchant System Implementation
+- **Square OAuth Service**: Complete OAuth 2.0 implementation for multi-merchant connections
+  - SquareOAuthService: Authorization flow, token exchange, refresh, revoke, and introspection
+  - OAuth routes: /api/oauth/square/authorize, /api/oauth/square/callback, /api/oauth/token/refresh/:connectionId
+  - Support for state parameter to track user context during authorization
+  - Comprehensive error handling with detailed error codes and descriptions
+  - Token introspection to verify token validity and permissions
+- **Merchant Connection Storage**: Extended database schema for OAuth connections
+  - merchant_connections table: Stores OAuth tokens and merchant metadata
+  - Support for multiple merchant connections per user
+  - Secure storage of access tokens, refresh tokens, and expiry times
+  - Automatic token refresh before expiration
+- **OAuth Flow Pages**: Client-side handling of OAuth callbacks
+  - OAuthSuccess page: Displays successful connection with merchant ID
+  - OAuthError page: Shows detailed error information with retry options
+  - Seamless redirect flow back to admin settings
+- **Architecture Evolution**: From single access token to multi-merchant system
+  - Replaced single SQUARE_ACCESS_TOKEN with OAuth-based connections
+  - Each merchant connection has its own access token and scope
+  - Support for different permission levels based on OAuth scopes
+  - Scalable system allowing unlimited merchant onboarding
+- **Security & Compliance**: Production-ready OAuth implementation
+  - PKCE (Proof Key for Code Exchange) ready for enhanced security
+  - State parameter validation to prevent CSRF attacks
+  - Secure token storage with encryption support
+  - OAuth best practices following Square's official documentation
