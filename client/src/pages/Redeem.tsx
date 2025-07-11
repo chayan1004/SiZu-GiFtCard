@@ -96,16 +96,38 @@ export default function Redeem() {
     
     // Try to extract gift card code from QR result
     try {
-      const url = new URL(result);
-      const code = url.searchParams.get('code');
-      if (code) {
-        setGiftCardCode(code);
-        toast({
-          title: "QR Code Scanned",
-          description: "Gift card code has been filled in automatically.",
-        });
+      // First check if it's a URL
+      if (result.startsWith('http://') || result.startsWith('https://')) {
+        const url = new URL(result);
+        
+        // Check if it's a receipt page URL
+        if (url.pathname.startsWith('/receipt-view/')) {
+          // Extract token and redirect to receipt page
+          const token = url.pathname.split('/receipt-view/')[1];
+          if (token) {
+            toast({
+              title: "Receipt QR Code Detected",
+              description: "Redirecting to receipt page...",
+            });
+            setTimeout(() => {
+              window.location.href = `/receipt-view/${token}`;
+            }, 1000);
+            return;
+          }
+        }
+        
+        // Check if it's a redeem URL with code parameter
+        const code = url.searchParams.get('code');
+        if (code) {
+          setGiftCardCode(code);
+          toast({
+            title: "QR Code Scanned",
+            description: "Gift card code has been filled in automatically.",
+          });
+          return;
+        }
       }
-    } catch {
+    } catch (error) {
       // If not a URL, assume it's a direct code
       if (result.startsWith('GC')) {
         setGiftCardCode(result);

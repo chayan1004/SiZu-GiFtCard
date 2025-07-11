@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Camera, X } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Camera, X, AlertCircle, Loader2 } from 'lucide-react';
+import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { Result } from '@zxing/library';
 
 interface QRScannerProps {
   onResult: (result: string) => void;
@@ -9,106 +11,81 @@ interface QRScannerProps {
 
 export default function QRScanner({ onResult }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [scannerControls, setScannerControls] = useState<IScannerControls | null>(null);
+  const codeReaderRef = useRef<BrowserQRCodeReader | null>(null);
+  const [hasScanned, setHasScanned] = useState(false);
 
   useEffect(() => {
-    startCamera();
+    // Initialize the QR code reader
+    codeReaderRef.current = new BrowserQRCodeReader();
+    
     return () => {
-      stopCamera();
+      // Cleanup on unmount
+      stopScanning();
     };
   }, []);
 
-  const startCamera = async () => {
+  const startScanning = async () => {
     try {
       setError(null);
+      setHasScanned(false);
       
-      // Check if getUserMedia is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access not supported in this browser');
+      if (!codeReaderRef.current) {
+        throw new Error('QR Scanner not initialized');
       }
-      
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment', // Use back camera on mobile
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
-      
-      setStream(mediaStream);
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        
-        // Add error handling for video play
-        try {
-          await videoRef.current.play();
-          setIsScanning(true);
+
+      // Check for camera permissions
+      const devices = await codeReaderRef.current.listVideoInputDevices();
+      if (devices.length === 0) {
+        throw new Error('No camera devices found');
+      }
+
+      // Use the first available camera (or preferred back camera on mobile)
+      const selectedDeviceId = devices.find(device => 
+        device.label.toLowerCase().includes('back') || 
+        device.label.toLowerCase().includes('rear')
+      )?.deviceId || devices[0].deviceId;
+
+      // Start continuous scanning
+      const controls = await codeReaderRef.current.decodeFromVideoDevice(
+        selectedDeviceId,
+        videoRef.current!,
+        (result: Result | null, error?: Error) => {
+          if (result && !hasScanned) {
+            // Successfully scanned
+            const text = result.getText();
+            console.log('QR Code scanned:', text);
+            setHasScanned(true);
+            onResult(text);
+            stopScanning();
+          }
           
-          // Start scanning for QR codes
-          scanQRCode();
-        } catch (playError) {
-          console.error('Error playing video:', playError);
-          setError('Unable to start camera preview. Please try again.');
+          if (error && error.name !== 'NotFoundException') {
+            // Only log errors that aren't "QR code not found"
+            console.error('QR scanning error:', error);
+          }
         }
-      }
+      );
+
+      setScannerControls(controls);
+      setIsScanning(true);
     } catch (err) {
-      console.error('Error accessing camera:', err);
+      console.error('Error starting QR scanner:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(`Unable to access camera: ${errorMessage}. Please ensure you have granted camera permissions.`);
+      setError(`Unable to start scanner: ${errorMessage}`);
+      setIsScanning(false);
     }
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+  const stopScanning = () => {
+    if (scannerControls) {
+      scannerControls.stop();
+      setScannerControls(null);
     }
     setIsScanning(false);
-  };
-
-  const scanQRCode = () => {
-    if (!videoRef.current || !canvasRef.current || !isScanning) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-
-    if (!context) return;
-
-    // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    // Draw video frame to canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Get image data
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Try to decode QR code using a simple pattern detection
-    // Note: In a real implementation, you would use a proper QR code library like @zxing/browser
-    // For demo purposes, we'll simulate QR code detection
-    
-    // Simple mock QR code detection - in production, use a proper QR code library
-    const mockQRDetection = () => {
-      // This is a placeholder - in production, you'd use a library like @zxing/browser
-      // For now, we'll show how the interface would work
-      return null;
-    };
-
-    const qrResult = mockQRDetection();
-    
-    if (qrResult) {
-      onResult(qrResult);
-      stopCamera();
-    } else {
-      // Continue scanning
-      setTimeout(scanQRCode, 100);
-    }
+    setHasScanned(false);
   };
 
   if (error) {
@@ -119,7 +96,7 @@ export default function QRScanner({ onResult }: QRScannerProps) {
           <h3 className="text-lg font-semibold text-white mb-2">Camera Access Error</h3>
           <p className="text-red-400 text-sm mb-4">{error}</p>
           <Button 
-            onClick={startCamera}
+            onClick={startScanning}
             className="gradient-primary text-white hover:opacity-90 transition-opacity"
           >
             Try Again
@@ -139,23 +116,33 @@ export default function QRScanner({ onResult }: QRScannerProps) {
               className="w-full h-64 bg-black rounded-lg object-cover"
               playsInline
               muted
+              style={{ display: isScanning ? 'block' : 'none' }}
             />
-            <canvas 
-              ref={canvasRef}
-              className="hidden"
-            />
+            
+            {!isScanning && (
+              <div className="w-full h-64 bg-white/10 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <Camera className="w-16 h-16 text-white/50 mx-auto mb-4" />
+                  <p className="text-white/70">Camera preview will appear here</p>
+                </div>
+              </div>
+            )}
             
             {/* Scanning overlay */}
             {isScanning && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border-2 border-primary rounded-lg relative">
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg"></div>
-                  
-                  {/* Scanning line animation */}
-                  <div className="absolute top-0 left-0 w-full h-0.5 bg-primary animate-pulse"></div>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="relative">
+                  <div className="w-48 h-48 border-2 border-primary rounded-lg relative">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-lg"></div>
+                    
+                    {/* Scanning line animation */}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -163,7 +150,7 @@ export default function QRScanner({ onResult }: QRScannerProps) {
           
           <div className="mt-4 text-center">
             <p className="text-white text-sm mb-4">
-              {isScanning ? 'Point your camera at the QR code' : 'Preparing camera...'}
+              {isScanning ? 'Point your camera at the QR code' : 'Click Start Scanning to begin'}
             </p>
             
             {/* Instructions */}
@@ -174,22 +161,32 @@ export default function QRScanner({ onResult }: QRScannerProps) {
                 <li>• Ensure good lighting</li>
                 <li>• Keep QR code within the frame</li>
                 <li>• Move closer or further if needed</li>
+                <li>• Make sure QR code is not damaged</li>
               </ul>
             </div>
             
             <div className="flex gap-2 justify-center">
               <Button 
-                onClick={startCamera}
+                onClick={startScanning}
                 disabled={isScanning}
                 size="sm"
                 className="gradient-primary text-white hover:opacity-90 transition-opacity"
               >
-                <Camera className="w-4 h-4 mr-2" />
-                {isScanning ? 'Scanning...' : 'Start Camera'}
+                {isScanning ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Scanning...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-4 h-4 mr-2" />
+                    Start Scanning
+                  </>
+                )}
               </Button>
               
               <Button 
-                onClick={stopCamera}
+                onClick={stopScanning}
                 disabled={!isScanning}
                 size="sm"
                 variant="outline"
