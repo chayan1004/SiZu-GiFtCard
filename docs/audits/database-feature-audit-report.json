@@ -1,0 +1,330 @@
+{
+  "timestamp": "2025-07-11T16:51:49.212Z",
+  "summary": {
+    "implemented": 8,
+    "placeholders": 0,
+    "missing": 60
+  },
+  "placeholderImplementations": [],
+  "missingFeatures": [
+    {
+      "category": "Webhook Handler",
+      "feature": "handlePaymentCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handlePaymentUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardActivityCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardActivityUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardCustomerLinked",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleGiftCardCustomerUnlinked",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleRefundCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleRefundUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleDisputeCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleDisputeUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleDisputeEvidenceCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handlePayoutCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handlePayoutUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleOnlineCheckoutLocationSettingsUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleOnlineCheckoutMerchantSettingsUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleCustomerCreated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleCustomerUpdated",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Webhook Handler",
+      "feature": "handleCustomerDeleted",
+      "type": "NO_DATABASE_STORAGE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "sessions",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "users",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "savedCards",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "giftCards",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "giftCardTransactions",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "receipts",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "feeConfigurations",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "fraudAlerts",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "merchantConnections",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "paymentLinks",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "refunds",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "disputes",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "webhookSubscriptions",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "emailTemplates",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "giftCardDesigns",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "auditLogs",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "systemSettings",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "squarePayments",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, DELETE"
+    },
+    {
+      "category": "Table Operations",
+      "feature": "webhookEvents",
+      "type": "MISSING_OPERATIONS",
+      "details": "CREATE, READ, UPDATE, DELETE"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminDisputes - /api/disputes/:id",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminDisputes - /api/disputes/:id/accept",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminRefunds - /api/refunds/create",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminRefunds - /api/refunds/:id",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminWebhooks - /api/webhooks/subscriptions",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminWebhooks - /api/webhooks/test",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminEmailTemplates - /api/email-templates",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminEmailTemplates - /api/email-templates/:id",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminGiftCardDesigns - /api/gift-card-designs",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminGiftCardDesigns - /api/gift-card-designs/:id",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminSystemSettings - /api/system-settings",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminSystemSettings - /api/system-settings/:key",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminAuditLogs - /api/audit-logs",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminAuditLogs - /api/audit-logs/export",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminDatabaseTools - /api/admin/database/backup",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Admin Page Endpoint",
+      "feature": "AdminDatabaseTools - /api/admin/database/optimize",
+      "type": "MISSING_ENDPOINT"
+    },
+    {
+      "category": "Service Method",
+      "feature": "EmailService.sendEmail",
+      "type": "MISSING_METHOD"
+    },
+    {
+      "category": "Service Method",
+      "feature": "EmailService.sendTemplatedEmail",
+      "type": "MISSING_METHOD"
+    },
+    {
+      "category": "Service Method",
+      "feature": "PDFService.generateReceipt",
+      "type": "MISSING_METHOD"
+    },
+    {
+      "category": "Service Method",
+      "feature": "PDFService.generateReport",
+      "type": "MISSING_METHOD"
+    },
+    {
+      "category": "Service Method",
+      "feature": "SquareRefundsService.createRefund",
+      "type": "MISSING_METHOD"
+    }
+  ]
+}
