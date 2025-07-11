@@ -63,6 +63,27 @@
   animation: scan 2s ease-in-out infinite;
 }
 
+/* Animation delay utilities for staggered animations */
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Enhanced glassmorphism backdrop effects */
+@supports (backdrop-filter: blur(16px)) {
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: all 0.2s ease;
+}
+
 @layer base {
   * {
     @apply border-border;

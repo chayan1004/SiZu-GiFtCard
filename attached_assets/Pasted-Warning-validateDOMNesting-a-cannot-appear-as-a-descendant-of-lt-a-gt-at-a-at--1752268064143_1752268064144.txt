@@ -1,0 +1,22 @@
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:220:18
+    at div
+    at div
+    at _c1 (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/src/components/ui/card.tsx:123:12)
+    at form
+    at div
+    at _c (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at MotionComponent (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=9a1ae241:945:40)
+    at div
+    at CustomerLogin (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/src/pages/CustomerLogin.tsx:32:32)
+    at Route (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:206:16)
+    at Switch (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=9a1ae241:262:17)
+    at Router (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/src/App.tsx?v=2FjX0MMxXKoZY00eILzDk:134:52)
+    at ErrorBoundary (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/src/App.tsx?v=2FjX0MMxXKoZY00eILzDk:79:5)
+    at Provider (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=9a1ae241:38:15)
+    at TooltipProvider (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=9a1ae241:63:5)
+    at QueryClientProvider (https://916512a3-30ee-4ddc-ae9b-f55816430795-00-1ab0k6z1w66d3.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9a1ae241:2933:3)
+    at App
