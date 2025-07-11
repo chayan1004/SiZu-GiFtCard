@@ -325,10 +325,20 @@ export const oauthStates = pgTable("oauth_states", {
   metadata: jsonb("metadata"),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Rate Limits table - for rate limiting functionality
+export const rateLimits = pgTable("rate_limits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  identifier: varchar("identifier").notNull(), // IP or user ID
+  endpoint: varchar("endpoint").notNull(),
+  windowStart: timestamp("window_start").notNull(),
+  count: integer("count").default(1).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
-  index("idx_oauth_states_state").on(table.state),
-  index("idx_oauth_states_expires_at").on(table.expiresAt),
-  index("idx_oauth_states_user").on(table.userId),
+  index("idx_rate_limits_identifier").on(table.identifier),
+  index("idx_rate_limits_endpoint").on(table.endpoint),
+  index("idx_rate_limits_window").on(table.windowStart),
 ]);
 
 // Relations
@@ -513,19 +523,6 @@ export type InsertWebhookEvent = typeof webhookEvents.$inferInsert;
 
 export type OAuthState = typeof oauthStates.$inferSelect;
 export type InsertOAuthState = typeof oauthStates.$inferInsert;
-
-// Rate Limiting table (for API and WebSocket rate limiting)
-export const rateLimits = pgTable("rate_limits", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  identifier: varchar("identifier").notNull(), // IP address or user ID
-  endpoint: varchar("endpoint").notNull(),
-  count: integer("count").default(0).notNull(),
-  windowStart: timestamp("window_start").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_rate_limits_identifier").on(table.identifier),
-  index("idx_rate_limits_window").on(table.windowStart),
-]);
 
 export type RateLimit = typeof rateLimits.$inferSelect;
 export type InsertRateLimit = typeof rateLimits.$inferInsert;

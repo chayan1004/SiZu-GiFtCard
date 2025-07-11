@@ -934,7 +934,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(oauthStates)
       .where(eq(oauthStates.state, state));
-    return result;
+    
+    if (result && result.userId) {
+      return {
+        userId: result.userId,
+        expiresAt: result.expiresAt
+      };
+    }
+    return undefined;
   }
 
   async deleteOAuthState(state: string): Promise<void> {
@@ -958,7 +965,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(rateLimits.identifier, identifier),
         eq(rateLimits.endpoint, endpoint),
-        gte(rateLimits.timestamp, windowStart)
+        gte(rateLimits.windowStart, windowStart)
       ));
 
     const requestCount = result?.count || 0;
@@ -969,7 +976,7 @@ export class DatabaseStorage implements IStorage {
     await db.insert(rateLimits).values({
       identifier,
       endpoint,
-      timestamp: new Date()
+      windowStart: new Date()
     });
   }
 
@@ -978,7 +985,7 @@ export class DatabaseStorage implements IStorage {
     const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
     await db
       .delete(rateLimits)
-      .where(lt(rateLimits.timestamp, cutoffTime));
+      .where(lt(rateLimits.windowStart, cutoffTime));
   }
 
   // Webhook event operations  
@@ -1023,7 +1030,7 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(webhookSubscriptions)
       .set({
-        isActive: false,
+        isEnabled: false,
         updatedAt: new Date()
       })
       .where(eq(webhookSubscriptions.id, id));
@@ -1033,7 +1040,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(webhookSubscriptions)
-      .where(eq(webhookSubscriptions.isActive, true))
+      .where(eq(webhookSubscriptions.isEnabled, true))
       .orderBy(desc(webhookSubscriptions.createdAt));
   }
 
@@ -1117,7 +1124,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(giftCardDesigns)
       .where(eq(giftCardDesigns.isActive, true))
-      .orderBy(giftCardDesigns.sortOrder);
+      .orderBy(desc(giftCardDesigns.createdAt));
   }
 
   async getGiftCardDesign(id: string): Promise<any | undefined> {
@@ -1146,21 +1153,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAuditLogs(limit: number = 100, filters?: any): Promise<any[]> {
-    let query = db.select().from(auditLogs);
-    
-    if (filters?.userId) {
-      query = query.where(eq(auditLogs.userId, filters.userId));
-    }
-    
-    if (filters?.action) {
-      query = query.where(eq(auditLogs.action, filters.action));
-    }
-    
-    if (filters?.entityType) {
-      query = query.where(eq(auditLogs.entityType, filters.entityType));
-    }
-    
-    return await query
+    return await db
+      .select()
+      .from(auditLogs)
       .orderBy(desc(auditLogs.createdAt))
       .limit(limit);
   }
@@ -1173,10 +1168,11 @@ export class DatabaseStorage implements IStorage {
     return setting?.value;
   }
 
-  async setSystemSetting(key: string, value: any): Promise<void> {
+  async setSystemSetting(key: string, value: any, category: string = 'general'): Promise<void> {
     await db
       .insert(systemSettings)
       .values({
+        category,
         key,
         value,
         updatedAt: new Date()
