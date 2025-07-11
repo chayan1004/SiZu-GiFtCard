@@ -1,0 +1,409 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { SquareService } from "./services/SquareService";
+import { PDFService } from "./services/PDFService";
+import { EmailService } from "./services/EmailService";
+import { QRService } from "./services/QRService";
+import {
+  createGiftCardSchema,
+  redeemGiftCardSchema,
+  checkBalanceSchema,
+  type CreateGiftCardInput,
+  type RedeemGiftCardInput,
+  type CheckBalanceInput,
+} from "@shared/schema";
+import { nanoid } from "nanoid";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize services
+  const squareService = new SquareService();
+  const pdfService = new PDFService();
+  const emailService = new EmailService();
+  const qrService = new QRService();
+
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Admin middleware
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      next();
+    } catch (error) {
+      res.status(500).json({ message: "Authorization check failed" });
+    }
+  };
+
+  // Gift Card Routes
+  
+  // Create gift card (Admin only)
+  app.post('/api/giftcards', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const data = createGiftCardSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      
+      // Generate unique code
+      const code = `GC${nanoid(12).toUpperCase()}`;
+      
+      // Create gift card in database
+      const giftCard = await storage.createGiftCard({
+        ...data,
+        code,
+        issuedById: userId,
+      });
+
+      // Create with Square API
+      try {
+        const squareGiftCard = await squareService.createGiftCard(
+          parseFloat(data.initialAmount.toString()),
+          code
+        );
+        
+        // Update with Square ID
+        await storage.updateGiftCardSquareId(giftCard.id, squareGiftCard.id);
+      } catch (squareError) {
+        console.error("Square API error:", squareError);
+        // Continue without Square integration for now
+      }
+
+      // Create issue transaction
+      const transaction = await storage.createTransaction({
+        giftCardId: giftCard.id,
+        type: 'issue',
+        amount: data.initialAmount.toString(),
+        balanceAfter: data.initialAmount.toString(),
+        performedById: userId,
+        notes: 'Gift card issued',
+      });
+
+      // Generate receipt
+      const receiptData = {
+        giftCardCode: code,
+        amount: data.initialAmount,
+        design: data.design,
+        customMessage: data.customMessage,
+        recipientEmail: data.recipientEmail,
+        recipientName: data.recipientName,
+        senderName: data.senderName,
+        transactionId: transaction.id,
+        timestamp: new Date().toISOString(),
+      };
+
+      const accessToken = nanoid(32);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+      const receipt = await storage.createReceipt({
+        giftCardId: giftCard.id,
+        transactionId: transaction.id,
+        receiptData,
+        accessToken,
+        expiresAt,
+      });
+
+      // Generate QR code
+      const qrCode = await qrService.generateQRCode(
+        `${process.env.REPLIT_DOMAINS?.split(',')[0]}/redeem?code=${code}`
+      );
+
+      // Generate PDF receipt
+      const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
+      await storage.updateReceiptPdfPath(receipt.id, pdfPath);
+
+      // Send email if recipient email provided
+      if (data.recipientEmail) {
+        await emailService.sendGiftCardEmail(
+          data.recipientEmail,
+          receiptData,
+          pdfPath,
+          qrCode
+        );
+        await storage.markReceiptEmailSent(receipt.id);
+      }
+
+      res.json({
+        ...giftCard,
+        receiptUrl: `/api/receipts/${accessToken}`,
+        qrCode,
+      });
+    } catch (error) {
+      console.error("Error creating gift card:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create gift card" });
+    }
+  });
+
+  // Check balance (Public)
+  app.post('/api/giftcards/balance', async (req, res) => {
+    try {
+      const { code } = checkBalanceSchema.parse(req.body);
+      
+      const giftCard = await storage.getGiftCardByCode(code);
+      if (!giftCard) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+
+      if (!giftCard.isActive) {
+        return res.status(400).json({ message: "Gift card is not active" });
+      }
+
+      res.json({
+        code: giftCard.code,
+        balance: parseFloat(giftCard.currentBalance),
+        isActive: giftCard.isActive,
+      });
+    } catch (error) {
+      console.error("Error checking balance:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to check balance" });
+    }
+  });
+
+  // Redeem gift card (Public)
+  app.post('/api/giftcards/redeem', async (req, res) => {
+    try {
+      const { code, amount } = redeemGiftCardSchema.parse(req.body);
+      
+      const giftCard = await storage.getGiftCardByCode(code);
+      if (!giftCard) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+
+      if (!giftCard.isActive) {
+        return res.status(400).json({ message: "Gift card is not active" });
+      }
+
+      const currentBalance = parseFloat(giftCard.currentBalance);
+      if (amount > currentBalance) {
+        return res.status(400).json({ message: "Insufficient balance" });
+      }
+
+      const newBalance = currentBalance - amount;
+
+      // Update balance
+      await storage.updateGiftCardBalance(giftCard.id, newBalance.toString());
+
+      // Create redemption transaction
+      const transaction = await storage.createTransaction({
+        giftCardId: giftCard.id,
+        type: 'redeem',
+        amount: amount.toString(),
+        balanceAfter: newBalance.toString(),
+        notes: 'Gift card redeemed',
+      });
+
+      // Generate receipt for redemption
+      const receiptData = {
+        giftCardCode: code,
+        amount: amount,
+        remainingBalance: newBalance,
+        transactionId: transaction.id,
+        timestamp: new Date().toISOString(),
+        type: 'redemption',
+      };
+
+      const accessToken = nanoid(32);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      const receipt = await storage.createReceipt({
+        giftCardId: giftCard.id,
+        transactionId: transaction.id,
+        receiptData,
+        accessToken,
+        expiresAt,
+      });
+
+      // Generate QR code for receipt
+      const qrCode = await qrService.generateQRCode(
+        `${process.env.REPLIT_DOMAINS?.split(',')[0]}/receipt/${accessToken}`
+      );
+
+      // Generate PDF receipt
+      const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
+      await storage.updateReceiptPdfPath(receipt.id, pdfPath);
+
+      res.json({
+        success: true,
+        redeemedAmount: amount,
+        remainingBalance: newBalance,
+        receiptUrl: `/api/receipts/${accessToken}`,
+        transactionId: transaction.id,
+      });
+    } catch (error) {
+      console.error("Error redeeming gift card:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to redeem gift card" });
+    }
+  });
+
+  // Get all gift cards (Admin only)
+  app.get('/api/giftcards', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const giftCards = await storage.getAllGiftCards();
+      res.json(giftCards);
+    } catch (error) {
+      console.error("Error fetching gift cards:", error);
+      res.status(500).json({ message: "Failed to fetch gift cards" });
+    }
+  });
+
+  // Get user's gift cards
+  app.get('/api/giftcards/mine', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const giftCards = await storage.getGiftCardsByUser(userId);
+      res.json(giftCards);
+    } catch (error) {
+      console.error("Error fetching user gift cards:", error);
+      res.status(500).json({ message: "Failed to fetch gift cards" });
+    }
+  });
+
+  // Receipt routes
+  app.get('/api/receipts/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const receipt = await storage.getReceiptByToken(token);
+      
+      if (!receipt) {
+        return res.status(404).json({ message: "Receipt not found or expired" });
+      }
+
+      res.json(receipt);
+    } catch (error) {
+      console.error("Error fetching receipt:", error);
+      res.status(500).json({ message: "Failed to fetch receipt" });
+    }
+  });
+
+  app.get('/api/receipts/:token/pdf', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const receipt = await storage.getReceiptByToken(token);
+      
+      if (!receipt || !receipt.pdfPath) {
+        return res.status(404).json({ message: "Receipt PDF not found" });
+      }
+
+      res.download(receipt.pdfPath, `receipt-${receipt.id}.pdf`);
+    } catch (error) {
+      console.error("Error serving PDF:", error);
+      res.status(500).json({ message: "Failed to serve PDF" });
+    }
+  });
+
+  // Admin Dashboard Routes
+  app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  app.get('/api/admin/transactions', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const transactions = await storage.getRecentTransactions(limit);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
+  app.get('/api/admin/fraud-alerts', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const alerts = await storage.getUnresolvedFraudAlerts();
+      res.json(alerts);
+    } catch (error) {
+      console.error("Error fetching fraud alerts:", error);
+      res.status(500).json({ message: "Failed to fetch fraud alerts" });
+    }
+  });
+
+  app.post('/api/admin/fraud-alerts/:id/resolve', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.claims.sub;
+      
+      const alert = await storage.resolveFraudAlert(id, userId);
+      res.json(alert);
+    } catch (error) {
+      console.error("Error resolving fraud alert:", error);
+      res.status(500).json({ message: "Failed to resolve fraud alert" });
+    }
+  });
+
+  // Health check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Create HTTP server
+  const httpServer = createServer(app);
+
+  // WebSocket server for real-time fraud alerts
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        // Handle client messages if needed
+      } catch (error) {
+        console.error('Invalid WebSocket message:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+  });
+
+  // Function to broadcast fraud alerts to all connected clients
+  const broadcastFraudAlert = (alert: any) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'fraud-alert',
+          data: alert
+        }));
+      }
+    });
+  };
+
+  // Export broadcast function for use in services
+  (global as any).broadcastFraudAlert = broadcastFraudAlert;
+
+  return httpServer;
+}
