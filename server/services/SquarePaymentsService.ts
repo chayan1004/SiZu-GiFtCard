@@ -1,328 +1,298 @@
-
-import { SquareClient, SquareEnvironment } from "square";
-import type { 
-  Payment, 
+import { 
+  SquareClient, 
+  SquareEnvironment,
   CreatePaymentRequest,
-  CreateOrderRequest,
-  Order,
-  Money,
-  OrderLineItem,
   CreatePaymentResponse,
-  CreateOrderResponse
+  Payment,
+  CompletePaymentRequest,
+  CompletePaymentResponse,
+  UpdatePaymentRequest,
+  UpdatePaymentResponse,
+  CancelPaymentByIdempotencyKeyRequest,
+  CancelPaymentByIdempotencyKeyResponse,
+  GetPaymentResponse,
+  ListPaymentsResponse,
+  CreateCustomerRequest,
+  CreateCustomerResponse,
+  Customer,
+  CreateCardRequest,
+  CreateCardResponse,
+  Card,
+  SearchCustomersRequest,
+  SearchCustomersResponse
 } from "square";
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
-export interface PaymentMethod {
-  type: 'card' | 'ach' | 'google_pay' | 'apple_pay' | 'cash_app_pay';
-  sourceId: string;
-  verificationToken?: string;
-  deviceFingerprint?: string;
-}
-
-export interface PaymentRequest {
-  amount: number;
-  currency: string;
-  paymentMethod: PaymentMethod;
-  orderId?: string;
-  referenceId?: string;
-  note?: string;
-  customerId?: string;
-  buyerEmailAddress?: string;
-  billingAddress?: any;
-  shippingAddress?: any;
-}
-
-export interface PaymentResult {
+export interface PaymentCreationResult {
   success: boolean;
+  payment?: Payment;
   paymentId?: string;
-  orderId?: string;
-  receiptNumber?: string;
-  receiptUrl?: string;
-  cardDetails?: any;
-  status: 'approved' | 'pending' | 'failed' | 'canceled';
-  errorMessage?: string;
+  error?: string;
+  errorCode?: string;
+}
+
+export interface CustomerCreationResult {
+  success: boolean;
+  customer?: Customer;
+  customerId?: string;
+  error?: string;
+  errorCode?: string;
+}
+
+export interface CardTokenizationResult {
+  success: boolean;
+  card?: Card;
+  cardId?: string;
+  error?: string;
   errorCode?: string;
 }
 
 export class SquarePaymentsService {
   private client: SquareClient;
-  private paymentsApi: any;
-  private ordersApi: any;
   private locationId: string;
+  private isInitialized: boolean = false;
 
   constructor() {
-    const accessToken = process.env.SQUARE_ACCESS_TOKEN;
-    const environment = process.env.SQUARE_ENVIRONMENT === 'production' 
-      ? SquareEnvironment.Production 
-      : SquareEnvironment.Sandbox;
-
-    if (!accessToken) {
-      throw new Error("Square access token is required for payment processing");
+    if (!process.env.SQUARE_ACCESS_TOKEN) {
+      console.warn("Square access token not provided. Payment features will be limited.");
+      return;
     }
+
+    // Determine environment based on token
+    const environment = process.env.SQUARE_ACCESS_TOKEN.startsWith('sandbox') 
+      ? SquareEnvironment.Sandbox 
+      : SquareEnvironment.Production;
 
     this.client = new SquareClient({
-      accessToken,
-      environment,
+      accessToken: process.env.SQUARE_ACCESS_TOKEN,
+      environment: environment
     });
 
-    this.paymentsApi = this.client.paymentsApi;
-    this.ordersApi = this.client.ordersApi;
-    this.locationId = process.env.SQUARE_LOCATION_ID || '';
-
-    if (!this.locationId) {
-      throw new Error("Square location ID is required");
-    }
+    // Get first available location
+    this.initializeLocation();
   }
 
-  /**
-   * Process a payment for gift card purchase or reload
-   */
-  async processPayment(request: PaymentRequest): Promise<PaymentResult> {
+  private async initializeLocation() {
     try {
-      // Create order first (recommended for gift cards)
-      const order = await this.createOrder(request);
+      const locationsApi = this.client.locationsApi;
+      const response = await locationsApi.listLocations();
       
-      // Process payment
-      const payment = await this.createPayment(request, order.id);
-      
-      return {
-        success: true,
-        paymentId: payment.id,
-        orderId: order.id,
-        receiptNumber: payment.receiptNumber || payment.id,
-        receiptUrl: payment.receiptUrl,
-        cardDetails: this.extractCardDetails(payment),
-        status: this.mapPaymentStatus(payment.status),
-      };
-    } catch (error: any) {
-      console.error("Payment processing error:", error);
-      return {
-        success: false,
-        status: 'failed',
-        errorMessage: this.extractErrorMessage(error),
-        errorCode: this.extractErrorCode(error),
-      };
-    }
-  }
-
-  /**
-   * Create an order for gift card purchase
-   */
-  private async createOrder(request: PaymentRequest): Promise<Order> {
-    const orderRequest: CreateOrderRequest = {
-      order: {
-        locationId: this.locationId,
-        referenceId: request.referenceId || `gift-card-${nanoid(10)}`,
-        lineItems: [
-          {
-            name: 'SiZu Gift Card',
-            quantity: '1',
-            note: request.note || 'Digital Gift Card',
-            basePriceMoney: {
-              amount: BigInt(Math.round(request.amount * 100)),
-              currency: request.currency || 'USD',
-            },
-            variationType: 'ITEM_VARIATION',
-          } as OrderLineItem
-        ],
-        netAmounts: {
-          totalMoney: {
-            amount: BigInt(Math.round(request.amount * 100)),
-            currency: request.currency || 'USD',
-          },
-          taxMoney: {
-            amount: BigInt(0),
-            currency: request.currency || 'USD',
-          },
-          discountMoney: {
-            amount: BigInt(0),
-            currency: request.currency || 'USD',
-          },
-          tipMoney: {
-            amount: BigInt(0),
-            currency: request.currency || 'USD',
-          },
-          serviceChargeMoney: {
-            amount: BigInt(0),
-            currency: request.currency || 'USD',
-          },
-        },
-      },
-      idempotencyKey: `order-${request.referenceId || nanoid(10)}-${Date.now()}`,
-    };
-
-    const response: CreateOrderResponse = await this.ordersApi.createOrder(orderRequest);
-    
-    if (response.result.errors) {
-      throw new Error(`Order creation failed: ${response.result.errors.map(e => e.detail).join(', ')}`);
-    }
-
-    if (!response.result.order) {
-      throw new Error("Order creation failed: No order returned");
-    }
-
-    return response.result.order;
-  }
-
-  /**
-   * Create payment for the order
-   */
-  private async createPayment(request: PaymentRequest, orderId: string): Promise<Payment> {
-    const paymentRequest: CreatePaymentRequest = {
-      sourceId: request.paymentMethod.sourceId,
-      idempotencyKey: `payment-${orderId}-${Date.now()}`,
-      amountMoney: {
-        amount: BigInt(Math.round(request.amount * 100)),
-        currency: request.currency || 'USD',
-      },
-      orderId,
-      autocomplete: true,
-      locationId: this.locationId,
-      referenceId: request.referenceId,
-      note: request.note,
-      customerId: request.customerId,
-      buyerEmailAddress: request.buyerEmailAddress,
-    };
-
-    // Add verification token for card payments
-    if (request.paymentMethod.verificationToken) {
-      paymentRequest.verificationToken = request.paymentMethod.verificationToken;
-    }
-
-    // Add billing/shipping addresses if provided
-    if (request.billingAddress) {
-      paymentRequest.billingAddress = request.billingAddress;
-    }
-    if (request.shippingAddress) {
-      paymentRequest.shippingAddress = request.shippingAddress;
-    }
-
-    const response: CreatePaymentResponse = await this.paymentsApi.createPayment(paymentRequest);
-    
-    if (response.result.errors) {
-      throw new Error(`Payment failed: ${response.result.errors.map(e => e.detail).join(', ')}`);
-    }
-
-    if (!response.result.payment) {
-      throw new Error("Payment failed: No payment returned");
-    }
-
-    return response.result.payment;
-  }
-
-  /**
-   * Process ACH payment
-   */
-  async processACHPayment(request: PaymentRequest): Promise<PaymentResult> {
-    try {
-      // ACH payments require special handling
-      const paymentRequest: CreatePaymentRequest = {
-        sourceId: request.paymentMethod.sourceId,
-        idempotencyKey: `ach-payment-${nanoid(10)}-${Date.now()}`,
-        amountMoney: {
-          amount: BigInt(Math.round(request.amount * 100)),
-          currency: request.currency || 'USD',
-        },
-        autocomplete: false, // ACH payments are async
-        locationId: this.locationId,
-        referenceId: request.referenceId,
-        note: request.note,
-        customerId: request.customerId,
-        buyerEmailAddress: request.buyerEmailAddress,
-      };
-
-      const response: CreatePaymentResponse = await this.paymentsApi.createPayment(paymentRequest);
-      
-      if (response.result.errors) {
-        throw new Error(`ACH Payment failed: ${response.result.errors.map(e => e.detail).join(', ')}`);
+      if (response.result.locations && response.result.locations.length > 0) {
+        this.locationId = response.result.locations[0].id!;
+        this.isInitialized = true;
+        console.log(`Square Payments Service initialized with location: ${this.locationId}`);
+      } else {
+        console.error("No Square locations found");
       }
-
-      const payment = response.result.payment!;
-      
-      return {
-        success: true,
-        paymentId: payment.id,
-        receiptNumber: payment.receiptNumber || payment.id,
-        status: 'pending', // ACH payments are initially pending
-      };
-    } catch (error: any) {
-      console.error("ACH payment processing error:", error);
-      return {
-        success: false,
-        status: 'failed',
-        errorMessage: this.extractErrorMessage(error),
-        errorCode: this.extractErrorCode(error),
-      };
+    } catch (error) {
+      console.error("Failed to initialize Square Payments Service:", error);
     }
   }
 
   /**
-   * Process digital wallet payments (Google Pay, Apple Pay)
+   * Create a payment from a source (card nonce from Web Payments SDK)
    */
-  async processDigitalWalletPayment(request: PaymentRequest): Promise<PaymentResult> {
-    try {
-      // Digital wallet payments use the same flow as card payments
-      // but with specific source types
-      return await this.processPayment(request);
-    } catch (error: any) {
-      console.error("Digital wallet payment error:", error);
+  async createPayment(
+    sourceId: string,
+    amount: number,
+    customerId?: string,
+    orderId?: string,
+    referenceId?: string,
+    note?: string,
+    verification?: boolean
+  ): Promise<PaymentCreationResult> {
+    if (!this.isInitialized) {
       return {
         success: false,
-        status: 'failed',
-        errorMessage: this.extractErrorMessage(error),
-        errorCode: this.extractErrorCode(error),
+        error: 'Square Payments Service not initialized',
+        errorCode: 'SERVICE_UNAVAILABLE'
       };
     }
-  }
 
-  /**
-   * Process Cash App Pay payment
-   */
-  async processCashAppPayment(request: PaymentRequest): Promise<PaymentResult> {
     try {
-      // Cash App Pay requires specific handling
-      const paymentRequest: CreatePaymentRequest = {
-        sourceId: request.paymentMethod.sourceId,
-        idempotencyKey: `cashapp-payment-${nanoid(10)}-${Date.now()}`,
+      const paymentsApi = this.client.paymentsApi;
+      const idempotencyKey = `payment-${nanoid()}`;
+
+      const request: CreatePaymentRequest = {
+        sourceId,
+        idempotencyKey,
         amountMoney: {
-          amount: BigInt(Math.round(request.amount * 100)),
-          currency: request.currency || 'USD',
+          amount: BigInt(Math.round(amount * 100)),
+          currency: 'USD'
         },
+        locationId: this.locationId,
+        customerId,
+        orderId,
+        referenceId,
+        note,
+        // Enable automatic capture for gift card purchases
         autocomplete: true,
-        locationId: this.locationId,
-        referenceId: request.referenceId,
-        note: request.note,
-        customerId: request.customerId,
-        buyerEmailAddress: request.buyerEmailAddress,
-        cashDetails: {
-          buyerSuppliedMoney: {
-            amount: BigInt(Math.round(request.amount * 100)),
-            currency: request.currency || 'USD',
-          },
-        },
+        // Enable verification for card-on-file payments
+        verifyBuyerIdentity: verification
       };
 
-      const response: CreatePaymentResponse = await this.paymentsApi.createPayment(paymentRequest);
-      
-      if (response.result.errors) {
-        throw new Error(`Cash App Pay failed: ${response.result.errors.map(e => e.detail).join(', ')}`);
+      const response: CreatePaymentResponse = await paymentsApi.createPayment(request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        console.error('Payment creation error:', error);
+        return {
+          success: false,
+          error: error.detail || 'Failed to create payment',
+          errorCode: error.code || 'PAYMENT_FAILED'
+        };
       }
 
-      const payment = response.result.payment!;
-      
+      if (!response.result.payment) {
+        return {
+          success: false,
+          error: 'No payment returned from Square',
+          errorCode: 'INVALID_RESPONSE'
+        };
+      }
+
+      const payment = response.result.payment;
+      console.log(`Payment created successfully: ${payment.id}`);
+
       return {
         success: true,
-        paymentId: payment.id,
-        receiptNumber: payment.receiptNumber || payment.id,
-        status: this.mapPaymentStatus(payment.status),
+        payment,
+        paymentId: payment.id
       };
     } catch (error: any) {
-      console.error("Cash App Pay processing error:", error);
+      console.error('Payment creation error:', error);
+      
+      if (error.statusCode && error.errors) {
+        return {
+          success: false,
+          error: error.errors[0]?.detail || error.message,
+          errorCode: error.errors[0]?.code || 'API_ERROR'
+        };
+      }
+
       return {
         success: false,
-        status: 'failed',
-        errorMessage: this.extractErrorMessage(error),
-        errorCode: this.extractErrorCode(error),
+        error: error.message || 'Failed to create payment',
+        errorCode: 'UNKNOWN_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Complete a payment (for delayed capture scenarios)
+   */
+  async completePayment(paymentId: string): Promise<PaymentCreationResult> {
+    if (!this.isInitialized) {
+      return {
+        success: false,
+        error: 'Square Payments Service not initialized',
+        errorCode: 'SERVICE_UNAVAILABLE'
+      };
+    }
+
+    try {
+      const paymentsApi = this.client.paymentsApi;
+      
+      const request: CompletePaymentRequest = {};
+      const response: CompletePaymentResponse = await paymentsApi.completePayment(paymentId, request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        console.error('Payment completion error:', error);
+        return {
+          success: false,
+          error: error.detail || 'Failed to complete payment',
+          errorCode: error.code || 'COMPLETION_FAILED'
+        };
+      }
+
+      if (!response.result.payment) {
+        return {
+          success: false,
+          error: 'No payment returned from Square',
+          errorCode: 'INVALID_RESPONSE'
+        };
+      }
+
+      const payment = response.result.payment;
+      console.log(`Payment completed successfully: ${payment.id}`);
+
+      return {
+        success: true,
+        payment,
+        paymentId: payment.id
+      };
+    } catch (error: any) {
+      console.error('Payment completion error:', error);
+      
+      if (error.statusCode && error.errors) {
+        return {
+          success: false,
+          error: error.errors[0]?.detail || error.message,
+          errorCode: error.errors[0]?.code || 'API_ERROR'
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || 'Failed to complete payment',
+        errorCode: 'UNKNOWN_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Cancel a payment by idempotency key
+   */
+  async cancelPayment(idempotencyKey: string): Promise<PaymentCreationResult> {
+    if (!this.isInitialized) {
+      return {
+        success: false,
+        error: 'Square Payments Service not initialized',
+        errorCode: 'SERVICE_UNAVAILABLE'
+      };
+    }
+
+    try {
+      const paymentsApi = this.client.paymentsApi;
+      
+      const request: CancelPaymentByIdempotencyKeyRequest = {
+        idempotencyKey
+      };
+      const response: CancelPaymentByIdempotencyKeyResponse = await paymentsApi.cancelPaymentByIdempotencyKey(request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        // Ignore errors if payment was already canceled
+        if (error.code !== 'PAYMENT_ALREADY_CANCELED') {
+          console.error('Payment cancellation error:', error);
+          return {
+            success: false,
+            error: error.detail || 'Failed to cancel payment',
+            errorCode: error.code || 'CANCELLATION_FAILED'
+          };
+        }
+      }
+
+      console.log('Payment canceled successfully');
+      return {
+        success: true
+      };
+    } catch (error: any) {
+      console.error('Payment cancellation error:', error);
+      
+      if (error.statusCode && error.errors) {
+        return {
+          success: false,
+          error: error.errors[0]?.detail || error.message,
+          errorCode: error.errors[0]?.code || 'API_ERROR'
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || 'Failed to cancel payment',
+        errorCode: 'UNKNOWN_ERROR'
       };
     }
   }
@@ -331,127 +301,220 @@ export class SquarePaymentsService {
    * Get payment details
    */
   async getPayment(paymentId: string): Promise<Payment | null> {
+    if (!this.isInitialized) {
+      throw new Error('Square Payments Service not initialized');
+    }
+
     try {
-      const response = await this.paymentsApi.getPayment(paymentId);
+      const paymentsApi = this.client.paymentsApi;
+      const response: GetPaymentResponse = await paymentsApi.getPayment(paymentId);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        throw new Error(error.detail || 'Failed to retrieve payment');
+      }
+
       return response.result.payment || null;
-    } catch (error) {
-      console.error("Error retrieving payment:", error);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.statusCode && error.errors) {
+        throw new Error(error.errors[0]?.detail || error.message);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Create a customer for card-on-file
+   */
+  async createCustomer(
+    email: string,
+    firstName?: string,
+    lastName?: string,
+    phoneNumber?: string
+  ): Promise<CustomerCreationResult> {
+    if (!this.isInitialized) {
+      return {
+        success: false,
+        error: 'Square Payments Service not initialized',
+        errorCode: 'SERVICE_UNAVAILABLE'
+      };
+    }
+
+    try {
+      const customersApi = this.client.customersApi;
+      const idempotencyKey = `customer-${nanoid()}`;
+
+      const request: CreateCustomerRequest = {
+        idempotencyKey,
+        emailAddress: email,
+        givenName: firstName,
+        familyName: lastName,
+        phoneNumber
+      };
+
+      const response: CreateCustomerResponse = await customersApi.createCustomer(request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        console.error('Customer creation error:', error);
+        return {
+          success: false,
+          error: error.detail || 'Failed to create customer',
+          errorCode: error.code || 'CUSTOMER_CREATION_FAILED'
+        };
+      }
+
+      if (!response.result.customer) {
+        return {
+          success: false,
+          error: 'No customer returned from Square',
+          errorCode: 'INVALID_RESPONSE'
+        };
+      }
+
+      const customer = response.result.customer;
+      console.log(`Customer created successfully: ${customer.id}`);
+
+      return {
+        success: true,
+        customer,
+        customerId: customer.id
+      };
+    } catch (error: any) {
+      console.error('Customer creation error:', error);
+      
+      if (error.statusCode && error.errors) {
+        return {
+          success: false,
+          error: error.errors[0]?.detail || error.message,
+          errorCode: error.errors[0]?.code || 'API_ERROR'
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || 'Failed to create customer',
+        errorCode: 'UNKNOWN_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Save a card on file for a customer
+   */
+  async saveCardOnFile(
+    customerId: string,
+    cardNonce: string
+  ): Promise<CardTokenizationResult> {
+    if (!this.isInitialized) {
+      return {
+        success: false,
+        error: 'Square Payments Service not initialized',
+        errorCode: 'SERVICE_UNAVAILABLE'
+      };
+    }
+
+    try {
+      const cardsApi = this.client.cardsApi;
+      const idempotencyKey = `card-${nanoid()}`;
+
+      const request: CreateCardRequest = {
+        idempotencyKey,
+        sourceId: cardNonce,
+        card: {
+          customerId
+        }
+      };
+
+      const response: CreateCardResponse = await cardsApi.createCard(request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        const error = response.result.errors[0];
+        console.error('Card tokenization error:', error);
+        return {
+          success: false,
+          error: error.detail || 'Failed to save card',
+          errorCode: error.code || 'CARD_TOKENIZATION_FAILED'
+        };
+      }
+
+      if (!response.result.card) {
+        return {
+          success: false,
+          error: 'No card returned from Square',
+          errorCode: 'INVALID_RESPONSE'
+        };
+      }
+
+      const card = response.result.card;
+      console.log(`Card saved successfully: ${card.id}`);
+
+      return {
+        success: true,
+        card,
+        cardId: card.id
+      };
+    } catch (error: any) {
+      console.error('Card tokenization error:', error);
+      
+      if (error.statusCode && error.errors) {
+        return {
+          success: false,
+          error: error.errors[0]?.detail || error.message,
+          errorCode: error.errors[0]?.code || 'API_ERROR'
+        };
+      }
+
+      return {
+        success: false,
+        error: error.message || 'Failed to save card',
+        errorCode: 'UNKNOWN_ERROR'
+      };
+    }
+  }
+
+  /**
+   * Search for existing customer by email
+   */
+  async findCustomerByEmail(email: string): Promise<Customer | null> {
+    if (!this.isInitialized) {
+      return null;
+    }
+
+    try {
+      const customersApi = this.client.customersApi;
+      
+      const request: SearchCustomersRequest = {
+        filter: {
+          emailAddress: {
+            exact: email
+          }
+        },
+        limit: BigInt(1)
+      };
+
+      const response: SearchCustomersResponse = await customersApi.searchCustomers(request);
+
+      if (response.result.errors && response.result.errors.length > 0) {
+        console.error('Customer search error:', response.result.errors[0]);
+        return null;
+      }
+
+      return response.result.customers?.[0] || null;
+    } catch (error: any) {
+      console.error('Customer search error:', error);
       return null;
     }
   }
 
   /**
-   * Cancel a payment (if possible)
-   */
-  async cancelPayment(paymentId: string): Promise<boolean> {
-    try {
-      const response = await this.paymentsApi.cancelPayment(paymentId, {
-        idempotencyKey: `cancel-${paymentId}-${Date.now()}`,
-      });
-      return !response.result.errors;
-    } catch (error) {
-      console.error("Error canceling payment:", error);
-      return false;
-    }
-  }
-
-  /**
-   * Complete a payment (for async payments like ACH)
-   */
-  async completePayment(paymentId: string): Promise<PaymentResult> {
-    try {
-      const response = await this.paymentsApi.completePayment(paymentId, {
-        idempotencyKey: `complete-${paymentId}-${Date.now()}`,
-      });
-      
-      if (response.result.errors) {
-        throw new Error(`Payment completion failed: ${response.result.errors.map(e => e.detail).join(', ')}`);
-      }
-
-      const payment = response.result.payment!;
-      
-      return {
-        success: true,
-        paymentId: payment.id,
-        status: this.mapPaymentStatus(payment.status),
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        status: 'failed',
-        errorMessage: this.extractErrorMessage(error),
-      };
-    }
-  }
-
-  /**
-   * Extract card details for receipt (non-sensitive info only)
-   */
-  private extractCardDetails(payment: Payment): any {
-    if (!payment.cardDetails) return null;
-    
-    return {
-      brand: payment.cardDetails.card?.cardBrand,
-      last4: payment.cardDetails.card?.last4,
-      expMonth: payment.cardDetails.card?.expMonth,
-      expYear: payment.cardDetails.card?.expYear,
-      entryMethod: payment.cardDetails.entryMethod,
-      fingerprint: payment.cardDetails.card?.fingerprint,
-    };
-  }
-
-  /**
-   * Map Square payment status to our status
-   */
-  private mapPaymentStatus(status?: string): 'approved' | 'pending' | 'failed' | 'canceled' {
-    switch (status) {
-      case 'COMPLETED':
-        return 'approved';
-      case 'APPROVED':
-        return 'approved';
-      case 'PENDING':
-        return 'pending';
-      case 'CANCELED':
-        return 'canceled';
-      case 'FAILED':
-        return 'failed';
-      default:
-        return 'pending';
-    }
-  }
-
-  /**
-   * Extract error message from Square API error
-   */
-  private extractErrorMessage(error: any): string {
-    if (error.errors && error.errors.length > 0) {
-      return error.errors[0].detail || error.errors[0].code || 'Payment processing failed';
-    }
-    return error.message || 'Payment processing failed';
-  }
-
-  /**
-   * Extract error code from Square API error
-   */
-  private extractErrorCode(error: any): string {
-    if (error.errors && error.errors.length > 0) {
-      return error.errors[0].code || 'UNKNOWN_ERROR';
-    }
-    return 'UNKNOWN_ERROR';
-  }
-
-  /**
-   * Validate payment method type
-   */
-  isValidPaymentMethod(type: string): boolean {
-    const validTypes = ['card', 'ach', 'google_pay', 'apple_pay', 'cash_app_pay'];
-    return validTypes.includes(type);
-  }
-
-  /**
-   * Check if Square integration is available
+   * Check if service is available
    */
   isAvailable(): boolean {
-    return !!process.env.SQUARE_ACCESS_TOKEN && !!this.locationId;
+    return this.isInitialized;
   }
 }
+
+// Singleton instance
+export const squarePaymentsService = new SquarePaymentsService();

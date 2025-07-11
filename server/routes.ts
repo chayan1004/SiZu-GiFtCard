@@ -13,6 +13,7 @@ import { EmailService } from "./services/EmailService";
 import { QRService } from "./services/QRService";
 import { aiService } from "./services/aiService";
 import { paymentsRouter } from "./routes-payments";
+import { webhooksRouter } from "./routes-webhooks";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -135,6 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add payment routes
   app.use('/api/payments', paymentsRouter);
+  
+  // Add webhook routes
+  app.use('/api/webhooks', webhooksRouter);
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

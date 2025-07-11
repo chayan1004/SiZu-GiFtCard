@@ -104,6 +104,10 @@ export interface IStorage {
   updateFeeConfiguration(id: string, fee: Partial<InsertFeeConfiguration>): Promise<FeeConfiguration>;
   deleteFeeConfiguration(id: string): Promise<void>;
   calculateFeeAmount(cardAmount: number, feeType: string): Promise<number>;
+
+  // Payment record operations (for webhook processing)
+  createPaymentRecord(payment: any): Promise<any>;
+  updateTransactionStatus(orderId: string, status: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -762,6 +766,35 @@ export class DatabaseStorage implements IStorage {
     }
 
     return Math.round(calculatedFee * 100) / 100; // Round to 2 decimal places
+  }
+
+  async createPaymentRecord(payment: any): Promise<any> {
+    // For now, we'll log the payment - in production, this would store in a payments table
+    console.log('Payment record:', payment);
+    
+    // If this is a gift card purchase, we can update the transaction record
+    if (payment.orderId) {
+      const [transaction] = await db
+        .update(giftCardTransactions)
+        .set({
+          metadata: payment
+        })
+        .where(eq(giftCardTransactions.id, payment.orderId))
+        .returning();
+      return transaction;
+    }
+    
+    return payment;
+  }
+
+  async updateTransactionStatus(orderId: string, status: string): Promise<void> {
+    // Update the transaction metadata with the new status
+    await db
+      .update(giftCardTransactions)
+      .set({
+        metadata: { status }
+      })
+      .where(eq(giftCardTransactions.id, orderId));
   }
 }
 

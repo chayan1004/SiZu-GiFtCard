@@ -1,6 +1,7 @@
 
 import { Router } from 'express';
-import { SquarePaymentsService } from './services/SquarePaymentsService';
+import { squarePaymentsService } from './services/SquarePaymentsService';
+import { SquareOrdersService } from './services/SquareOrdersService';
 import { storage } from './storage';
 import { 
   generalRateLimit, 
@@ -8,19 +9,26 @@ import {
   validateGiftCardAmount,
   secureLogger 
 } from './middleware/security';
+import { isAuthenticated } from './replitAuth';
 import { z } from 'zod';
 
 const router = Router();
+const ordersService = new SquareOrdersService();
 
-// Initialize payments service only if Square access token is available
-let paymentsService: SquarePaymentsService | null = null;
-try {
-  if (process.env.SQUARE_ACCESS_TOKEN) {
-    paymentsService = new SquarePaymentsService();
-  }
-} catch (error) {
-  console.log('Square payments service not available - Square access token not provided');
-}
+// Web Payments SDK configuration endpoint
+router.get('/config', (req, res) => {
+  const applicationId = process.env.SQUARE_APPLICATION_ID || '';
+  const locationId = process.env.SQUARE_LOCATION_ID || '';
+  const environment = process.env.SQUARE_ACCESS_TOKEN?.startsWith('sandbox') 
+    ? 'sandbox' 
+    : 'production';
+
+  res.json({
+    applicationId,
+    locationId,
+    environment
+  });
+});
 
 // Payment request schema
 const paymentRequestSchema = z.object({
@@ -55,107 +63,265 @@ const paymentRequestSchema = z.object({
   }).optional(),
 });
 
-// Process payment for gift card purchase
-router.post('/process', 
-  generalRateLimit,
+// Create payment for gift card purchase
+router.post('/create', 
+  isAuthenticated,
   validateInput,
   validateGiftCardAmount,
   secureLogger,
   async (req, res) => {
     try {
-      const paymentData = paymentRequestSchema.parse(req.body);
-      
-      if (!paymentsService || !paymentsService.isAvailable()) {
+      const { 
+        sourceId,  // Card nonce from Web Payments SDK
+        amount, 
+        giftCardId,
+        recipientEmail,
+        recipientName,
+        message,
+        designType
+      } = req.body;
+
+      if (!sourceId || !amount || !giftCardId) {
+        return res.status(400).json({ 
+          success: false,
+          error: "Missing required fields: sourceId, amount, and giftCardId are required" 
+        });
+      }
+
+      if (!squarePaymentsService.isAvailable() || !ordersService.isAvailable()) {
         return res.status(503).json({
           success: false,
-          errorMessage: 'Payment processing temporarily unavailable',
+          error: 'Payment processing temporarily unavailable',
           errorCode: 'SERVICE_UNAVAILABLE'
         });
       }
 
-      // Validate payment method
-      if (!paymentsService.isValidPaymentMethod(paymentData.paymentMethod.type)) {
+      // Get user information
+      const user = req.user as any;
+      const userId = user.id || user.claims?.sub;
+      const userEmail = user.email || user.claims?.email || '';
+
+      // Create order with Square Orders API
+      const orderResult = await ordersService.createOrder(
+        amount,
+        [{
+          name: `Gift Card - ${designType || 'Standard'}`,
+          quantity: '1',
+          basePriceMoney: {
+            amount: BigInt(Math.round(amount * 100)),
+            currency: 'USD'
+          },
+          note: message || ''
+        }],
+        userEmail
+      );
+
+      if (!orderResult.success || !orderResult.orderId) {
         return res.status(400).json({
           success: false,
-          errorMessage: 'Invalid payment method',
-          errorCode: 'INVALID_PAYMENT_METHOD'
+          error: orderResult.error || 'Failed to create order'
         });
       }
 
-      let paymentResult;
+      // Process payment with Square Payments API
+      const paymentResult = await squarePaymentsService.createPayment(
+        sourceId,
+        amount,
+        undefined, // customerId - optional
+        orderResult.orderId,
+        giftCardId, // referenceId
+        `Gift card purchase: ${designType || 'Standard'} - ${recipientEmail || 'Self'}`,
+        false // no verification needed for gift card purchase
+      );
 
-      // Route to appropriate payment processor based on method type
-      switch (paymentData.paymentMethod.type) {
-        case 'card':
-        case 'google_pay':
-        case 'apple_pay':
-          paymentResult = await paymentsService.processPayment(paymentData);
-          break;
-        
-        case 'ach':
-          paymentResult = await paymentsService.processACHPayment(paymentData);
-          break;
-        
-        case 'cash_app_pay':
-          paymentResult = await paymentsService.processCashAppPayment(paymentData);
-          break;
-        
-        default:
-          return res.status(400).json({
-            success: false,
-            errorMessage: 'Unsupported payment method',
-            errorCode: 'UNSUPPORTED_PAYMENT_METHOD'
-          });
+      if (!paymentResult.success || !paymentResult.paymentId) {
+        // Cancel the order if payment fails
+        // Note: In production, you might want to keep the order for retry
+        return res.status(400).json({
+          success: false,
+          error: paymentResult.error || 'Payment processing failed'
+        });
       }
 
-      if (paymentResult.success) {
-        // Store payment record
-        await storage.createPaymentRecord({
-          paymentId: paymentResult.paymentId!,
-          orderId: paymentResult.orderId,
-          amount: paymentData.amount.toString(),
-          currency: paymentData.currency,
-          paymentMethod: paymentData.paymentMethod.type,
-          status: paymentResult.status,
-          buyerEmail: paymentData.buyerEmailAddress,
-          referenceId: paymentData.referenceId,
-          receiptNumber: paymentResult.receiptNumber,
-          cardDetails: paymentResult.cardDetails,
-        });
+      // Update gift card with Square ID if needed
+      const giftCard = await storage.getGiftCardById(giftCardId);
+      if (giftCard && !giftCard.squareGiftCardId) {
+        // Activate gift card with Square
+        const squareService = (await import('./services/SquareService')).default;
+        const activationResult = await squareService.activateGiftCard(
+          giftCard.id,
+          orderResult.orderId,
+          orderResult.lineItemUid || ''
+        );
 
-        res.json(paymentResult);
-      } else {
-        // Log failed payment attempt
-        await storage.createPaymentRecord({
-          paymentId: paymentResult.paymentId || 'failed',
-          amount: paymentData.amount.toString(),
-          currency: paymentData.currency,
-          paymentMethod: paymentData.paymentMethod.type,
-          status: 'failed',
-          buyerEmail: paymentData.buyerEmailAddress,
-          referenceId: paymentData.referenceId,
-          errorMessage: paymentResult.errorMessage,
-          errorCode: paymentResult.errorCode,
-        });
-
-        res.status(400).json(paymentResult);
+        if (activationResult.success && activationResult.activity) {
+          await storage.updateGiftCardSquareId(
+            giftCard.id,
+            activationResult.activity.giftCardId || ''
+          );
+        }
       }
+
+      // Create transaction record
+      await storage.createTransaction({
+        giftCardId,
+        transactionType: 'purchase',
+        amount: amount.toString(),
+        balanceAfter: amount.toString(),
+        performedBy: userId,
+        recipientEmail,
+        description: `Gift card purchase - ${designType || 'Standard'}`,
+        metadata: {
+          paymentId: paymentResult.paymentId,
+          orderId: orderResult.orderId,
+          recipientName,
+          message,
+          designType
+        }
+      });
+
+      res.json({
+        success: true,
+        paymentId: paymentResult.paymentId,
+        orderId: orderResult.orderId,
+        giftCardId
+      });
     } catch (error: any) {
-      console.error('Payment processing error:', error);
-      
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({
+      console.error('Payment creation error:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to process payment' 
+      });
+    }
+  }
+);
+
+// Process payment for gift card recharge
+router.post('/recharge', 
+  isAuthenticated,
+  validateInput,
+  secureLogger,
+  async (req, res) => {
+    try {
+      const { 
+        sourceId,  // Card nonce from Web Payments SDK
+        amount, 
+        giftCardId
+      } = req.body;
+
+      if (!sourceId || !amount || !giftCardId) {
+        return res.status(400).json({ 
           success: false,
-          errorMessage: 'Invalid payment data',
-          errorCode: 'VALIDATION_ERROR',
-          errors: error.errors
+          error: "Missing required fields: sourceId, amount, and giftCardId are required" 
         });
       }
 
-      res.status(500).json({
+      if (!squarePaymentsService.isAvailable() || !ordersService.isAvailable()) {
+        return res.status(503).json({
+          success: false,
+          error: 'Payment processing temporarily unavailable',
+          errorCode: 'SERVICE_UNAVAILABLE'
+        });
+      }
+
+      // Get gift card details
+      const giftCard = await storage.getGiftCardById(giftCardId);
+      if (!giftCard) {
+        return res.status(404).json({
+          success: false,
+          error: 'Gift card not found'
+        });
+      }
+
+      // Get user information
+      const user = req.user as any;
+      const userId = user.id || user.claims?.sub;
+      const userEmail = user.email || user.claims?.email || '';
+
+      // Create order for recharge
+      const orderResult = await ordersService.createOrder(
+        amount,
+        [{
+          name: `Gift Card Recharge`,
+          quantity: '1',
+          basePriceMoney: {
+            amount: BigInt(Math.round(amount * 100)),
+            currency: 'USD'
+          },
+          note: `Recharge for card ending in ${giftCard.code.slice(-4)}`
+        }],
+        userEmail
+      );
+
+      if (!orderResult.success || !orderResult.orderId) {
+        return res.status(400).json({
+          success: false,
+          error: orderResult.error || 'Failed to create order'
+        });
+      }
+
+      // Process payment
+      const paymentResult = await squarePaymentsService.createPayment(
+        sourceId,
+        amount,
+        undefined,
+        orderResult.orderId,
+        giftCardId,
+        `Gift card recharge - ${giftCard.code.slice(-4)}`,
+        false
+      );
+
+      if (!paymentResult.success || !paymentResult.paymentId) {
+        return res.status(400).json({
+          success: false,
+          error: paymentResult.error || 'Payment processing failed'
+        });
+      }
+
+      // Load funds to Square gift card if it has a Square ID
+      if (giftCard.squareGiftCardId) {
+        const squareService = (await import('./services/SquareService')).default;
+        const loadResult = await squareService.loadGiftCard(
+          giftCard.squareGiftCardId,
+          amount,
+          orderResult.orderId,
+          orderResult.lineItemUid
+        );
+
+        if (!loadResult.success) {
+          console.error('Failed to load Square gift card:', loadResult.error);
+        }
+      }
+
+      // Update gift card balance
+      const newBalance = parseFloat(giftCard.balance) + amount;
+      await storage.updateGiftCardBalance(giftCardId, newBalance.toString());
+
+      // Create transaction record
+      await storage.createTransaction({
+        giftCardId,
+        transactionType: 'recharge',
+        amount: amount.toString(),
+        balanceAfter: newBalance.toString(),
+        performedBy: userId,
+        description: `Gift card recharge`,
+        metadata: {
+          paymentId: paymentResult.paymentId,
+          orderId: orderResult.orderId
+        }
+      });
+
+      res.json({
+        success: true,
+        paymentId: paymentResult.paymentId,
+        orderId: orderResult.orderId,
+        newBalance
+      });
+    } catch (error: any) {
+      console.error('Recharge payment error:', error);
+      res.status(500).json({ 
         success: false,
-        errorMessage: 'Payment processing failed',
-        errorCode: 'INTERNAL_ERROR'
+        error: error.message || 'Failed to process recharge' 
       });
     }
   }
@@ -163,185 +329,94 @@ router.post('/process',
 
 // Get payment status
 router.get('/status/:paymentId',
-  generalRateLimit,
-  secureLogger,
+  isAuthenticated,
   async (req, res) => {
     try {
       const { paymentId } = req.params;
       
-      if (!paymentId) {
-        return res.status(400).json({
+      if (!squarePaymentsService.isAvailable()) {
+        return res.status(503).json({
           success: false,
-          errorMessage: 'Payment ID is required'
+          error: 'Payment service temporarily unavailable'
         });
       }
-
-      const payment = await paymentsService.getPayment(paymentId);
       
+      const payment = await squarePaymentsService.getPayment(paymentId);
       if (!payment) {
         return res.status(404).json({
           success: false,
-          errorMessage: 'Payment not found'
+          error: 'Payment not found'
         });
       }
 
-      // Return safe payment information
       res.json({
-        paymentId: payment.id,
-        status: payment.status,
-        amount: payment.amountMoney,
-        createdAt: payment.createdAt,
-        updatedAt: payment.updatedAt,
-        receiptNumber: payment.receiptNumber,
-        receiptUrl: payment.receiptUrl,
+        success: true,
+        payment: {
+          id: payment.id,
+          status: payment.status,
+          amount: payment.amountMoney ? Number(payment.amountMoney.amount) / 100 : 0,
+          createdAt: payment.createdAt,
+          updatedAt: payment.updatedAt,
+          cardDetails: payment.cardDetails ? {
+            last4: payment.cardDetails.card?.last4,
+            brand: payment.cardDetails.card?.cardBrand,
+            expMonth: payment.cardDetails.card?.expMonth,
+            expYear: payment.cardDetails.card?.expYear
+          } : undefined
+        }
       });
-    } catch (error) {
-      console.error('Error fetching payment status:', error);
-      res.status(500).json({
+    } catch (error: any) {
+      console.error('Payment status error:', error);
+      res.status(500).json({ 
         success: false,
-        errorMessage: 'Failed to fetch payment status'
-      });
-    }
-  }
-);
-
-// Complete payment (for async payments like ACH)
-router.post('/complete/:paymentId',
-  generalRateLimit,
-  validateInput,
-  secureLogger,
-  async (req, res) => {
-    try {
-      const { paymentId } = req.params;
-      
-      if (!paymentId) {
-        return res.status(400).json({
-          success: false,
-          errorMessage: 'Payment ID is required'
-        });
-      }
-
-      const result = await paymentsService.completePayment(paymentId);
-      
-      if (result.success) {
-        // Update payment record in database
-        await storage.updatePaymentStatus(paymentId, result.status);
-      }
-
-      res.json(result);
-    } catch (error) {
-      console.error('Error completing payment:', error);
-      res.status(500).json({
-        success: false,
-        errorMessage: 'Failed to complete payment'
-      });
-    }
-  }
-);
-
-// Cancel payment
-router.post('/cancel/:paymentId',
-  generalRateLimit,
-  validateInput,
-  secureLogger,
-  async (req, res) => {
-    try {
-      const { paymentId } = req.params;
-      
-      if (!paymentId) {
-        return res.status(400).json({
-          success: false,
-          errorMessage: 'Payment ID is required'
-        });
-      }
-
-      const success = await paymentsService.cancelPayment(paymentId);
-      
-      if (success) {
-        // Update payment record in database
-        await storage.updatePaymentStatus(paymentId, 'canceled');
-        
-        res.json({
-          success: true,
-          message: 'Payment canceled successfully'
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          errorMessage: 'Failed to cancel payment'
-        });
-      }
-    } catch (error) {
-      console.error('Error canceling payment:', error);
-      res.status(500).json({
-        success: false,
-        errorMessage: 'Failed to cancel payment'
+        error: error.message || 'Failed to get payment status' 
       });
     }
   }
 );
 
 // Get supported payment methods
-router.get('/methods',
-  generalRateLimit,
-  async (req, res) => {
-    try {
-      const methods = [
-        {
-          type: 'card',
-          name: 'Credit/Debit Card',
-          description: 'Visa, Mastercard, American Express, Discover',
-          processingTime: 'Instant',
-          fees: 'Standard processing fees apply',
-          supported: true
-        },
-        {
-          type: 'google_pay',
-          name: 'Google Pay',
-          description: 'Pay with your Google account',
-          processingTime: 'Instant',
-          fees: 'No additional fees',
-          supported: true
-        },
-        {
-          type: 'apple_pay',
-          name: 'Apple Pay',
-          description: 'Pay with Touch ID or Face ID',
-          processingTime: 'Instant',
-          fees: 'No additional fees',
-          supported: true
-        },
-        {
-          type: 'cash_app_pay',
-          name: 'Cash App Pay',
-          description: 'Pay with your Cash App account',
-          processingTime: 'Instant',
-          fees: 'No additional fees',
-          supported: true
-        },
-        {
-          type: 'ach',
-          name: 'Bank Transfer (ACH)',
-          description: 'Direct transfer from your bank account',
-          processingTime: '1-3 business days',
-          fees: 'Lower processing fees',
-          supported: true
-        }
-      ];
+router.get('/methods', async (req, res) => {
+  try {
+    const methods = [
+      {
+        type: 'card',
+        name: 'Credit/Debit Card',
+        description: 'Visa, Mastercard, American Express, Discover',
+        processingTime: 'Instant',
+        fees: 'Standard processing fees apply',
+        supported: true
+      },
+      {
+        type: 'google_pay',
+        name: 'Google Pay',
+        description: 'Pay with your Google account',
+        processingTime: 'Instant',
+        fees: 'No additional fees',
+        supported: true
+      },
+      {
+        type: 'apple_pay',
+        name: 'Apple Pay',
+        description: 'Pay with Touch ID or Face ID',
+        processingTime: 'Instant',
+        fees: 'No additional fees',
+        supported: true
+      }
+    ];
 
-      res.json({
-        success: true,
-        methods,
-        available: paymentsService.isAvailable()
-      });
-    } catch (error) {
-      console.error('Error fetching payment methods:', error);
-      res.status(500).json({
-        success: false,
-        errorMessage: 'Failed to fetch payment methods'
-      });
-    }
+    res.json({
+      success: true,
+      methods,
+      available: squarePaymentsService.isAvailable()
+    });
+  } catch (error) {
+    console.error('Error fetching payment methods:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch payment methods'
+    });
   }
-);
+});
 
 export { router as paymentsRouter };

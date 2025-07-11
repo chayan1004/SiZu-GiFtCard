@@ -43,13 +43,23 @@ type PaymentFormData = z.infer<typeof paymentSchema>;
 
 interface PaymentFormProps {
   amount: number;
+  giftCardId: string;
+  recipientEmail?: string;
+  recipientName?: string;
+  message?: string;
+  designType?: string;
   onPaymentSuccess: (paymentResult: any) => void;
   onPaymentError: (error: string) => void;
   isLoading?: boolean;
 }
 
 export default function PaymentForm({ 
-  amount, 
+  amount,
+  giftCardId,
+  recipientEmail = '',
+  recipientName = '',
+  message = '',
+  designType = 'Standard',
   onPaymentSuccess, 
   onPaymentError, 
   isLoading = false 
@@ -101,14 +111,20 @@ export default function PaymentForm({
         throw new Error('Square SDK not loaded');
       }
 
-      const appId = process.env.REACT_APP_SQUARE_APPLICATION_ID;
-      const locationId = process.env.REACT_APP_SQUARE_LOCATION_ID;
+      // Fetch Square configuration from backend
+      const configResponse = await fetch('/api/payments/config');
+      if (!configResponse.ok) {
+        throw new Error('Failed to fetch payment configuration');
+      }
+      
+      const config = await configResponse.json();
+      const { applicationId, locationId, environment } = config;
 
-      if (!appId || !locationId) {
+      if (!applicationId || !locationId) {
         throw new Error('Square configuration missing');
       }
 
-      const payments = window.Square.payments(appId, locationId);
+      const payments = window.Square.payments(applicationId, locationId);
       
       // Initialize payment methods
       const paymentMethodsConfig: any = {};
@@ -194,20 +210,16 @@ export default function PaymentForm({
       if (tokenResult.status === 'OK') {
         // Process payment on backend
         const paymentRequest = {
+          sourceId: tokenResult.token,
           amount: data.amount,
-          currency: 'USD',
-          paymentMethod: {
-            type: selectedPaymentMethod,
-            sourceId: tokenResult.token,
-            verificationToken: tokenResult.details?.verificationToken,
-          },
-          referenceId: `gift-card-${Date.now()}`,
-          buyerEmailAddress: data.email,
-          billingAddress: data.billingAddress,
-          note: `SiZu Gift Card Purchase - $${data.amount}`,
+          giftCardId,
+          recipientEmail: recipientEmail || data.email,
+          recipientName: recipientName || `${data.firstName} ${data.lastName}`,
+          message: message || 'Thank you for your purchase!',
+          designType
         };
 
-        const response = await fetch('/api/payments/process', {
+        const response = await fetch('/api/payments/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
