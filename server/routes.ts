@@ -51,7 +51,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(httpsRedirect);
   app.use(securityHeaders);
   app.use(cors(corsOptions));
-  app.use(generalRateLimit);
+  
+  // Apply rate limiting only to API routes and not to Vite development routes
+  app.use((req, res, next) => {
+    // Skip rate limiting for Vite development routes
+    if (process.env.NODE_ENV === 'development' && 
+        (req.path.startsWith('/@') || 
+         req.path.startsWith('/src') || 
+         req.path.startsWith('/node_modules'))) {
+      return next();
+    }
+    generalRateLimit(req, res, next);
+  });
+  
   app.use(validateInput);
   app.use(secureLogger);
 
