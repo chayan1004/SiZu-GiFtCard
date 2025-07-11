@@ -87,6 +87,7 @@ export default function AdminPaymentLinks() {
   const { data: paymentLinks = [], isLoading: linksLoading } = useQuery<PaymentLink[]>({
     queryKey: ['/api/payment-links'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Create payment link mutation

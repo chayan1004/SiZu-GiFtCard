@@ -73,6 +73,7 @@ export default function AdminRefunds() {
   const { data: refunds = [], isLoading: refundsLoading } = useQuery<Refund[]>({
     queryKey: ['/api/refunds'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Fetch recent payments for refund creation

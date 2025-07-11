@@ -158,8 +158,9 @@ export default function AdminSystemSettings() {
 
   // Fetch settings
   const { data: fetchedSettings, isLoading: settingsLoading } = useQuery<SystemSettings>({
-    queryKey: ['/api/admin/settings'],
+    queryKey: ['/api/system-settings'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   useEffect(() => {
@@ -171,7 +172,7 @@ export default function AdminSystemSettings() {
   // Save settings mutation
   const saveSettingsMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('/api/admin/settings', {
+      await apiRequest('/api/system-settings', {
         method: 'PUT',
         body: JSON.stringify(settings)
       });
@@ -182,7 +183,7 @@ export default function AdminSystemSettings() {
         description: "System settings have been updated successfully."
       });
       setHasChanges(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/system-settings'] });
     },
     onError: () => {
       toast({

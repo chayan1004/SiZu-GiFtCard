@@ -94,6 +94,7 @@ export default function AdminWebhooks() {
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<WebhookSubscription[]>({
     queryKey: ['/api/webhooks/subscriptions'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Create webhook subscription mutation

@@ -71,53 +71,25 @@ export default function AdminAuditLogs() {
     }
   }, [isAuthenticated, isLoading, user]);
 
-  // Mock audit logs data - in production, this would come from the backend
+  // Fetch audit logs from backend
   const { data: logs = [], isLoading: logsLoading } = useQuery<AuditLog[]>({
-    queryKey: ['/api/admin/audit-logs', filters],
+    queryKey: ['/api/audit-logs', filters],
     enabled: isAuthenticated && user?.role === 'admin',
-    initialData: [
-      {
-        id: '1',
-        timestamp: new Date().toISOString(),
-        userId: '123',
-        userEmail: 'admin@example.com',
-        userRole: 'admin',
-        action: 'admin.settings_update',
-        resource: 'system_settings',
-        details: { section: 'payments', fields: ['acceptApplePay'] },
-        ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0 ...',
-        status: 'success'
-      },
-      {
-        id: '2',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        userId: '456',
-        userEmail: 'user@example.com',
-        userRole: 'user',
-        action: 'giftcard.redeem',
-        resource: 'gift_card',
-        resourceId: 'GC-123456',
-        details: { amount: 50, remainingBalance: 150 },
-        ipAddress: '10.0.0.1',
-        userAgent: 'Chrome/91.0 ...',
-        status: 'success'
-      },
-      {
-        id: '3',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        userId: '789',
-        userEmail: 'suspicious@example.com',
-        userRole: 'user',
-        action: 'security.failed_login',
-        resource: 'authentication',
-        details: { attempts: 5, reason: 'Invalid password' },
-        ipAddress: '123.456.789.0',
-        userAgent: 'Unknown',
-        status: 'failure',
-        errorMessage: 'Account locked due to multiple failed attempts'
-      }
-    ]
+    retry: false
+  });
+
+  // Filter logs based on search and filters
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = filters.search === '' || 
+      log.userEmail.toLowerCase().includes(filters.search.toLowerCase()) ||
+      log.action.toLowerCase().includes(filters.search.toLowerCase()) ||
+      log.resource.toLowerCase().includes(filters.search.toLowerCase());
+    
+    const matchesAction = filters.action === 'all' || log.action === filters.action;
+    const matchesUser = filters.user === 'all' || log.userEmail === filters.user;
+    const matchesStatus = filters.status === 'all' || log.status === filters.status;
+    
+    return matchesSearch && matchesAction && matchesUser && matchesStatus;
   });
 
   const handleLogout = () => {
@@ -216,20 +188,7 @@ export default function AdminAuditLogs() {
     return null;
   }
 
-  // Apply filters
-  const filteredLogs = logs.filter(log => {
-    if (filters.search && !Object.values(log).some(val => 
-      String(val).toLowerCase().includes(filters.search.toLowerCase())
-    )) return false;
-    
-    if (filters.action !== 'all' && log.action !== filters.action) return false;
-    if (filters.status !== 'all' && log.status !== filters.status) return false;
-    
-    if (filters.dateFrom && new Date(log.timestamp) < new Date(filters.dateFrom)) return false;
-    if (filters.dateTo && new Date(log.timestamp) > new Date(filters.dateTo)) return false;
-    
-    return true;
-  });
+
 
   // Stats
   const totalLogs = filteredLogs.length;

@@ -110,14 +110,15 @@ export default function AdminGiftCardDesigns() {
 
   // Fetch designs
   const { data: designs = [], isLoading: designsLoading } = useQuery<GiftCardDesign[]>({
-    queryKey: ['/api/admin/gift-card-designs'],
+    queryKey: ['/api/gift-card-designs'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Create design mutation
   const createDesignMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/gift-card-designs', {
+      return await apiRequest('/api/gift-card-designs', {
         method: 'POST',
         body: JSON.stringify({
           ...formData,
@@ -136,7 +137,7 @@ export default function AdminGiftCardDesigns() {
       });
       setIsCreateDialogOpen(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/gift-card-designs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gift-card-designs'] });
     },
     onError: (error: any) => {
       toast({
@@ -150,8 +151,8 @@ export default function AdminGiftCardDesigns() {
   // Update design mutation
   const updateDesignMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      await apiRequest(`/api/admin/gift-card-designs/${id}`, {
-        method: 'PUT',
+      await apiRequest(`/api/gift-card-designs/${id}`, {
+        method: 'PATCH',
         body: JSON.stringify(data)
       });
     },
@@ -163,7 +164,7 @@ export default function AdminGiftCardDesigns() {
       setIsCreateDialogOpen(false);
       setIsEditMode(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/gift-card-designs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gift-card-designs'] });
     },
     onError: () => {
       toast({

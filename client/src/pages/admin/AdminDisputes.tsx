@@ -51,6 +51,7 @@ export default function AdminDisputes() {
   const { data: disputes = [], isLoading: disputesLoading } = useQuery<Dispute[]>({
     queryKey: ['/api/disputes'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Accept dispute mutation

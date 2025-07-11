@@ -56,7 +56,7 @@ export default function QRScanner({ onResult }: QRScannerProps) {
           if (result && !hasScanned) {
             // Successfully scanned
             const text = result.getText();
-            console.log('QR Code scanned:', text);
+            // QR Code scanned successfully
             setHasScanned(true);
             onResult(text);
             stopScanning();

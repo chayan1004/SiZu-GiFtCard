@@ -197,22 +197,16 @@ export default function AdminEmailTemplates() {
 
   // Fetch email templates
   const { data: templates = [], isLoading: templatesLoading } = useQuery<EmailTemplate[]>({
-    queryKey: ['/api/admin/email-templates'],
+    queryKey: ['/api/email-templates'],
     enabled: isAuthenticated && user?.role === 'admin',
-    initialData: Object.entries(DEFAULT_TEMPLATES).map(([type, template]) => ({
-      id: type,
-      type: type as any,
-      enabled: true,
-      updatedAt: new Date().toISOString(),
-      ...template
-    }))
+    retry: false
   });
 
   // Update template mutation
   const updateTemplateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      await apiRequest(`/api/admin/email-templates/${id}`, {
-        method: 'PUT',
+      await apiRequest(`/api/email-templates/${id}`, {
+        method: 'PATCH',
         body: JSON.stringify(data)
       });
     },
@@ -222,7 +216,7 @@ export default function AdminEmailTemplates() {
         description: "The email template has been updated successfully."
       });
       setIsEditDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/email-templates'] });
     },
     onError: () => {
       toast({

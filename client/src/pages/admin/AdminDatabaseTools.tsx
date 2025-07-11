@@ -50,26 +50,11 @@ export default function AdminDatabaseTools() {
     }
   }, [isAuthenticated, isLoading, user]);
 
-  // Mock database stats - in production, this would come from the backend
-  const { data: dbStats = {
-    totalSize: '125.3 MB',
-    tableCount: 12,
-    recordCount: 45678,
-    lastBackup: new Date(Date.now() - 86400000).toISOString(),
-    tables: [
-      { name: 'users', rows: 1234, size: '5.2 MB' },
-      { name: 'gift_cards', rows: 8765, size: '45.8 MB' },
-      { name: 'transactions', rows: 23456, size: '62.3 MB' },
-      { name: 'sessions', rows: 12223, size: '8.9 MB' },
-      { name: 'receipts', rows: 8765, size: '3.1 MB' },
-      { name: 'fraud_alerts', rows: 23, size: '0.1 MB' },
-      { name: 'fee_configurations', rows: 5, size: '0.01 MB' },
-      { name: 'merchant_connections', rows: 2, size: '0.02 MB' },
-      { name: 'saved_cards', rows: 145, size: '0.05 MB' }
-    ]
-  }, isLoading: statsLoading } = useQuery<DatabaseStats>({
+  // Fetch database stats from backend
+  const { data: dbStats, isLoading: statsLoading } = useQuery<DatabaseStats>({
     queryKey: ['/api/admin/database/stats'],
     enabled: isAuthenticated && user?.role === 'admin',
+    retry: false
   });
 
   // Create backup mutation
