@@ -140,6 +140,7 @@ function Router() {
           <Route path="/order-history" component={OrderHistory} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route path="/dashboard/user" component={UserDashboard} />
           <Route path="/admin/gift-cards" component={AdminGiftCards} />
           <Route path="/admin/users" component={AdminUsers} />
