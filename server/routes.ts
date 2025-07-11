@@ -14,6 +14,7 @@ import { QRService } from "./services/QRService";
 import { aiService } from "./services/aiService";
 import { paymentsRouter } from "./routes-payments";
 import { webhooksRouter } from "./routes-webhooks";
+import { paymentLinksRouter } from "./routes-payment-links";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -111,10 +112,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     generalRateLimit(req, res, next);
   });
 
-  // Apply input validation middleware except for webhook endpoints
+  // Apply input validation middleware except for webhook and payment-links endpoints
   app.use((req, res, next) => {
     // Skip validation for webhook endpoints - they receive legitimate JSON from external services
-    if (req.path.startsWith('/api/webhooks/')) {
+    if (req.path.startsWith('/api/webhooks/') || req.path.startsWith('/api/payment-links/')) {
       return next();
     }
     validateInput(req, res, next);
@@ -146,6 +147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add webhook routes
   app.use('/api/webhooks', webhooksRouter);
+  
+  // Add payment links routes
+  app.use('/api/payment-links', paymentLinksRouter);
 
   // Replit Auth routes (for admin)
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
