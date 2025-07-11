@@ -5,6 +5,7 @@ import cors from "cors";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { SquareService } from "./services/SquareService";
+import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
 import { EmailService } from "./services/EmailService";
 import { QRService } from "./services/QRService";
@@ -12,9 +13,15 @@ import {
   createGiftCardSchema,
   redeemGiftCardSchema,
   checkBalanceSchema,
+  addSavedCardSchema,
+  deleteSavedCardSchema,
+  setSavedCardDefaultSchema,
   type CreateGiftCardInput,
   type RedeemGiftCardInput,
   type CheckBalanceInput,
+  type AddSavedCardInput,
+  type DeleteSavedCardInput,
+  type SetSavedCardDefaultInput,
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -35,6 +42,7 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
   const squareService = new SquareService();
+  const squareCustomerService = new SquareCustomerService();
   const pdfService = new PDFService();
   const emailService = new EmailService();
   const qrService = new QRService();
@@ -381,6 +389,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resolving fraud alert:", error);
       res.status(500).json({ message: "Failed to resolve fraud alert" });
+    }
+  });
+
+  // Saved Card Routes
+  
+  // List user's saved cards
+  app.get('/api/cards', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cards = await storage.getUserSavedCards(userId);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching saved cards:", error);
+      res.status(500).json({ message: "Failed to fetch saved cards" });
+    }
+  });
+
+  // Add a new card
+  app.post('/api/cards', authRateLimit, isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const data = addSavedCardSchema.parse(req.body);
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if Square integration is available
+      if (!squareCustomerService.isAvailable()) {
+        return res.status(503).json({ message: "Payment card service unavailable" });
+      }
+
+      // Create or update Square customer if needed
+      let squareCustomerId = user.squareCustomerId;
+      if (!squareCustomerId) {
+        try {
+          const customer = await squareCustomerService.createCustomer(
+            user.email || undefined,
+            user.firstName || undefined,
+            user.lastName || undefined
+          );
+          squareCustomerId = customer.id!;
+          await storage.updateUserSquareCustomerId(userId, squareCustomerId);
+        } catch (error) {
+          console.error("Error creating Square customer:", error);
+          return res.status(500).json({ message: "Failed to create payment profile" });
+        }
+      }
+
+      // Add card to Square customer
+      let squareCard;
+      try {
+        squareCard = await squareCustomerService.addCardToCustomer(
+          squareCustomerId,
+          data.sourceId,
+          data.verificationToken
+        );
+      } catch (error: any) {
+        console.error("Error adding card to Square:", error);
+        if (error.message?.includes("Card was declined")) {
+          return res.status(400).json({ message: "Card was declined" });
+        } else if (error.message?.includes("verification required")) {
+          return res.status(400).json({ message: "Card verification required" });
+        } else if (error.message?.includes("Invalid card")) {
+          return res.status(400).json({ message: "Invalid card information" });
+        }
+        return res.status(500).json({ message: "Failed to add payment card" });
+      }
+
+      // Parse card details for storage
+      const cardDetails = squareCustomerService.parseCardForStorage(squareCard);
+
+      // Save card to database
+      const savedCard = await storage.addSavedCard({
+        userId,
+        squareCardId: cardDetails.squareCardId,
+        cardBrand: cardDetails.cardBrand,
+        last4: cardDetails.last4,
+        expMonth: cardDetails.expMonth,
+        expYear: cardDetails.expYear,
+        cardholderName: cardDetails.cardholderName,
+        nickname: data.nickname,
+        isDefault: data.isDefault || false,
+      });
+
+      res.json(savedCard);
+    } catch (error: any) {
+      console.error("Error adding saved card:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add payment card" });
+    }
+  });
+
+  // Delete a saved card
+  app.delete('/api/cards/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cardId = req.params.id;
+
+      // Verify card ownership
+      const card = await storage.getSavedCardById(cardId, userId);
+      if (!card) {
+        return res.status(404).json({ message: "Card not found" });
+      }
+
+      // Delete from Square if integration is available
+      if (squareCustomerService.isAvailable() && card.squareCardId) {
+        try {
+          await squareCustomerService.deleteCard(card.squareCardId);
+        } catch (error) {
+          console.error("Error deleting card from Square:", error);
+          // Continue with local deletion even if Square deletion fails
+        }
+      }
+
+      // Delete from database
+      await storage.deleteSavedCard(cardId, userId);
+      res.json({ message: "Card deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting saved card:", error);
+      res.status(500).json({ message: "Failed to delete card" });
+    }
+  });
+
+  // Set card as default
+  app.put('/api/cards/:id/default', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cardId = req.params.id;
+
+      // Verify card ownership
+      const card = await storage.getSavedCardById(cardId, userId);
+      if (!card) {
+        return res.status(404).json({ message: "Card not found" });
+      }
+
+      // Set as default
+      await storage.setDefaultCard(cardId, userId);
+      res.json({ message: "Default card updated successfully" });
+    } catch (error) {
+      console.error("Error setting default card:", error);
+      res.status(500).json({ message: "Failed to update default card" });
     }
   });
 
