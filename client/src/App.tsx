@@ -13,6 +13,7 @@ import Redeem from "@/pages/Redeem";
 import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
+import OrderDetails from "@/pages/OrderDetails";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -86,6 +87,7 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
+          <Route path="/orders/:orderId" component={OrderDetails} />
         </>
       )}
       <Route component={NotFound} />

@@ -121,6 +121,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### July 11, 2025 - Phase 8: Order History Feature Complete
+- **Database Schema Updates**: Added order tracking fields
+  - Added `delivery_status` column to gift_cards table (pending/sent/delivered/failed)
+  - Added `payment_method_last4` and `payment_method_type` columns to transactions
+  - Created indexes for optimized user order queries
+- **Backend Implementation**: Complete order history management
+  - Storage methods: `getUserOrders()` with pagination, `getUserOrderDetails()`
+  - API endpoints: GET /api/user/orders (paginated), GET /api/user/orders/:id
+  - Join queries to fetch gift cards with payment transaction data
+- **Frontend Components**: Full order history user interface
+  - OrderHistory page: Paginated list with search, badges for status/design
+  - OrderDetails page: Comprehensive order view with transaction history
+  - Navigation: Added "Orders" link to authenticated user menu
+  - Empty state handling with call-to-action buttons
+- **Test Data**: Created sample orders to demonstrate functionality
+  - Premium $50 gift card (fully unused)
+  - Love $25 gift card (partially redeemed - $10 used)
+
 ### July 11, 2025 - Phase 7: Saved Payment Cards Feature Complete
 - **Database Schema Updates**: Extended user profiles with payment card management
   - Added `squareCustomerId` column to users table for Square integration
