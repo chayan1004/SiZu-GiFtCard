@@ -127,19 +127,24 @@ Preferred communication style: Simple, everyday language.
   - 6-digit OTP generation with 10-minute expiry
   - Created dedicated OTP verification page with modern UI
   - Integrated OTP resend functionality with 60-second cooldown
-- **Email Service Updates**: Redesigned verification emails
+- **Email Service Updates**: Migrated from SMTP to Mailgun REST API
+  - Implemented official Mailgun API using mailgun.js package
   - Professional OTP email template with clear verification code display
   - Security warnings and expiry notices
-  - Mailgun SMTP integration for reliable delivery
+  - Console logging for development when credentials not provided
 - **Frontend Flow**: Complete OTP verification experience
   - Auto-redirect from registration to OTP verification page
   - Real-time OTP input validation
   - Resend code button with countdown timer
-  - Auto-login after successful verification
+  - Auto-login after successful verification with redirect to shop
 - **Security Features**: Enhanced authentication security
   - OTP expires after 10 minutes
   - Rate limiting on OTP verification attempts
   - Secure session creation post-verification
+- **Dual Authentication Fix**: Resolved routing issues for mixed auth types
+  - Created combined authentication hook for admin and customer sessions
+  - Fixed post-verification redirects
+  - Proper handling of authenticated customer routes
 
 ### July 11, 2025 - Phase 13: Revenue and Fee Management UI Reconstruction
 - **Revenue Analytics Page**: Created comprehensive AdminRevenue page with modern dark theme

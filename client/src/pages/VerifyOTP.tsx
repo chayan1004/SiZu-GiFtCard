@@ -87,8 +87,8 @@ export default function VerifyOTP() {
       // Clear stored email
       localStorage.removeItem('verificationEmail');
 
-      // Redirect to login page after successful verification
-      setLocation('/login');
+      // Redirect to shop page after successful verification (user is already logged in)
+      setLocation('/shop');
     } catch (error: any) {
       setError("otp", {
         message: error.message || "Invalid verification code"

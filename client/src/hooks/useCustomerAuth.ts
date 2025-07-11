@@ -71,7 +71,7 @@ export function useCustomerAuth() {
           description: "You have successfully logged in."
         });
         
-        setLocation("/dashboard/user");
+        setLocation("/shop");
         return response.user;
       }
     } catch (error: any) {
