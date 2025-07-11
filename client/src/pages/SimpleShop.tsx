@@ -9,9 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   Gift, CreditCard, Sparkles, Heart, Star, Loader2, Download, Mail,
-  ShoppingCart, Eye, Info, Check, ArrowRight, Zap, DollarSign
+  ShoppingCart, Eye, Info, Check, ArrowRight, Zap, DollarSign,
+  Gamepad2, Sword, Trophy, Laugh, TrendingUp, Rocket, Crown,
+  Gem, Shield, Flame, Moon, Sun, CloudLightning, Skull,
+  Cherry, Cat, Fish, Ghost, Pizza, Coffee, Music, Tv
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -32,67 +35,239 @@ const purchaseSchema = z.object({
 
 type PurchaseForm = z.infer<typeof purchaseSchema>;
 
-// Gift card designs catalog
+// Categories
+const categories = [
+  { id: 'all', name: 'All Cards', icon: Sparkles },
+  { id: 'anime', name: 'Anime', icon: Cherry },
+  { id: 'gaming', name: 'Gaming', icon: Gamepad2 },
+  { id: 'memes', name: 'Memes', icon: Laugh },
+  { id: 'premium', name: 'Premium', icon: Crown },
+  { id: 'classic', name: 'Classic', icon: Star },
+  { id: 'trending', name: 'Trending', icon: TrendingUp }
+];
+
+// Enhanced gift card designs catalog
 const giftCardDesigns = [
+  // Classic Cards
   {
-    id: 'classic',
+    id: 'classic-purple',
     name: 'Classic Purple',
+    category: 'classic',
     description: 'Timeless elegance with our signature purple gradient',
     price: 'From $10',
-    gradient: 'from-purple-600 to-blue-600',
+    gradient: 'from-purple-600 via-purple-800 to-indigo-900',
+    backgroundPattern: 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))]',
     icon: CreditCard,
     features: ['No expiration', 'Instant delivery', 'Custom message'],
-    popular: false
+    popular: false,
+    animation: 'hover:scale-105 hover:rotate-1',
+    glow: 'hover:shadow-purple-500/50'
   },
   {
-    id: 'love',
+    id: 'love-romance',
     name: 'Love & Romance',
+    category: 'classic',
     description: 'Perfect for anniversaries and special moments',
     price: 'From $25',
-    gradient: 'from-pink-500 to-rose-600',
+    gradient: 'from-pink-500 via-rose-600 to-red-700',
+    backgroundPattern: 'bg-[conic-gradient(at_bottom_left,_var(--tw-gradient-stops))]',
     icon: Heart,
     features: ['Romantic design', 'Gift wrapping option', 'Special occasions'],
-    popular: true
+    popular: true,
+    animation: 'hover:scale-105 hover:-rotate-1',
+    glow: 'hover:shadow-pink-500/50'
+  },
+  
+  // Anime Cards
+  {
+    id: 'anime-sakura',
+    name: 'Sakura Dreams',
+    category: 'anime',
+    description: 'Cherry blossom themed card for anime enthusiasts',
+    price: 'From $30',
+    gradient: 'from-pink-300 via-purple-400 to-indigo-500',
+    backgroundPattern: 'bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))]',
+    icon: Cherry,
+    features: ['Limited edition', 'Anime artwork', 'Collectible design'],
+    popular: true,
+    animation: 'hover:scale-110 hover:rotate-3',
+    glow: 'hover:shadow-pink-400/60'
   },
   {
-    id: 'premium',
-    name: 'Premium Gold',
-    description: 'Luxury gift card for VIP experiences',
+    id: 'anime-neko',
+    name: 'Neko Paradise',
+    category: 'anime',
+    description: 'Kawaii cat-themed gift card for otaku friends',
+    price: 'From $25',
+    gradient: 'from-purple-400 via-pink-500 to-red-500',
+    backgroundPattern: 'bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)]',
+    icon: Cat,
+    features: ['Cute design', 'Manga style', 'Special effects'],
+    popular: true,
+    animation: 'hover:scale-105 hover:rotate-2',
+    glow: 'hover:shadow-purple-400/50'
+  },
+  {
+    id: 'anime-cyber',
+    name: 'Cyber Tokyo',
+    category: 'anime',
+    description: 'Futuristic cyberpunk anime aesthetic',
     price: 'From $50',
-    gradient: 'from-amber-500 to-yellow-600',
-    icon: Sparkles,
-    features: ['Premium packaging', 'Priority support', 'Exclusive benefits'],
-    popular: false
+    gradient: 'from-cyan-500 via-blue-600 to-purple-700',
+    backgroundPattern: 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.05)_10px,rgba(255,255,255,.05)_20px)]',
+    icon: Tv,
+    features: ['Neon effects', 'Holographic style', 'Premium quality'],
+    popular: false,
+    animation: 'hover:scale-105 hover:-rotate-2',
+    glow: 'hover:shadow-cyan-500/60'
+  },
+  
+  // Gaming Cards
+  {
+    id: 'gaming-epic',
+    name: 'Epic Gamer',
+    category: 'gaming',
+    description: 'Ultimate gift for hardcore gamers',
+    price: 'From $50',
+    gradient: 'from-green-500 via-emerald-600 to-teal-700',
+    backgroundPattern: 'bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))]',
+    icon: Gamepad2,
+    features: ['Gaming theme', 'Achievement unlocked', 'Power-up ready'],
+    popular: true,
+    animation: 'hover:scale-110 hover:rotate-1',
+    glow: 'hover:shadow-green-500/60'
   },
   {
-    id: 'birthday',
-    name: 'Birthday Celebration',
-    description: 'Make their special day unforgettable',
-    price: 'From $20',
-    gradient: 'from-blue-500 to-purple-600',
-    icon: Gift,
-    features: ['Birthday theme', 'Confetti animation', 'Age customization'],
-    popular: true
-  },
-  {
-    id: 'business',
-    name: 'Corporate Professional',
-    description: 'Ideal for business gifts and rewards',
+    id: 'gaming-legendary',
+    name: 'Legendary Loot',
+    category: 'gaming',
+    description: 'Rare drop for your gaming inventory',
     price: 'From $100',
-    gradient: 'from-gray-700 to-gray-900',
-    icon: Star,
-    features: ['Bulk discounts', 'Company branding', 'Tax invoices'],
-    popular: false
+    gradient: 'from-orange-500 via-amber-600 to-yellow-700',
+    backgroundPattern: 'bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))]',
+    icon: Trophy,
+    features: ['SSR rarity', 'Legendary status', 'Max level rewards'],
+    popular: false,
+    animation: 'hover:scale-105 hover:-rotate-3',
+    glow: 'hover:shadow-orange-500/70'
   },
   {
-    id: 'seasonal',
-    name: 'Seasonal Special',
-    description: 'Limited edition seasonal designs',
-    price: 'From $15',
-    gradient: 'from-green-500 to-emerald-600',
-    icon: Zap,
-    features: ['Limited time', 'Seasonal themes', 'Special bonuses'],
-    popular: true
+    id: 'gaming-pvp',
+    name: 'PvP Champion',
+    category: 'gaming',
+    description: 'For the competitive gaming warriors',
+    price: 'From $75',
+    gradient: 'from-red-600 via-orange-700 to-yellow-800',
+    backgroundPattern: 'bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.1)_25%,rgba(255,255,255,.1)_75%,transparent_75%,transparent)]',
+    icon: Sword,
+    features: ['Battle ready', 'Ranked rewards', 'Victory assured'],
+    popular: true,
+    animation: 'hover:scale-105 hover:rotate-2',
+    glow: 'hover:shadow-red-600/60'
+  },
+  
+  // Meme Cards
+  {
+    id: 'meme-doge',
+    name: 'Much Wow Card',
+    category: 'memes',
+    description: 'Such gift, very money, wow',
+    price: 'From $69',
+    gradient: 'from-yellow-400 via-orange-500 to-red-600',
+    backgroundPattern: 'bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))]',
+    icon: Laugh,
+    features: ['Very meme', 'Much funny', 'So gift'],
+    popular: true,
+    animation: 'hover:scale-110 hover:-rotate-3',
+    glow: 'hover:shadow-yellow-400/60'
+  },
+  {
+    id: 'meme-stonks',
+    name: 'Stonks Rising',
+    category: 'memes',
+    description: 'When the gift card value only goes up',
+    price: 'From $420',
+    gradient: 'from-green-400 via-blue-500 to-purple-600',
+    backgroundPattern: 'bg-[linear-gradient(to_top_right,#00000040,#00000020)]',
+    icon: TrendingUp,
+    features: ['To the moon', 'Diamond hands', 'Profit guaranteed'],
+    popular: true,
+    animation: 'hover:scale-105 hover:rotate-1',
+    glow: 'hover:shadow-green-400/60'
+  },
+  {
+    id: 'meme-pepe',
+    name: 'Rare Pepe Card',
+    category: 'memes',
+    description: 'Ultra rare collectible meme card',
+    price: 'From $33',
+    gradient: 'from-green-600 via-emerald-700 to-teal-800',
+    backgroundPattern: 'bg-[repeating-conic-gradient(from_0deg_at_50%_50%,rgba(255,255,255,0.1)_0deg_10deg,transparent_10deg_20deg)]',
+    icon: Ghost,
+    features: ['Extremely rare', 'Meme magic', 'Feels good man'],
+    popular: false,
+    animation: 'hover:scale-105 hover:-rotate-2',
+    glow: 'hover:shadow-green-600/60'
+  },
+  
+  // Premium Cards
+  {
+    id: 'premium-diamond',
+    name: 'Diamond Elite',
+    category: 'premium',
+    description: 'The pinnacle of luxury gift cards',
+    price: 'From $500',
+    gradient: 'from-slate-200 via-gray-300 to-slate-400',
+    backgroundPattern: 'bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))]',
+    icon: Gem,
+    features: ['VIP treatment', 'Concierge service', 'Exclusive access'],
+    popular: false,
+    animation: 'hover:scale-105 hover:rotate-1',
+    glow: 'hover:shadow-slate-300/70'
+  },
+  {
+    id: 'premium-cosmic',
+    name: 'Cosmic Infinity',
+    category: 'premium',
+    description: 'Beyond the stars luxury experience',
+    price: 'From $1000',
+    gradient: 'from-indigo-900 via-purple-900 to-pink-900',
+    backgroundPattern: 'bg-[conic-gradient(from_230.29deg_at_51.63%_52.16%,#2400ff_0deg,#0087ff_67.5deg,#eb00ff_198.75deg,#ff0099_251.25deg,#2400ff_360deg)]',
+    icon: Rocket,
+    features: ['Unlimited potential', 'Cosmic rewards', 'Stellar service'],
+    popular: true,
+    animation: 'hover:scale-110 hover:-rotate-2',
+    glow: 'hover:shadow-purple-900/80'
+  },
+  
+  // Trending Cards
+  {
+    id: 'trending-nft',
+    name: 'NFT Vibes',
+    category: 'trending',
+    description: 'Digital art meets gift cards',
+    price: 'From $100',
+    gradient: 'from-violet-600 via-purple-700 to-indigo-800',
+    backgroundPattern: 'bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)]',
+    icon: Shield,
+    features: ['Blockchain verified', 'Digital collectible', 'Web3 ready'],
+    popular: true,
+    animation: 'hover:scale-105 hover:rotate-3',
+    glow: 'hover:shadow-violet-600/60'
+  },
+  {
+    id: 'trending-ai',
+    name: 'AI Generated',
+    category: 'trending',
+    description: 'Powered by artificial intelligence',
+    price: 'From $75',
+    gradient: 'from-cyan-600 via-teal-700 to-emerald-800',
+    backgroundPattern: 'bg-[repeating-linear-gradient(90deg,transparent,transparent_2px,rgba(255,255,255,.05)_2px,rgba(255,255,255,.05)_4px)]',
+    icon: CloudLightning,
+    features: ['AI enhanced', 'Machine learning', 'Future tech'],
+    popular: false,
+    animation: 'hover:scale-105 hover:-rotate-1',
+    glow: 'hover:shadow-cyan-600/60'
   }
 ];
 
@@ -105,6 +280,8 @@ export default function SimpleShop() {
   const queryClient = useQueryClient();
   const [selectedDesign, setSelectedDesign] = useState<typeof giftCardDesigns[0] | null>(null);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const form = useForm<PurchaseForm>({
     resolver: zodResolver(purchaseSchema),
@@ -152,6 +329,10 @@ export default function SimpleShop() {
     },
   });
 
+  const filteredCards = giftCardDesigns.filter(card => 
+    selectedCategory === 'all' || card.category === selectedCategory
+  );
+
   const handleDesignSelect = (design: typeof giftCardDesigns[0]) => {
     setSelectedDesign(design);
     form.setValue('design', design.id);
@@ -193,7 +374,15 @@ export default function SimpleShop() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated background */}
+      <div className="fixed inset-0 opacity-30">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-pink-900/30" />
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-700 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+        <div className="absolute top-0 -right-4 w-96 h-96 bg-blue-700 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-700 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
+      </div>
+
       <Navigation 
         user={user} 
         onLogin={handleLogin}
@@ -201,7 +390,7 @@ export default function SimpleShop() {
         showDashboard={user?.role === 'admin'}
       />
       
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div 
@@ -210,113 +399,260 @@ export default function SimpleShop() {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Gift Card Collection
+            <h1 className="text-5xl md:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500 mb-4 animate-gradient">
+              Gift Card Universe
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Choose from our premium selection of digital gift cards for every occasion
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Explore our collection of premium digital gift cards featuring anime, gaming, memes, and exclusive designs
             </p>
           </motion.div>
 
-          {/* Gift Card Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {giftCardDesigns.map((design, index) => (
-              <motion.div
-                key={design.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="glassmorphism border-white/20 overflow-hidden hover:scale-105 transition-all duration-300 h-full flex flex-col">
-                  {/* Card Preview */}
-                  <div className={`h-48 bg-gradient-to-br ${design.gradient} relative overflow-hidden`}>
-                    {design.popular && (
-                      <Badge className="absolute top-4 right-4 bg-yellow-500 text-black">
-                        Popular
-                      </Badge>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <design.icon className="w-24 h-24 text-white/20" />
-                    </div>
-                    <div className="absolute bottom-4 left-4">
-                      <p className="text-white font-bold text-lg">SiZu Gift Card</p>
-                      <p className="text-white/80 text-sm">{design.name}</p>
-                    </div>
-                  </div>
+          {/* Category Filters */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-wrap justify-center gap-3 mb-12"
+          >
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <Button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  variant={selectedCategory === category.id ? 'default' : 'outline'}
+                  className={`
+                    relative group transition-all duration-300 
+                    ${selectedCategory === category.id 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow-lg shadow-purple-500/25' 
+                      : 'bg-white/5 backdrop-blur-md border-white/20 text-white hover:bg-white/10 hover:border-white/30'
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  <span className="font-medium">{category.name}</span>
+                  {selectedCategory === category.id && (
+                    <motion.div
+                      layoutId="categoryHighlight"
+                      className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-md -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </Button>
+              );
+            })}
+          </motion.div>
 
-                  {/* Card Details */}
-                  <CardContent className="p-6 flex-1 flex flex-col">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-white mb-2">{design.name}</h3>
-                      <p className="text-gray-300 text-sm mb-4">{design.description}</p>
+          {/* Gift Card Grid */}
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={selectedCategory}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {filteredCards.map((design, index) => {
+                const Icon = design.icon;
+                return (
+                  <motion.div
+                    key={design.id}
+                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ 
+                      duration: 0.5, 
+                      delay: index * 0.05,
+                      type: "spring",
+                      stiffness: 100
+                    }}
+                    whileHover={{ y: -10 }}
+                    onHoverStart={() => setHoveredCard(design.id)}
+                    onHoverEnd={() => setHoveredCard(null)}
+                    className="relative group"
+                  >
+                    <div className={`
+                      relative h-full rounded-2xl overflow-hidden backdrop-blur-xl
+                      bg-gradient-to-br from-white/10 to-white/5 
+                      border border-white/10 
+                      ${design.animation} 
+                      transition-all duration-500
+                      shadow-2xl ${design.glow}
+                    `}>
+                      {/* Card Background */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${design.gradient} ${design.backgroundPattern} opacity-90`} />
                       
-                      {/* Features */}
-                      <div className="space-y-2 mb-4">
-                        {design.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-center text-gray-400 text-sm">
-                            <Check className="w-4 h-4 mr-2 text-green-500" />
-                            <span>{feature}</span>
+                      {/* Animated overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      {/* Popular Badge */}
+                      {design.popular && (
+                        <motion.div
+                          initial={{ x: 100, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: index * 0.05 + 0.3 }}
+                        >
+                          <Badge className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold shadow-lg z-10">
+                            <Flame className="w-3 h-3 mr-1" />
+                            HOT
+                          </Badge>
+                        </motion.div>
+                      )}
+
+                      {/* Card Content */}
+                      <div className="relative p-6 h-[450px] flex flex-col">
+                        {/* Icon Section */}
+                        <div className="flex-1 flex items-center justify-center mb-4">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-white/20 rounded-full blur-2xl scale-150 animate-pulse" />
+                            <Icon className={`
+                              w-24 h-24 text-white/80 relative z-10
+                              ${hoveredCard === design.id ? 'animate-bounce' : ''}
+                            `} />
                           </div>
-                        ))}
+                        </div>
+
+                        {/* Title and Description */}
+                        <div className="text-center mb-4">
+                          <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+                            {design.name}
+                          </h3>
+                          <p className="text-white/80 text-sm leading-relaxed">
+                            {design.description}
+                          </p>
+                        </div>
+
+                        {/* Features - Show on hover */}
+                        <AnimatePresence>
+                          {hoveredCard === design.id && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 20 }}
+                              className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/90 to-black/50"
+                            >
+                              <div className="space-y-1 mb-4">
+                                {design.features.map((feature, idx) => (
+                                  <motion.div 
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="flex items-center text-white/90 text-xs"
+                                  >
+                                    <Check className="w-3 h-3 mr-2 text-green-400" />
+                                    <span>{feature}</span>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Price and Action */}
+                        <div className="mt-auto space-y-3">
+                          <div className="text-center">
+                            <span className="text-3xl font-bold text-white drop-shadow-lg">
+                              {design.price}
+                            </span>
+                          </div>
+                          
+                          <Button
+                            onClick={() => handleDesignSelect(design)}
+                            className={`
+                              w-full relative overflow-hidden group/btn
+                              bg-gradient-to-r from-purple-600 to-pink-600 
+                              hover:from-purple-700 hover:to-pink-700
+                              text-white font-bold py-3 
+                              shadow-lg hover:shadow-xl
+                              transform transition-all duration-300
+                            `}
+                          >
+                            <span className="relative z-10 flex items-center justify-center">
+                              <ShoppingCart className="w-5 h-5 mr-2" />
+                              Buy Now
+                            </span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Price and Action */}
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-lg font-bold text-white">{design.price}</span>
-                      <Button
-                        onClick={() => handleDesignSelect(design)}
-                        className="gradient-primary text-white hover:opacity-90 transition-opacity"
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Buy Now
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Info Section */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-16 text-center"
+            className="mt-20 text-center"
           >
-            <Card className="glassmorphism border-white/20 max-w-3xl mx-auto">
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Mail className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="font-bold text-white mb-2">Instant Delivery</h3>
-                    <p className="text-gray-400 text-sm">Gift cards delivered instantly via email</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Eye className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="font-bold text-white mb-2">Track Balance</h3>
-                    <p className="text-gray-400 text-sm">Check your balance anytime, anywhere</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="w-8 h-8 text-primary" />
-                    </div>
-                    <h3 className="font-bold text-white mb-2">Custom Design</h3>
-                    <p className="text-gray-400 text-sm">
-                      Want more options? Try our{' '}
-                      <a href="/dashboard/user/designer" className="text-primary hover:underline">
-                        Designer Studio
-                      </a>
-                    </p>
+            <div className="relative">
+              {/* Glowing background effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20 blur-3xl" />
+              
+              <div className="relative backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/10 border border-white/20 rounded-3xl p-12 max-w-4xl mx-auto shadow-2xl">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-full p-4 shadow-lg">
+                    <Sparkles className="w-8 h-8 text-white" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-4 mt-4">
+                  Unlock Advanced Customization
+                </h3>
+                <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+                  Take your gift cards to the next level with our Designer Studio. Create truly unique designs with AI-powered messages, custom artwork, and exclusive templates.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-purple-600/20 to-purple-600/10 rounded-xl p-4 mb-2">
+                      <Zap className="w-8 h-8 text-purple-400 mx-auto" />
+                    </div>
+                    <h4 className="text-white font-semibold mb-1">AI-Powered</h4>
+                    <p className="text-gray-400 text-sm">Smart message suggestions</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-pink-600/20 to-pink-600/10 rounded-xl p-4 mb-2">
+                      <Crown className="w-8 h-8 text-pink-400 mx-auto" />
+                    </div>
+                    <h4 className="text-white font-semibold mb-1">Exclusive Designs</h4>
+                    <p className="text-gray-400 text-sm">Premium templates</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gradient-to-br from-blue-600/20 to-blue-600/10 rounded-xl p-4 mb-2">
+                      <Rocket className="w-8 h-8 text-blue-400 mx-auto" />
+                    </div>
+                    <h4 className="text-white font-semibold mb-1">Instant Delivery</h4>
+                    <p className="text-gray-400 text-sm">Send via email or SMS</p>
+                  </div>
+                </div>
+                
+                {isAuthenticated ? (
+                  <Link 
+                    href="/dashboard/user/designer" 
+                    className="inline-flex items-center justify-center px-8 py-4 text-lg font-bold rounded-full text-white bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <Sparkles className="w-6 h-6 mr-2" />
+                    Open Designer Studio
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
+                ) : (
+                  <Button
+                    onClick={handleLogin}
+                    className="px-8 py-4 text-lg font-bold rounded-full text-white bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 hover:from-purple-700 hover:via-pink-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <Sparkles className="w-6 h-6 mr-2" />
+                    Login to Access Designer Studio
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
