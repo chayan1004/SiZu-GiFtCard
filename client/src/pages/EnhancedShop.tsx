@@ -424,55 +424,56 @@ export default function EnhancedShop() {
         showDashboard={user?.role === 'admin'}
       />
       
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 sm:pt-24 pb-12 sm:pb-16 px-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Header - Responsive */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              <Sparkles className="inline-block w-10 h-10 mr-3 text-yellow-400" />
-              Gift Card Designer Studio
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 flex items-center justify-center flex-wrap gap-2">
+              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-yellow-400" />
+              <span>Gift Card Designer Studio</span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base lg:text-xl text-gray-300 max-w-2xl mx-auto px-4">
               Create stunning, personalized gift cards with advanced customization
             </p>
           </motion.div>
 
-          {/* Main Content - Split View */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Side - Customization Panel */}
+          {/* Main Content - Split View Responsive */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            {/* Left Side - Customization Panel - Responsive */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
               <Card className="glassmorphism border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Palette className="w-5 h-5" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-white flex items-center gap-2 text-lg sm:text-xl">
+                    <Palette className="w-4 h-4 sm:w-5 sm:h-5" />
                     Design Studio
                   </CardTitle>
-                  <CardDescription className="text-gray-300">
+                  <CardDescription className="text-gray-300 text-sm">
                     Customize every aspect of your gift card
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   <Tabs value={activeCustomTab} onValueChange={setActiveCustomTab}>
-                    <TabsList className="grid grid-cols-4 w-full bg-white/10">
-                      <TabsTrigger value="template" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-                        <Layout className="w-4 h-4 mr-1" />
-                        Templates
+                    <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full bg-white/10 p-1">
+                      <TabsTrigger value="template" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm">
+                        <Layout className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                        <span className="hidden xs:inline">Templates</span>
+                        <span className="xs:hidden">Tmpl</span>
                       </TabsTrigger>
-                      <TabsTrigger value="colors" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-                        <Palette className="w-4 h-4 mr-1" />
+                      <TabsTrigger value="colors" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm">
+                        <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
                         Colors
                       </TabsTrigger>
-                      <TabsTrigger value="text" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                      <TabsTrigger value="text" className="data-[state=active]:bg-primary data-[state=active]:text-white text-xs sm:text-sm">
                         <Type className="w-4 h-4 mr-1" />
                         Text
                       </TabsTrigger>
@@ -650,27 +651,27 @@ export default function EnhancedShop() {
                 </CardContent>
               </Card>
 
-              {/* Gift Card Details Form */}
+              {/* Gift Card Details Form - Responsive */}
               <Card className="glassmorphism border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Gift className="w-5 h-5" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-white flex items-center gap-2 text-lg sm:text-xl">
+                    <Gift className="w-4 h-4 sm:w-5 sm:h-5" />
                     Gift Card Details
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
                     <div>
-                      <Label htmlFor="amount" className="text-white">Amount ($)</Label>
+                      <Label htmlFor="amount" className="text-white text-sm sm:text-base">Amount ($)</Label>
                       <div className="flex gap-2 mt-1">
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
                           onClick={() => form.setValue('initialAmount', Math.max(1, (form.watch('initialAmount') || 0) - 10))}
-                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                         <Input
                           id="amount"
@@ -679,16 +680,16 @@ export default function EnhancedShop() {
                           max="500"
                           step="1"
                           {...form.register('initialAmount')}
-                          className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-center"
+                          className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-center text-sm sm:text-base h-8 sm:h-10"
                         />
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
                           onClick={() => form.setValue('initialAmount', Math.min(500, (form.watch('initialAmount') || 0) + 10))}
-                          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                       {form.formState.errors.initialAmount && (
@@ -697,38 +698,38 @@ export default function EnhancedShop() {
                     </div>
 
                     <div>
-                      <Label htmlFor="recipientName" className="text-white">Recipient Name</Label>
+                      <Label htmlFor="recipientName" className="text-white text-sm sm:text-base">Recipient Name</Label>
                       <Input
                         id="recipientName"
                         {...form.register('recipientName')}
-                        className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                        className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-sm sm:text-base h-8 sm:h-10"
                         placeholder="Who is this gift for?"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="recipientEmail" className="text-white">Recipient Email (Optional)</Label>
+                      <Label htmlFor="recipientEmail" className="text-white text-sm sm:text-base">Recipient Email (Optional)</Label>
                       <Input
                         id="recipientEmail"
                         type="email"
                         {...form.register('recipientEmail')}
-                        className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                        className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-sm sm:text-base h-8 sm:h-10"
                         placeholder="Send gift card via email"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="senderName" className="text-white">Your Name</Label>
+                      <Label htmlFor="senderName" className="text-white text-sm sm:text-base">Your Name</Label>
                       <Input
                         id="senderName"
                         {...form.register('senderName')}
-                        className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                        className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-sm sm:text-base h-8 sm:h-10"
                         placeholder="From..."
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="customMessage" className="text-white flex items-center justify-between">
+                      <Label htmlFor="customMessage" className="text-white flex items-center justify-between text-sm sm:text-base">
                         <span>Personal Message</span>
                         <Button
                           type="button"
@@ -740,43 +741,44 @@ export default function EnhancedShop() {
                             tone: 'friendly'
                           })}
                           disabled={generateMessageMutation.isPending}
-                          className="text-primary hover:text-primary/80"
+                          className="text-primary hover:text-primary/80 text-xs sm:text-sm h-7 sm:h-8"
                         >
-                          <Wand2 className="w-4 h-4 mr-1" />
-                          AI Generate
+                          <Wand2 className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
+                          <span className="hidden sm:inline">AI Generate</span>
+                          <span className="sm:hidden">AI</span>
                         </Button>
                       </Label>
                       <Textarea
                         id="customMessage"
                         {...form.register('customMessage')}
-                        className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                        className="bg-white/10 border-white/20 text-white placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Add a personal message..."
                         rows={3}
                       />
                     </div>
 
-                    {/* Price Breakdown */}
-                    <div className="pt-4 border-t border-white/20">
-                      <div className="space-y-2 text-white">
-                        <div className="flex justify-between">
+                    {/* Price Breakdown - Responsive */}
+                    <div className="pt-3 sm:pt-4 border-t border-white/20">
+                      <div className="space-y-1.5 sm:space-y-2 text-white">
+                        <div className="flex justify-between text-sm sm:text-base">
                           <span>Gift Card Amount</span>
-                          <span>${form.watch('initialAmount') || 0}</span>
+                          <span className="font-medium">${form.watch('initialAmount') || 0}</span>
                         </div>
                         {activeFees.length > 0 && (
                           <>
-                            <div className="flex justify-between text-sm text-gray-300">
+                            <div className="flex justify-between text-xs sm:text-sm text-gray-300">
                               <span>Processing Fee</span>
                               <span>$2.95</span>
                             </div>
                             {form.watch('animation') !== 'none' && (
-                              <div className="flex justify-between text-sm text-gray-300">
+                              <div className="flex justify-between text-xs sm:text-sm text-gray-300">
                                 <span>Animation Effect</span>
                                 <span>$2.99</span>
                               </div>
                             )}
                           </>
                         )}
-                        <div className="flex justify-between font-bold text-lg pt-2 border-t border-white/20">
+                        <div className="flex justify-between font-bold text-base sm:text-lg pt-2 border-t border-white/20">
                           <span>Total</span>
                           <span>${calculateTotalPrice().toFixed(2)}</span>
                         </div>
@@ -785,17 +787,17 @@ export default function EnhancedShop() {
 
                     <Button
                       type="submit"
-                      className="w-full gradient-primary text-white hover:opacity-90 transition-opacity"
+                      className="w-full gradient-primary text-white hover:opacity-90 transition-opacity h-9 sm:h-11 text-sm sm:text-base"
                       disabled={createGiftCardMutation.isPending}
                     >
                       {createGiftCardMutation.isPending ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                           Creating...
                         </>
                       ) : (
                         <>
-                          <CreditCard className="mr-2 h-4 w-4" />
+                          <CreditCard className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           Create Gift Card
                         </>
                       )}
@@ -805,52 +807,52 @@ export default function EnhancedShop() {
               </Card>
             </motion.div>
 
-            {/* Right Side - Live Preview */}
+            {/* Right Side - Live Preview - Responsive */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
-              <Card className="glassmorphism border-white/20 sticky top-24">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Eye className="w-5 h-5" />
+              <Card className="glassmorphism border-white/20 lg:sticky lg:top-24">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <CardTitle className="text-white flex items-center gap-2 text-lg sm:text-xl">
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                       Live Preview
                     </CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5 sm:gap-2">
                       <Button
                         type="button"
                         variant={previewMode === 'desktop' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => setPreviewMode('desktop')}
-                        className={previewMode === 'desktop' ? 'bg-primary' : 'text-white hover:text-white/80'}
+                        className={`h-7 sm:h-8 px-2 sm:px-3 ${previewMode === 'desktop' ? 'bg-primary' : 'text-white hover:text-white/80'}`}
                       >
-                        <Monitor className="w-4 h-4" />
+                        <Monitor className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                       <Button
                         type="button"
                         variant={previewMode === 'mobile' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => setPreviewMode('mobile')}
-                        className={previewMode === 'mobile' ? 'bg-primary' : 'text-white hover:text-white/80'}
+                        className={`h-7 sm:h-8 px-2 sm:px-3 ${previewMode === 'mobile' ? 'bg-primary' : 'text-white hover:text-white/80'}`}
                       >
-                        <Smartphone className="w-4 h-4" />
+                        <Smartphone className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </div>
-                  <CardDescription className="text-gray-300">
+                  <CardDescription className="text-gray-300 text-sm mt-1">
                     See your changes in real-time
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="p-8 bg-black/20 rounded-xl">
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="p-4 sm:p-6 lg:p-8 bg-black/20 rounded-xl">
                     <LivePreview form={form} previewMode={previewMode} />
                   </div>
 
-                  {/* Quick Actions */}
-                  <div className="mt-6 flex gap-3">
+                  {/* Quick Actions - Responsive */}
+                  <div className="mt-4 sm:mt-6 flex gap-2 sm:gap-3">
                     <Button
                       type="button"
                       variant="outline"
@@ -862,9 +864,9 @@ export default function EnhancedShop() {
                           description: "All customizations have been reset to defaults.",
                         });
                       }}
-                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-8 sm:h-9 text-xs sm:text-sm"
                     >
-                      <RotateCw className="w-4 h-4 mr-1" />
+                      <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
                       Reset Design
                     </Button>
                   </div>

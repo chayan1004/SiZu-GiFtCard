@@ -135,58 +135,59 @@ export default function Recharge() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-teal-50 to-blue-50">
       <Navigation onLogin={handleLogin} onLogout={handleLogout} />
       
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 sm:pt-24 pb-12 sm:pb-16 px-3 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-8"
+            className="text-center mb-6 sm:mb-8"
           >
-            <div className="inline-flex items-center justify-center p-3 bg-green-100 rounded-full mb-4">
-              <Plus className="h-10 w-10 text-green-600" />
+            <div className="inline-flex items-center justify-center p-2.5 sm:p-3 bg-green-100 rounded-full mb-3 sm:mb-4">
+              <Plus className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Recharge Gift Card</h1>
-            <p className="text-lg text-gray-600">Add funds to your existing gift card</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1.5 sm:mb-2">Recharge Gift Card</h1>
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600">Add funds to your existing gift card</p>
           </motion.div>
 
           <Tabs defaultValue="manual" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-              <TabsTrigger value="scan">Scan QR</TabsTrigger>
-              <TabsTrigger value="saved">My Cards</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-auto">
+              <TabsTrigger value="manual" className="text-xs sm:text-sm py-2 sm:py-3">Manual Entry</TabsTrigger>
+              <TabsTrigger value="scan" className="text-xs sm:text-sm py-2 sm:py-3">Scan QR</TabsTrigger>
+              <TabsTrigger value="saved" className="text-xs sm:text-sm py-2 sm:py-3">My Cards</TabsTrigger>
             </TabsList>
 
             <TabsContent value="manual">
               <Card>
-                <CardHeader>
-                  <CardTitle>Enter Gift Card Details</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Enter Gift Card Details</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm mt-1">
                     Enter your gift card code and the amount you want to add
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
                       <FormField
                         control={form.control}
                         name="code"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Gift Card Code</FormLabel>
+                            <FormLabel className="text-sm sm:text-base">Gift Card Code</FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="XXXX-XXXX-XXXX"
                                 {...field}
                                 onChange={(e) => handleCodeChange(e.target.value)}
+                                className="h-9 sm:h-11 text-sm sm:text-base"
                               />
                             </FormControl>
                             {currentBalance !== null && (
-                              <p className="text-sm text-muted-foreground mt-2">
+                              <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
                                 Current balance: ${currentBalance.toFixed(2)}
                               </p>
                             )}
-                            <FormMessage />
+                            <FormMessage className="text-xs sm:text-sm" />
                           </FormItem>
                         )}
                       />
@@ -196,15 +197,16 @@ export default function Recharge() {
                         name="amount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Recharge Amount</FormLabel>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-5 gap-2">
+                            <FormLabel className="text-sm sm:text-base">Recharge Amount</FormLabel>
+                            <div className="space-y-3 sm:space-y-4">
+                              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
                                 {PRESET_AMOUNTS.map((preset) => (
                                   <Button
                                     key={preset}
                                     type="button"
                                     variant={field.value === preset.toString() ? "default" : "outline"}
                                     onClick={() => field.onChange(preset.toString())}
+                                    className="h-8 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
                                   >
                                     ${preset}
                                   </Button>
@@ -217,27 +219,28 @@ export default function Recharge() {
                                   min="1"
                                   placeholder="Or enter custom amount"
                                   {...field}
+                                  className="h-9 sm:h-11 text-sm sm:text-base"
                                 />
                               </FormControl>
                             </div>
-                            <FormMessage />
+                            <FormMessage className="text-xs sm:text-sm" />
                           </FormItem>
                         )}
                       />
 
                       <Button
                         type="submit"
-                        className="w-full"
+                        className="w-full h-9 sm:h-11 text-sm sm:text-base"
                         disabled={rechargeMutation.isPending}
                       >
                         {rechargeMutation.isPending ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                             Processing...
                           </>
                         ) : (
                           <>
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                             Recharge Card
                           </>
                         )}
@@ -250,15 +253,15 @@ export default function Recharge() {
 
             <TabsContent value="scan">
               <Card>
-                <CardHeader>
-                  <CardTitle>Scan QR Code</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Scan QR Code</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm mt-1">
                     Use your camera to scan the gift card QR code
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {showQRScanner ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       <QRScanner 
                         onResult={(result) => {
                           handleCodeChange(result);
@@ -279,7 +282,7 @@ export default function Recharge() {
                       <Button
                         variant="outline"
                         onClick={() => setShowQRScanner(false)}
-                        className="w-full"
+                        className="w-full h-9 sm:h-11 text-sm sm:text-base"
                       >
                         Cancel Scan
                       </Button>
@@ -287,10 +290,10 @@ export default function Recharge() {
                   ) : (
                     <Button
                       onClick={() => setShowQRScanner(true)}
-                      className="w-full"
+                      className="w-full h-9 sm:h-11 text-sm sm:text-base"
                       variant="outline"
                     >
-                      <Scan className="mr-2 h-4 w-4" />
+                      <Scan className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       Start Scanner
                     </Button>
                   )}
@@ -300,15 +303,15 @@ export default function Recharge() {
 
             <TabsContent value="saved">
               <Card>
-                <CardHeader>
-                  <CardTitle>Your Gift Cards</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Your Gift Cards</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm mt-1">
                     Select a gift card from your collection to recharge
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {userGiftCards && userGiftCards.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-2.5 sm:space-y-3">
                       {userGiftCards.map((card: any) => (
                         <motion.div
                           key={card.id}
@@ -319,15 +322,15 @@ export default function Recharge() {
                             className="cursor-pointer hover:shadow-md transition-shadow"
                             onClick={() => handleQuickSelect(card)}
                           >
-                            <CardContent className="p-4">
+                            <CardContent className="p-3 sm:p-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="font-semibold">{card.code}</p>
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className="font-semibold text-sm sm:text-base">{card.code}</p>
+                                  <p className="text-xs sm:text-sm text-muted-foreground">
                                     Balance: ${card.balance.toFixed(2)}
                                   </p>
                                 </div>
-                                <Badge variant={card.design === 'premium' ? 'default' : 'secondary'}>
+                                <Badge variant={card.design === 'premium' ? 'default' : 'secondary'} className="text-xs sm:text-sm">
                                   {card.design}
                                 </Badge>
                               </div>
@@ -337,7 +340,7 @@ export default function Recharge() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-muted-foreground py-8">
+                    <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
                       No gift cards found in your account
                     </p>
                   )}
@@ -350,17 +353,17 @@ export default function Recharge() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6"
+              className="mt-4 sm:mt-6"
             >
               <Card className="border-green-200 bg-green-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600 mr-3" />
-                    <h3 className="text-xl font-semibold text-green-900">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mr-2 sm:mr-3" />
+                    <h3 className="text-base sm:text-xl font-semibold text-green-900">
                       Recharge Successful!
                     </h3>
                   </div>
-                  <div className="space-y-2 text-green-800">
+                  <div className="space-y-1.5 sm:space-y-2 text-green-800 text-sm sm:text-base">
                     <p>Card: {rechargeResult.code}</p>
                     <p>Amount Added: ${rechargeResult.rechargedAmount.toFixed(2)}</p>
                     <p className="font-semibold">New Balance: ${rechargeResult.newBalance.toFixed(2)}</p>

@@ -159,61 +159,72 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar - Responsive */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-950 transform transition-transform duration-300 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className="flex flex-col h-full">
-          {/* Brand */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-800">
-            <div className="flex items-center space-x-3">
-              <div className="bg-purple-600 p-2 rounded-lg">
-                <CreditCard className="h-6 w-6 text-white" />
+          {/* Brand - Responsive */}
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-800">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-1.5 sm:p-2 rounded-lg">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <span className="font-bold text-lg">Gift Card Hub</span>
+              <span className="font-bold text-base sm:text-lg">Gift Card Hub</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden"
+              className="lg:hidden p-1 hover:bg-gray-800 rounded-lg transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4">
-            <ul className="space-y-2">
+          {/* Navigation - Responsive */}
+          <nav className="flex-1 p-3 sm:p-4 overflow-y-auto">
+            <ul className="space-y-1 sm:space-y-2">
               {navItems.map((item) => (
                 <li key={item.path}>
                   <button
-                    onClick={() => setLocation(item.path)}
-                    className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+                    onClick={() => {
+                      setLocation(item.path);
+                      setSidebarOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-gray-800 transition-all duration-200"
                   >
-                    <item.icon className="h-5 w-5 text-gray-400" />
-                    <span className="text-gray-300">{item.label}</span>
+                    <item.icon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                    <span className="text-sm sm:text-base text-gray-300">{item.label}</span>
                   </button>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* User Info */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-purple-600 p-2 rounded-full">
-                <span className="text-sm font-medium">
+          {/* User Info - Responsive */}
+          <div className="p-3 sm:p-4 border-t border-gray-800">
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+              <div className="bg-gradient-to-r from-purple-600 to-purple-700 p-1.5 sm:p-2 rounded-full flex-shrink-0">
+                <span className="text-xs sm:text-sm font-medium">
                   {user?.firstName?.[0] || user?.email?.[0] || 'U'}
                 </span>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">{user?.firstName || 'User'}</p>
-                <p className="text-xs text-gray-400">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user?.firstName || 'User'}</p>
+                <p className="text-xs text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full border-gray-700 hover:bg-gray-800"
+              className="w-full border-gray-700 hover:bg-gray-800 text-sm sm:text-base py-2"
             >
               Logout
             </Button>
@@ -221,67 +232,68 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="lg:ml-64">
-        {/* Header */}
-        <header className="bg-gray-950 border-b border-gray-800 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      {/* Main Content - Responsive */}
+      <div className="lg:ml-64 min-h-screen">
+        {/* Header - Responsive */}
+        <header className="bg-gray-950 border-b border-gray-800 p-3 sm:p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden"
+                className="lg:hidden p-1 hover:bg-gray-800 rounded-lg transition-colors"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
-              <h1 className="text-2xl font-bold">Gift Card Dashboard</h1>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">Gift Card Dashboard</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="relative hidden sm:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="search"
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 w-64"
+                  className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400 w-40 sm:w-48 lg:w-64 text-sm"
                 />
               </div>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+              <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 sm:h-3 sm:w-3 bg-red-500 rounded-full"></span>
               </Button>
             </div>
           </div>
         </header>
 
-        {/* Dashboard Content */}
-        <main className="p-6">
-          {/* Wallet Section */}
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Wallet</h2>
+        {/* Dashboard Content - Responsive */}
+        <main className="p-3 sm:p-4 lg:p-6">
+          {/* Wallet Section - Responsive */}
+          <section className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold">Wallet</h2>
               <Button
                 onClick={() => setLocation('/shop')}
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg text-sm sm:text-base"
               >
                 Get More
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* Balance Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+              {/* Balance Cards - Responsive */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
+                className="col-span-2 sm:col-span-1"
               >
-                <Card className="bg-gradient-to-br from-purple-600 to-purple-800 border-0">
-                  <CardContent className="p-6">
-                    <p className="text-purple-100 text-sm mb-1">Total Balance</p>
-                    <p className="text-3xl font-bold text-white">${totalBalance.toFixed(2)}</p>
-                    <div className="flex items-center mt-2 text-purple-200">
-                      <TrendingUp className="h-4 w-4 mr-1" />
+                <Card className="bg-gradient-to-br from-purple-600 to-purple-800 border-0 hover:scale-105 transition-transform duration-200">
+                  <CardContent className="p-4 sm:p-5 lg:p-6">
+                    <p className="text-purple-100 text-xs sm:text-sm mb-1">Total Balance</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">${totalBalance.toFixed(2)}</p>
+                    <div className="flex items-center mt-1.5 sm:mt-2 text-purple-200">
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       <span className="text-xs">+12% from last month</span>
                     </div>
                   </CardContent>
@@ -293,12 +305,12 @@ export default function UserDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card className="bg-gradient-to-br from-green-600 to-green-800 border-0">
-                  <CardContent className="p-6">
-                    <p className="text-green-100 text-sm mb-1">Active Cards</p>
-                    <p className="text-3xl font-bold text-white">{giftCards.length}</p>
-                    <div className="flex items-center mt-2 text-green-200">
-                      <CreditCard className="h-4 w-4 mr-1" />
+                <Card className="bg-gradient-to-br from-green-600 to-green-800 border-0 hover:scale-105 transition-transform duration-200">
+                  <CardContent className="p-4 sm:p-5 lg:p-6">
+                    <p className="text-green-100 text-xs sm:text-sm mb-1">Active Cards</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">{giftCards.length}</p>
+                    <div className="flex items-center mt-1.5 sm:mt-2 text-green-200">
+                      <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       <span className="text-xs">All cards active</span>
                     </div>
                   </CardContent>
@@ -310,12 +322,12 @@ export default function UserDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <Card className="bg-gradient-to-br from-blue-600 to-blue-800 border-0">
-                  <CardContent className="p-6">
-                    <p className="text-blue-100 text-sm mb-1">Total Spent</p>
-                    <p className="text-3xl font-bold text-white">${totalSpent.toFixed(2)}</p>
-                    <div className="flex items-center mt-2 text-blue-200">
-                      <DollarSign className="h-4 w-4 mr-1" />
+                <Card className="bg-gradient-to-br from-blue-600 to-blue-800 border-0 hover:scale-105 transition-transform duration-200">
+                  <CardContent className="p-4 sm:p-5 lg:p-6">
+                    <p className="text-blue-100 text-xs sm:text-sm mb-1">Total Spent</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">${totalSpent.toFixed(2)}</p>
+                    <div className="flex items-center mt-1.5 sm:mt-2 text-blue-200">
+                      <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       <span className="text-xs">This month</span>
                     </div>
                   </CardContent>
@@ -326,13 +338,14 @@ export default function UserDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
+                className="col-span-2 lg:col-span-1"
               >
-                <Card className="bg-gradient-to-br from-orange-600 to-orange-800 border-0">
-                  <CardContent className="p-6">
-                    <p className="text-orange-100 text-sm mb-1">Saved</p>
-                    <p className="text-3xl font-bold text-white">$432</p>
-                    <div className="flex items-center mt-2 text-orange-200">
-                      <TrendingUp className="h-4 w-4 mr-1" />
+                <Card className="bg-gradient-to-br from-orange-600 to-orange-800 border-0 hover:scale-105 transition-transform duration-200">
+                  <CardContent className="p-4 sm:p-5 lg:p-6">
+                    <p className="text-orange-100 text-xs sm:text-sm mb-1">Saved</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">$432</p>
+                    <div className="flex items-center mt-1.5 sm:mt-2 text-orange-200">
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       <span className="text-xs">With special offers</span>
                     </div>
                   </CardContent>
@@ -340,28 +353,29 @@ export default function UserDashboard() {
               </motion.div>
             </div>
 
-            {/* Gift Cards Display */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Gift Cards Display - Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {giftCards.slice(0, 3).map((card, index) => (
                 <motion.div
                   key={card.id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 * index }}
+                  whileHover={{ scale: 1.02 }}
                 >
-                  <Card className="bg-gray-800 border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className={`h-32 bg-gradient-to-br ${
+                  <Card className="bg-gray-800 border-gray-700 overflow-hidden hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-200 cursor-pointer">
+                    <div className={`h-24 sm:h-28 lg:h-32 bg-gradient-to-br ${
                       index === 0 ? 'from-pink-500 to-rose-600' :
                       index === 1 ? 'from-green-500 to-teal-600' :
                       'from-blue-500 to-purple-600'
-                    } p-4 relative`}>
-                      <CreditCard className="absolute right-4 top-4 h-8 w-8 text-white/20" />
-                      <p className="text-white font-semibold">{card.design} Card</p>
-                      <p className="text-white/80 text-sm mt-1">Balance: ${card.balance}</p>
+                    } p-3 sm:p-4 relative`}>
+                      <CreditCard className="absolute right-3 top-3 sm:right-4 sm:top-4 h-6 w-6 sm:h-8 sm:w-8 text-white/20" />
+                      <p className="text-white font-semibold text-sm sm:text-base">{card.design} Card</p>
+                      <p className="text-white/80 text-xs sm:text-sm mt-1">Balance: ${card.balance}</p>
                     </div>
-                    <CardContent className="p-4">
-                      <p className="text-gray-400 text-sm">Card Code</p>
-                      <p className="font-mono text-sm">{card.code}</p>
+                    <CardContent className="p-3 sm:p-4">
+                      <p className="text-gray-400 text-xs sm:text-sm">Card Code</p>
+                      <p className="font-mono text-xs sm:text-sm bg-gray-900 px-2 py-1 rounded mt-1">{card.code}</p>
                       <div className="mt-2">
                         <Progress 
                           value={(parseFloat(card.balance) / parseFloat(card.initialAmount)) * 100}
@@ -375,16 +389,16 @@ export default function UserDashboard() {
             </div>
           </section>
 
-          {/* Transaction Reports & Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Transaction Reports */}
+          {/* Transaction Reports & Overview - Responsive */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Transaction Reports - Responsive */}
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-white">Transaction Reports</CardTitle>
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-6">
+                <CardTitle className="text-white text-base sm:text-lg">Transaction Reports</CardTitle>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-gray-400">
-                      <Calendar className="h-4 w-4 mr-2" />
+                    <Button variant="ghost" size="sm" className="text-gray-400 text-xs sm:text-sm">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                       {selectedPeriod === 'week' ? 'This Week' : 
                        selectedPeriod === 'month' ? 'This Month' : 'This Year'}
                     </Button>
@@ -402,8 +416,8 @@ export default function UserDashboard() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
                   <AreaChart data={transactionData}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -428,35 +442,35 @@ export default function UserDashboard() {
                   </AreaChart>
                 </ResponsiveContainer>
 
-                {/* Recent Transactions List */}
-                <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
-                  <div className="space-y-3">
+                {/* Recent Transactions List - Responsive */}
+                <div className="mt-4 sm:mt-6">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-2 sm:mb-3">Recent Activity</h3>
+                  <div className="space-y-2 sm:space-y-3">
                     {transactions.slice(0, 3).map((tx: any) => (
-                      <div key={tx.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${
+                      <div key={tx.id} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                          <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
                             tx.type === 'purchase' ? 'bg-green-900/50' : 'bg-red-900/50'
                           }`}>
                             {tx.type === 'purchase' ? 
-                              <TrendingUp className="h-4 w-4 text-green-400" /> :
-                              <TrendingDown className="h-4 w-4 text-red-400" />
+                              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" /> :
+                              <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />
                             }
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-200">{tx.description}</p>
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-gray-200 truncate">{tx.description}</p>
                             <p className="text-xs text-gray-500">
                               {format(new Date(tx.createdAt), 'MMM d, h:mm a')}
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className={`text-sm font-medium ${
+                        <div className="text-right flex-shrink-0">
+                          <p className={`text-xs sm:text-sm font-medium ${
                             tx.type === 'purchase' ? 'text-green-400' : 'text-red-400'
                           }`}>
                             {tx.type === 'purchase' ? '+' : '-'}${Math.abs(tx.amount).toFixed(2)}
                           </p>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs mt-0.5">
                             {tx.status}
                           </Badge>
                         </div>
@@ -474,24 +488,24 @@ export default function UserDashboard() {
               </CardContent>
             </Card>
 
-            {/* Overview */}
+            {/* Overview - Responsive */}
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Overview</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-white text-base sm:text-lg">Overview</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-6">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-white">201</p>
-                    <p className="text-sm text-gray-400">Total Transactions</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">201</p>
+                    <p className="text-xs sm:text-sm text-gray-400">Total Transactions</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-white">156</p>
-                    <p className="text-sm text-gray-400">Completed</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-white">156</p>
+                    <p className="text-xs sm:text-sm text-gray-400">Completed</p>
                   </div>
                 </div>
 
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={180} className="sm:h-[200px]">
                   <PieChart>
                     <Pie
                       data={overviewData}
@@ -513,17 +527,17 @@ export default function UserDashboard() {
                   </PieChart>
                 </ResponsiveContainer>
 
-                <div className="mt-6 space-y-3">
+                <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
                   {overviewData.map((item) => (
                     <div key={item.name} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1.5 sm:space-x-2">
                         <div 
-                          className="w-3 h-3 rounded-full" 
+                          className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm text-gray-300">{item.name}</span>
+                        <span className="text-xs sm:text-sm text-gray-300">{item.name}</span>
                       </div>
-                      <span className="text-sm font-medium text-gray-200">{item.value}</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-200">{item.value}</span>
                     </div>
                   ))}
                 </div>
