@@ -6,6 +6,8 @@ import {
   fraudAlerts,
   savedCards,
   feeConfigurations,
+  merchantConnections,
+  squarePayments,
   type User,
   type UpsertUser,
   type GiftCard,
@@ -20,6 +22,10 @@ import {
   type InsertSavedCard,
   type FeeConfiguration,
   type InsertFeeConfiguration,
+  type MerchantConnection,
+  type InsertMerchantConnection,
+  type SquarePayment,
+  type InsertSquarePayment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
@@ -775,77 +781,84 @@ export class DatabaseStorage implements IStorage {
     return Math.round(calculatedFee * 100) / 100; // Round to 2 decimal places
   }
 
-  async createPaymentRecord(payment: any): Promise<any> {
-    // For now, we'll log the payment - in production, this would store in a payments table
-    console.log('Payment record:', payment);
-    
-    // Store the payment record as metadata - no need to update non-existent transactions
-    // In a full implementation, this would create a new payment record in a payments table
-    return payment;
+  async createPaymentRecord(payment: InsertSquarePayment): Promise<SquarePayment> {
+    const [record] = await db
+      .insert(squarePayments)
+      .values({
+        ...payment,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return record;
   }
 
   async updateTransactionStatus(orderId: string, status: string): Promise<void> {
-    // In a full implementation, this would update the payment record
-    // For now, we'll log the status update since we're processing test webhooks
-    console.log(`Transaction status update - Order ID: ${orderId}, New Status: ${status}`);
-    
-    // In production, you would:
-    // 1. Find the transaction by Square order ID (stored in metadata)
-    // 2. Update the transaction status
-    // 3. Trigger any necessary actions (send emails, activate gift cards, etc.)
+    await db
+      .update(squarePayments)
+      .set({
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(squarePayments.orderId, orderId));
   }
 
   // Merchant connection operations (for OAuth)
-  async createMerchantConnection(connection: any): Promise<any> {
-    // Store merchant OAuth connection
-    // In production, this would be stored in a merchant_connections table
-    console.log('Creating merchant connection:', {
-      userId: connection.userId,
-      merchantId: connection.merchantId,
-      scopes: connection.scopes
-    });
-    
-    return {
-      id: nanoid(),
-      ...connection,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+  async createMerchantConnection(connection: InsertMerchantConnection): Promise<MerchantConnection> {
+    const [newConnection] = await db
+      .insert(merchantConnections)
+      .values({
+        ...connection,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return newConnection;
   }
 
-  async getMerchantConnection(userId: string, merchantId: string): Promise<any | undefined> {
-    // Retrieve merchant OAuth connection
-    // In production, this would query a merchant_connections table
-    console.log(`Getting merchant connection for user: ${userId}, merchant: ${merchantId}`);
-    
-    // Return mock data for development
-    return undefined;
+  async getMerchantConnection(userId: string, merchantId: string): Promise<MerchantConnection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(merchantConnections)
+      .where(and(
+        eq(merchantConnections.userId, userId),
+        eq(merchantConnections.merchantId, merchantId),
+        eq(merchantConnections.isActive, true)
+      ));
+    return connection;
   }
 
-  async getMerchantConnections(userId: string): Promise<any[]> {
-    // Get all merchant connections for a user
-    // In production, this would query a merchant_connections table
-    console.log(`Getting all merchant connections for user: ${userId}`);
-    
-    return [];
+  async getMerchantConnections(userId: string): Promise<MerchantConnection[]> {
+    return await db
+      .select()
+      .from(merchantConnections)
+      .where(and(
+        eq(merchantConnections.userId, userId),
+        eq(merchantConnections.isActive, true)
+      ))
+      .orderBy(desc(merchantConnections.createdAt));
   }
 
-  async updateMerchantConnection(id: string, updates: any): Promise<any> {
-    // Update merchant OAuth connection (refresh tokens, etc.)
-    // In production, this would update a merchant_connections table
-    console.log(`Updating merchant connection: ${id}`, updates);
-    
-    return {
-      id,
-      ...updates,
-      updatedAt: new Date()
-    };
+  async updateMerchantConnection(id: string, updates: Partial<InsertMerchantConnection>): Promise<MerchantConnection> {
+    const [connection] = await db
+      .update(merchantConnections)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(merchantConnections.id, id))
+      .returning();
+    return connection;
   }
 
   async deleteMerchantConnection(id: string): Promise<void> {
-    // Delete merchant OAuth connection
-    // In production, this would delete from a merchant_connections table
-    console.log(`Deleting merchant connection: ${id}`);
+    await db
+      .update(merchantConnections)
+      .set({
+        isActive: false,
+        updatedAt: new Date()
+      })
+      .where(eq(merchantConnections.id, id));
   }
 }
 

@@ -212,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/login', authRateLimit, validateInput, async (req, res) => {
+  app.post('/api/auth/login', authRateLimit, async (req, res) => {
     try {
       const { email, password } = req.body;
 

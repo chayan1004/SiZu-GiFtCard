@@ -51,7 +51,7 @@ export const savedCards = pgTable("saved_cards", {
   userId: varchar("user_id").references(() => users.id).notNull(),
   squareCardId: varchar("square_card_id").notNull(), // Square's card ID
   cardBrand: varchar("card_brand").notNull(), // VISA, MASTERCARD, etc.
-  last4: varchar("last_4", { length: 4 }).notNull(), // Last 4 digits only
+  last4: varchar("last4", { length: 4 }).notNull(), // Last 4 digits only
   expMonth: integer("exp_month").notNull(), // Expiration month
   expYear: integer("exp_year").notNull(), // Expiration year
   cardholderName: varchar("cardholder_name"),
@@ -139,6 +139,181 @@ export const fraudAlerts = pgTable("fraud_alerts", {
   resolvedAt: timestamp("resolved_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Merchant Connections table (for Square OAuth)
+export const merchantConnections = pgTable("merchant_connections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  merchantId: varchar("merchant_id").notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: timestamp("expires_at"),
+  scope: text("scope"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Payment Links table
+export const paymentLinks = pgTable("payment_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  squarePaymentLinkId: varchar("square_payment_link_id").unique(),
+  version: integer("version"),
+  url: text("url").notNull(),
+  orderId: varchar("order_id"),
+  checkoutOptions: jsonb("checkout_options"),
+  prePopulatedData: jsonb("pre_populated_data"),
+  paymentNote: text("payment_note"),
+  createdById: varchar("created_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Refunds table
+export const refunds = pgTable("refunds", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  squareRefundId: varchar("square_refund_id").unique(),
+  paymentId: varchar("payment_id"),
+  orderId: varchar("order_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  reason: text("reason"),
+  status: varchar("status").notNull(), // 'PENDING', 'COMPLETED', 'FAILED'
+  processedById: varchar("processed_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Disputes table
+export const disputes = pgTable("disputes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  squareDisputeId: varchar("square_dispute_id").unique(),
+  paymentId: varchar("payment_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  state: varchar("state").notNull(), // 'INQUIRY_EVIDENCE_REQUIRED', 'PROCESSING', 'WON', 'LOST', etc.
+  reason: varchar("reason"),
+  dueAt: timestamp("due_at"),
+  evidenceIds: text("evidence_ids").array(),
+  cardBrand: varchar("card_brand"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Webhook Subscriptions table
+export const webhookSubscriptions = pgTable("webhook_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  squareSubscriptionId: varchar("square_subscription_id").unique(),
+  name: varchar("name").notNull(),
+  eventTypes: text("event_types").array(),
+  notificationUrl: text("notification_url").notNull(),
+  apiVersion: varchar("api_version"),
+  signatureKey: text("signature_key"),
+  isEnabled: boolean("is_enabled").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email Templates table
+export const emailTemplates = pgTable("email_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name").notNull().unique(),
+  subject: varchar("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  variables: jsonb("variables"), // Available template variables
+  category: varchar("category"), // 'transactional', 'marketing', etc.
+  isActive: boolean("is_active").default(true).notNull(),
+  createdById: varchar("created_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Gift Card Designs table
+export const giftCardDesigns = pgTable("gift_card_designs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name").notNull().unique(),
+  description: text("description"),
+  category: varchar("category"), // 'birthday', 'holiday', 'thank_you', etc.
+  designConfig: jsonb("design_config").notNull(), // Colors, patterns, images, etc.
+  previewUrl: text("preview_url"),
+  price: decimal("price", { precision: 10, scale: 2 }).default("0"),
+  isActive: boolean("is_active").default(true).notNull(),
+  isPremium: boolean("is_premium").default(false).notNull(),
+  createdById: varchar("created_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Audit Logs table
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id),
+  action: varchar("action").notNull(), // 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', etc.
+  resource: varchar("resource").notNull(), // 'gift_card', 'user', 'payment', etc.
+  resourceId: varchar("resource_id"),
+  changes: jsonb("changes"), // Before/after values
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// System Settings table
+export const systemSettings = pgTable("system_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  category: varchar("category").notNull(), // 'general', 'payment', 'email', etc.
+  key: varchar("key").notNull().unique(),
+  value: jsonb("value").notNull(),
+  description: text("description"),
+  isPublic: boolean("is_public").default(false).notNull(), // Can be exposed to frontend
+  updatedById: varchar("updated_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Square Payments table - track all payment records
+export const squarePayments = pgTable("square_payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  squarePaymentId: varchar("square_payment_id").unique(),
+  orderId: varchar("order_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  status: varchar("status").notNull(), // APPROVED, COMPLETED, CANCELED, FAILED
+  sourceType: varchar("source_type"), // CARD, BANK_ACCOUNT, WALLET, etc.
+  cardBrand: varchar("card_brand"),
+  last4: varchar("last4", { length: 4 }),
+  receiptUrl: text("receipt_url"),
+  userId: varchar("user_id").references(() => users.id),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_square_payments_user").on(table.userId),
+  index("idx_square_payments_order").on(table.orderId),
+  index("idx_square_payments_created_at").on(table.createdAt),
+]);
+
+// Webhook Events table - log all webhook events
+export const webhookEvents = pgTable("webhook_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: varchar("event_id").unique(),
+  eventType: varchar("event_type").notNull(),
+  merchantId: varchar("merchant_id"),
+  locationId: varchar("location_id"),
+  entityId: varchar("entity_id"), // ID of the affected entity (payment, order, etc.)
+  eventData: jsonb("event_data").notNull(),
+  processed: boolean("processed").default(false).notNull(),
+  processingError: text("processing_error"),
+  signature: text("signature"),
+  createdAt: timestamp("created_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+}, (table) => [
+  index("idx_webhook_events_type").on(table.eventType),
+  index("idx_webhook_events_entity").on(table.entityId),
+  index("idx_webhook_events_processed").on(table.processed),
+  index("idx_webhook_events_created_at").on(table.createdAt),
+]);
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -285,6 +460,40 @@ export type SavedCard = typeof savedCards.$inferSelect;
 
 export type InsertFeeConfiguration = z.infer<typeof insertFeeConfigurationSchema>;
 export type FeeConfiguration = typeof feeConfigurations.$inferSelect;
+
+// Additional type exports for new tables
+export type MerchantConnection = typeof merchantConnections.$inferSelect;
+export type InsertMerchantConnection = typeof merchantConnections.$inferInsert;
+
+export type PaymentLink = typeof paymentLinks.$inferSelect;
+export type InsertPaymentLink = typeof paymentLinks.$inferInsert;
+
+export type Refund = typeof refunds.$inferSelect;
+export type InsertRefund = typeof refunds.$inferInsert;
+
+export type Dispute = typeof disputes.$inferSelect;
+export type InsertDispute = typeof disputes.$inferInsert;
+
+export type WebhookSubscription = typeof webhookSubscriptions.$inferSelect;
+export type InsertWebhookSubscription = typeof webhookSubscriptions.$inferInsert;
+
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = typeof emailTemplates.$inferInsert;
+
+export type GiftCardDesign = typeof giftCardDesigns.$inferSelect;
+export type InsertGiftCardDesign = typeof giftCardDesigns.$inferInsert;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
+
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = typeof systemSettings.$inferInsert;
+
+export type SquarePayment = typeof squarePayments.$inferSelect;
+export type InsertSquarePayment = typeof squarePayments.$inferInsert;
+
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
+export type InsertWebhookEvent = typeof webhookEvents.$inferInsert;
 
 // Additional validation schemas
 export const redeemGiftCardSchema = z.object({

@@ -116,10 +116,8 @@ export default function CustomerLogin() {
               )}
 
               <div className="flex justify-end">
-                <Link href="/forgot-password">
-                  <a className="text-sm text-purple-600 hover:underline">
-                    Forgot password?
-                  </a>
+                <Link href="/forgot-password" className="text-sm text-purple-600 hover:underline">
+                  Forgot password?
                 </Link>
               </div>
             </CardContent>
