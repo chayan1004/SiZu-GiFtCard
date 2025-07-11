@@ -102,6 +102,7 @@ export class SquarePaymentsService {
 
   /**
    * Create a payment from a source (card nonce from Web Payments SDK)
+   * Enhanced with support for partial payments, statement descriptions, delayed capture, and app fees
    */
   async createPayment(
     sourceId: string,
@@ -110,7 +111,19 @@ export class SquarePaymentsService {
     orderId?: string,
     referenceId?: string,
     note?: string,
-    verification?: boolean
+    verification?: boolean,
+    options?: {
+      // Delayed capture - set to false to authorize only
+      autocomplete?: boolean;
+      // Statement description that appears on buyer's statement
+      statementDescriptionIdentifier?: string;
+      // Application fee for marketplace scenarios
+      appFeeAmount?: number;
+      // Tip amount
+      tipAmount?: number;
+      // Accept partial authorization (useful with gift cards)
+      acceptPartialAuthorization?: boolean;
+    }
   ): Promise<PaymentCreationResult> {
     if (!this.isInitialized) {
       return {
@@ -136,11 +149,31 @@ export class SquarePaymentsService {
         orderId,
         referenceId,
         note,
-        // Enable automatic capture for gift card purchases
-        autocomplete: true,
+        // Delayed capture support - default to true for backward compatibility
+        autocomplete: options?.autocomplete !== undefined ? options.autocomplete : true,
         // Enable verification for card-on-file payments
-        verifyBuyerIdentity: verification
+        verifyBuyerIdentity: verification,
+        // Accept partial authorization for gift card scenarios
+        acceptPartialAuthorization: options?.acceptPartialAuthorization,
+        // Statement description for buyer's bank statement
+        statementDescriptionIdentifier: options?.statementDescriptionIdentifier
       };
+
+      // Add application fee if specified
+      if (options?.appFeeAmount && options.appFeeAmount > 0) {
+        request.appFeeMoney = {
+          amount: BigInt(Math.round(options.appFeeAmount * 100)),
+          currency: 'USD'
+        };
+      }
+
+      // Add tip amount if specified
+      if (options?.tipAmount && options.tipAmount > 0) {
+        request.tipMoney = {
+          amount: BigInt(Math.round(options.tipAmount * 100)),
+          currency: 'USD'
+        };
+      }
 
       const response: CreatePaymentResponse = await paymentsApi.createPayment(request);
 

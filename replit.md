@@ -184,6 +184,41 @@ Preferred communication style: Simple, everyday language.
   - API response structure for wallet payments
   - Production requirements and security considerations
 
+### January 11, 2025 - Phase 24: Advanced Square Payment Features Implementation
+- **Square Refunds Service**: Complete refund management system
+  - SquareRefundsService: Full/partial refunds, unlinked refunds, refund listings
+  - API endpoints: POST /api/refunds/create, GET /api/refunds/:id, GET /api/refunds, POST /api/refunds/unlinked
+  - Support for app fee refunds with proportional calculations
+  - Admin-only unlinked refunds for cash/alternative payment methods
+  - Complete audit trail integration with transaction logging
+- **Square Disputes Service**: Comprehensive dispute handling
+  - SquareDisputesService: List, retrieve, accept disputes, evidence management
+  - API endpoints: GET /api/disputes, GET /api/disputes/:id, POST /api/disputes/:id/accept
+  - Evidence upload: Text and file evidence (JPEG, PNG, PDF) with multer integration
+  - Evidence management: List, remove, and submit evidence endpoints
+  - Dispute state tracking with visual indicators and descriptions
+- **Enhanced Payment Processing**: Advanced payment features
+  - Partial payment authorization for gift card scenarios
+  - Statement descriptions for customer bank statements
+  - Delayed capture support (authorize now, capture later)
+  - Application fees for marketplace scenarios
+  - Tip money support for service-based transactions
+- **Partial Payments Service**: Specialized gift card payment handling
+  - SquarePartialPaymentsService: Handle multiple payment sources
+  - Process gift cards that don't cover full amount
+  - Automatic payment splitting across multiple gift cards
+  - Payment source prioritization and balance calculations
+- **Webhook Subscriptions Service**: Programmatic webhook management
+  - SquareWebhookSubscriptionsService: Create, update, list, delete subscriptions
+  - Support for all 25+ Square webhook event types
+  - Test webhook functionality for verification
+  - Webhook URL validation and signature key management
+- **Production-Ready Integration**: Complete Square ecosystem
+  - All services initialized and operational
+  - Comprehensive error handling and logging
+  - Type-safe implementations with full TypeScript support
+  - Follows Square API best practices and latest API versions
+
 ### January 11, 2025 - Phase 21: Complete Square Gift Card & Online Checkout Webhook Integration
 - **Gift Card Webhook Processing**: All 6 gift card webhook types fully implemented
   - gift_card.created: Tracks new gift cards in NOT_ACTIVE state
