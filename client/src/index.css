@@ -123,6 +123,47 @@
     box-shadow: 0 0 30px rgba(6, 182, 212, 0.8);
   }
   
+  /* Anime-themed effects */
+  .anime-glow-pink {
+    box-shadow: 0 0 20px rgba(236, 72, 153, 0.5), inset 0 0 20px rgba(236, 72, 153, 0.2);
+  }
+  
+  .anime-glow-purple {
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.5), inset 0 0 20px rgba(147, 51, 234, 0.2);
+  }
+  
+  .anime-glow-cyan {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(6, 182, 212, 0.2);
+  }
+  
+  @keyframes sakura-float {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+  }
+  
+  @keyframes neko-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes cyber-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  
+  .anime-card-sakura {
+    animation: sakura-float 6s ease-in-out infinite;
+  }
+  
+  .anime-card-neko {
+    animation: neko-bounce 2s ease-in-out infinite;
+  }
+  
+  .anime-card-cyber {
+    animation: cyber-pulse 1.5s ease-in-out infinite;
+  }
+  
   .card-3d {
     transform-style: preserve-3d;
     perspective: 1000px;
