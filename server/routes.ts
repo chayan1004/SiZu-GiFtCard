@@ -5,7 +5,8 @@ import cors from "cors";
 import session from "express-session";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { requireAnyAuth, getAuthenticatedUser } from "./middleware/customerAuth";
+import { requireAnyAuth, requireCustomerAuth, getAuthenticatedUser } from "./middleware/customerAuth";
+import { AuthService } from "./services/AuthService";
 import { SquareService } from "./services/SquareService";
 import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
@@ -156,8 +157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Import AuthService
-  const { AuthService } = await import('./services/AuthService');
+  // Initialize AuthService
+  const authService = new AuthService();
 
   // Add payment routes
   app.use('/api/payments', paymentsRouter);
@@ -272,28 +273,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Customer Authentication Routes
-  app.post('/api/auth/register', authRateLimit, validateInput, validateEmail, async (req, res) => {
+  app.post('/api/auth/register', authRateLimit, async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: "All fields are required" });
       }
 
       if (password.length < 8) {
         return res.status(400).json({ message: "Password must be at least 8 characters" });
       }
 
-      const { user, otp } = await AuthService.registerCustomer(email, password, firstName, lastName);
+      const result = await authService.registerCustomer(email, password, firstName, lastName);
 
-      // Send OTP email
-      await emailService.sendOTPEmail(email, otp, firstName);
-
-      res.status(201).json({ 
-        message: "Registration successful. Please check your email for verification code.",
-        userId: user.id,
-        email: user.email
-      });
+      res.status(201).json(result);
     } catch (error: any) {
       console.error("Registration error:", error);
       res.status(400).json({ message: error.message || "Registration failed" });
@@ -308,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
-      const user = await AuthService.loginCustomer(email, password);
+      const user = await authService.loginCustomer(email, password);
 
       // Create session
       req.session.userId = user.id;
@@ -339,79 +333,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.post('/api/auth/verify-otp', authRateLimit, validateInput, async (req, res) => {
+  app.post('/api/auth/verify-otp', authRateLimit, async (req, res) => {
     try {
-      const { email, otp } = req.body;
+      const { userId, otp } = req.body;
 
-      if (!email || !otp) {
-        return res.status(400).json({ message: "Email and OTP are required" });
+      if (!userId || !otp) {
+        return res.status(400).json({ message: "User ID and OTP are required" });
       }
 
-      const user = await AuthService.verifyOTP(email, otp);
+      const result = await authService.verifyEmail(userId, otp);
 
       // Automatically log them in after verification
-      req.session.userId = user.id;
-      req.session.role = user.role;
+      const user = await storage.getUser(userId);
+      if (user) {
+        req.session.userId = user.id;
+        req.session.role = user.role;
+      }
 
       res.json({ 
         message: "Email verified successfully",
-        user: {
+        user: user ? {
           id: user.id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role
-        }
+        } : null
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Verification failed" });
     }
   });
 
-  app.post('/api/auth/resend-otp', authRateLimit, validateInput, validateEmail, async (req, res) => {
+  app.get('/api/auth/customer', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      res.status(500).json({ message: "Failed to fetch customer info" });
+    }
+  });
+
+  app.post('/api/auth/forgot-password', authRateLimit, async (req, res) => {
     try {
       const { email } = req.body;
-
+      
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }
 
-      const otp = await AuthService.resendOTP(email);
-      const user = await storage.getUserByEmail(email);
-
-      // Send new OTP email
-      await emailService.sendOTPEmail(email, otp, user?.firstName);
-
-      res.json({ message: "New verification code sent to your email" });
-    } catch (error: any) {
-      res.status(400).json({ message: error.message || "Failed to resend OTP" });
-    }
-  });
-
-  app.post('/api/auth/forgot-password', authRateLimit, validateInput, validateEmail, async (req, res) => {
-    try {
-      const { email } = req.body;
-      const resetToken = await AuthService.requestPasswordReset(email);
-
-      // Send reset email
-      await emailService.sendPasswordResetEmail(email, resetToken);
-
-      res.json({ message: "If that email exists, we've sent a password reset link" });
+      const result = await authService.forgotPassword(email);
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: "Password reset request failed" });
     }
   });
 
-  app.post('/api/auth/reset-password', authRateLimit, validateInput, async (req, res) => {
+  app.post('/api/auth/reset-password', authRateLimit, async (req, res) => {
     try {
       const { token, password } = req.body;
 
-      if (!password || password.length < 8) {
+      if (!token || !password) {
+        return res.status(400).json({ message: "Token and password are required" });
+      }
+
+      if (password.length < 8) {
         return res.status(400).json({ message: "Password must be at least 8 characters" });
       }
 
-      await AuthService.resetPassword(token, password);
-      res.json({ message: "Password reset successful" });
+      const result = await authService.resetPassword(token, password);
+      res.json(result);
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Password reset failed" });
     }
@@ -438,6 +430,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Session check failed" });
+    }
+  });
+
+  // Customer-specific endpoints (require customer authentication)
+  app.get('/api/giftcards/mine', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const giftCards = await storage.getGiftCardsByUser(user.id);
+      res.json(giftCards);
+    } catch (error) {
+      console.error("Error fetching user gift cards:", error);
+      res.status(500).json({ message: "Failed to fetch gift cards" });
+    }
+  });
+
+  app.get('/api/user/orders', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      
+      const result = await storage.getUserOrders(user.id, page, pageSize);
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get('/api/user/orders/:orderId', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const orderId = req.params.orderId;
+      
+      const order = await storage.getUserOrderDetails(user.id, orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      res.status(500).json({ message: "Failed to fetch order details" });
+    }
+  });
+
+  app.get('/api/cards', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const savedCards = await storage.getUserSavedCards(user.id);
+      res.json(savedCards);
+    } catch (error) {
+      console.error("Error fetching saved cards:", error);
+      res.status(500).json({ message: "Failed to fetch saved cards" });
+    }
+  });
+
+  app.get('/api/user/saved-cards', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const savedCards = await storage.getUserSavedCards(user.id);
+      res.json(savedCards);
+    } catch (error) {
+      console.error("Error fetching saved cards:", error);
+      res.status(500).json({ message: "Failed to fetch saved cards" });
+    }
+  });
+
+  app.post('/api/cards', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const cardData = req.body;
+      
+      const savedCard = await storage.addSavedCard({
+        ...cardData,
+        userId: user.id
+      });
+      
+      res.status(201).json(savedCard);
+    } catch (error) {
+      console.error("Error adding saved card:", error);
+      res.status(500).json({ message: "Failed to add saved card" });
+    }
+  });
+
+  app.delete('/api/cards/:id', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const cardId = req.params.id;
+      
+      await storage.deleteSavedCard(cardId, user.id);
+      res.json({ message: "Card deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting saved card:", error);
+      res.status(500).json({ message: "Failed to delete saved card" });
+    }
+  });
+
+  app.put('/api/cards/:id/default', requireCustomerAuth, async (req: any, res) => {
+    try {
+      const user = getAuthenticatedUser(req);
+      const cardId = req.params.id;
+      
+      await storage.setDefaultCard(cardId, user.id);
+      res.json({ message: "Default card updated successfully" });
+    } catch (error) {
+      console.error("Error setting default card:", error);
+      res.status(500).json({ message: "Failed to set default card" });
     }
   });
 

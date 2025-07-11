@@ -49,7 +49,7 @@ export interface IStorage {
 
   // Customer authentication operations
   getUserByEmail(email: string): Promise<User | undefined>;
-  createCustomer(userData: any): Promise<User>;
+  createUser(userData: any): Promise<User>;
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   getUserByResetToken(token: string): Promise<User | undefined>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
@@ -216,13 +216,12 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createCustomer(userData: any): Promise<User> {
+  async createUser(userData: any): Promise<User> {
     const [user] = await db
       .insert(users)
       .values({
-        id: nanoid(),
         ...userData,
-        role: 'customer',
+        role: userData.role || 'customer',
         createdAt: new Date(),
         updatedAt: new Date()
       })

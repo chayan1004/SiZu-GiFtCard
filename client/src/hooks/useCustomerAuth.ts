@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +21,7 @@ interface CustomerAuthState {
 export function useCustomerAuth() {
   const [authState, setAuthState] = useState<CustomerAuthState>({
     user: null,
-    isLoading: false,
+    isLoading: true,
     isAuthenticated: false
   });
   const [, setLocation] = useLocation();
@@ -44,14 +44,21 @@ export function useCustomerAuth() {
         return true;
       }
     } catch (error) {
-      setAuthState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false
-      });
+      console.error('Customer auth check failed:', error);
     }
+    
+    setAuthState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false
+    });
     return false;
   };
+
+  // Check auth status on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
   const login = async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));

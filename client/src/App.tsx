@@ -104,20 +104,33 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 function Router() {
   const { isAuthenticated, isLoading, userType } = useCombinedAuth();
 
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
+      {!isAuthenticated ? (
         <>
+          {/* Public routes - no authentication required */}
           <Route path="/" component={Landing} />
-          <Route path="/login" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/register" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/verify-otp" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/forgot-password" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/reset-password/:token" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/admin-login" component={Login} />
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Login} />
+          <Route path="/verify-otp" component={Login} />
+          <Route path="/forgot-password" component={Login} />
+          <Route path="/reset-password/:token" component={Login} />
+          <Route path="/admin-login" component={() => { window.location.href = '/api/login'; return null; }} />
           <Route path="/dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/user-dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
-          <Route path="/shop" component={SimpleShop} />
+          <Route path="/user-dashboard" component={Login} />
+          <Route path="/shop" component={PublicShop} />
           <Route path="/balance" component={PublicBalance} />
           <Route path="/redeem" component={PublicRedeem} />
           <Route path="/recharge" component={PublicRecharge} />
@@ -126,18 +139,13 @@ function Router() {
           <Route path="/oauth/success" component={OAuthSuccess} />
           <Route path="/oauth/error" component={OAuthError} />
         </>
-      ) : (
+      ) : userType === 'admin' ? (
         <>
-          <Route path="/" component={Home} />
-          <Route path="/shop" component={SimpleShop} />
-          <Route path="/balance" component={Balance} />
-          <Route path="/redeem" component={Redeem} />
-          <Route path="/recharge" component={Recharge} />
-          <Route path="/order-history" component={OrderHistory} />
-          <Route path="/dashboard" component={Dashboard} />
+          {/* Admin routes - Replit authentication required */}
+          <Route path="/" component={() => { window.location.href = '/dashboard/admin'; return null; }} />
+          <Route path="/dashboard" component={() => { window.location.href = '/dashboard/admin'; return null; }} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/admin/dashboard" component={AdminDashboard} />
-          <Route path="/dashboard/user" component={UserDashboard} />
           <Route path="/admin/gift-cards" component={AdminGiftCards} />
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/transactions" component={AdminTransactions} />
@@ -155,9 +163,16 @@ function Router() {
           <Route path="/admin/system-settings" component={AdminSystemSettings} />
           <Route path="/admin/audit-logs" component={AdminAuditLogs} />
           <Route path="/admin/database-tools" component={AdminDatabaseTools} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/orders" component={OrderHistory} />
-          <Route path="/orders/:orderId" component={OrderDetails} />
+          <Route path="/receipt-view/:token" component={ReceiptView} />
+          <Route path="/oauth/success" component={OAuthSuccess} />
+          <Route path="/oauth/error" component={OAuthError} />
+        </>
+      ) : userType === 'customer' ? (
+        <>
+          {/* Customer routes - session authentication required */}
+          <Route path="/" component={() => { window.location.href = '/dashboard/user'; return null; }} />
+          <Route path="/dashboard" component={() => { window.location.href = '/dashboard/user'; return null; }} />
+          <Route path="/dashboard/user" component={UserDashboard} />
           <Route path="/dashboard/user/wallet" component={UserWallet} />
           <Route path="/dashboard/user/transactions" component={UserTransactions} />
           <Route path="/dashboard/user/reports" component={UserReports} />
@@ -165,9 +180,20 @@ function Router() {
           <Route path="/dashboard/user/support" component={UserSupport} />
           <Route path="/dashboard/user/settings" component={UserSettings} />
           <Route path="/dashboard/user/designer" component={EnhancedShop} />
-          <Route path="/revenue" component={Revenue} />
-          <Route path="/fees" component={FeeManagement} />
+          <Route path="/shop" component={Shop} />
+          <Route path="/balance" component={Balance} />
+          <Route path="/redeem" component={Redeem} />
+          <Route path="/recharge" component={Recharge} />
+          <Route path="/order-history" component={OrderHistory} />
+          <Route path="/orders" component={OrderHistory} />
+          <Route path="/orders/:orderId" component={OrderDetails} />
+          <Route path="/profile" component={Profile} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
+        </>
+      ) : (
+        <>
+          {/* Fallback for unknown user type */}
+          <Route path="/" component={Landing} />
         </>
       )}
       <Route component={NotFound} />
