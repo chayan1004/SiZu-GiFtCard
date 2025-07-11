@@ -1,33 +1,32 @@
-import nodemailer from 'nodemailer';
+import formData from 'form-data';
+import Mailgun from 'mailgun.js';
 
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private mailgunClient: any;
+  private domain: string;
+  private fromEmail: string;
+  private isConfigured: boolean;
 
   constructor() {
-    // Configure with Mailgun SMTP or fallback to console logging
-    const mailgunUser = process.env.MAILGUN_SMTP_LOGIN;
-    const mailgunPassword = process.env.MAILGUN_SMTP_PASSWORD;
-    const mailgunHost = process.env.MAILGUN_SMTP_SERVER || 'smtp.mailgun.org';
-    const mailgunPort = parseInt(process.env.MAILGUN_SMTP_PORT || '587');
-
-    if (mailgunUser && mailgunPassword) {
-      this.transporter = nodemailer.createTransport({
-        host: mailgunHost,
-        port: mailgunPort,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: mailgunUser,
-          pass: mailgunPassword,
-        },
+    // Configure with Mailgun API
+    const apiKey = process.env.MAILGUN_API_KEY;
+    this.domain = process.env.MAILGUN_DOMAIN || '';
+    this.fromEmail = process.env.MAILGUN_FROM_EMAIL || 'noreply@sizu-giftcard.com';
+    
+    if (apiKey && this.domain) {
+      const mailgun = new Mailgun(formData);
+      this.mailgunClient = mailgun.client({
+        username: 'api',
+        key: apiKey,
+        // Uncomment for EU region:
+        // url: 'https://api.eu.mailgun.net'
       });
+      this.isConfigured = true;
+      console.log('Mailgun API configured successfully');
     } else {
-      // Fallback to console logging for development
-      console.warn('Mailgun credentials not provided. Emails will be logged to console.');
-      this.transporter = nodemailer.createTransport({
-        streamTransport: true,
-        newline: 'unix',
-        buffer: true,
-      });
+      this.isConfigured = false;
+      console.warn('Mailgun API credentials not provided. Emails will be logged to console.');
+      console.warn('Please set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables.');
     }
   }
 
@@ -38,22 +37,40 @@ export class EmailService {
     qrCodeDataUrl?: string
   ): Promise<void> {
     try {
-      const mailOptions = {
-        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
-        to: recipientEmail,
+      if (!this.isConfigured) {
+        console.log('=== GIFT CARD EMAIL (DEV MODE) ===');
+        console.log('To:', recipientEmail);
+        console.log('Subject: Your SiZu GiftCard is ready!');
+        console.log('Gift Card Details:', {
+          amount: giftCardData.amount,
+          code: giftCardData.giftCardCode,
+          design: giftCardData.design,
+          recipientName: giftCardData.recipientName,
+          senderName: giftCardData.senderName
+        });
+        console.log('================================');
+        return;
+      }
+
+      const messageData: any = {
+        from: `SiZu GiftCard <${this.fromEmail}>`,
+        to: [recipientEmail],
         subject: 'Your SiZu GiftCard is ready!',
-        html: this.generateGiftCardEmailHTML(giftCardData, qrCodeDataUrl),
-        attachments: pdfPath ? [
-          {
-            filename: 'gift-card-receipt.pdf',
-            path: pdfPath,
-            contentType: 'application/pdf',
-          },
-        ] : [],
+        html: this.generateGiftCardEmailHTML(giftCardData, qrCodeDataUrl)
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Gift card email sent:', info.messageId);
+      // Add attachment if PDF path is provided
+      if (pdfPath) {
+        const fs = require('fs');
+        const fileData = await fs.promises.readFile(pdfPath);
+        messageData.attachment = [{
+          filename: 'gift-card-receipt.pdf',
+          data: fileData
+        }];
+      }
+
+      const response = await this.mailgunClient.messages.create(this.domain, messageData);
+      console.log('Gift card email sent:', response.id);
     } catch (error) {
       console.error('Error sending gift card email:', error);
       throw new Error('Failed to send gift card email');
@@ -66,22 +83,39 @@ export class EmailService {
     pdfPath?: string
   ): Promise<void> {
     try {
-      const mailOptions = {
-        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
-        to: recipientEmail,
+      if (!this.isConfigured) {
+        console.log('=== REDEMPTION EMAIL (DEV MODE) ===');
+        console.log('To:', recipientEmail);
+        console.log('Subject: Gift Card Redemption Receipt');
+        console.log('Redemption Details:', {
+          giftCardCode: redemptionData.giftCardCode,
+          amount: redemptionData.amount,
+          remainingBalance: redemptionData.remainingBalance,
+          transactionId: redemptionData.transactionId
+        });
+        console.log('===================================');
+        return;
+      }
+
+      const messageData: any = {
+        from: `SiZu GiftCard <${this.fromEmail}>`,
+        to: [recipientEmail],
         subject: 'Gift Card Redemption Receipt',
-        html: this.generateRedemptionEmailHTML(redemptionData),
-        attachments: pdfPath ? [
-          {
-            filename: 'redemption-receipt.pdf',
-            path: pdfPath,
-            contentType: 'application/pdf',
-          },
-        ] : [],
+        html: this.generateRedemptionEmailHTML(redemptionData)
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Redemption email sent:', info.messageId);
+      // Add attachment if PDF path is provided
+      if (pdfPath) {
+        const fs = require('fs');
+        const fileData = await fs.promises.readFile(pdfPath);
+        messageData.attachment = [{
+          filename: 'redemption-receipt.pdf',
+          data: fileData
+        }];
+      }
+
+      const response = await this.mailgunClient.messages.create(this.domain, messageData);
+      console.log('Redemption email sent:', response.id);
     } catch (error) {
       console.error('Error sending redemption email:', error);
       throw new Error('Failed to send redemption email');
@@ -93,15 +127,24 @@ export class EmailService {
     alertData: any
   ): Promise<void> {
     try {
-      const mailOptions = {
-        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
-        to: adminEmail,
+      if (!this.isConfigured) {
+        console.log('=== FRAUD ALERT EMAIL (DEV MODE) ===');
+        console.log('To:', adminEmail);
+        console.log(`Subject: [FRAUD ALERT] ${alertData.alertType} - ${alertData.severity.toUpperCase()}`);
+        console.log('Alert Details:', alertData);
+        console.log('====================================');
+        return;
+      }
+
+      const messageData = {
+        from: `SiZu GiftCard Security <${this.fromEmail}>`,
+        to: [adminEmail],
         subject: `[FRAUD ALERT] ${alertData.alertType} - ${alertData.severity.toUpperCase()}`,
-        html: this.generateFraudAlertEmailHTML(alertData),
+        html: this.generateFraudAlertEmailHTML(alertData)
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Fraud alert email sent:', info.messageId);
+      const response = await this.mailgunClient.messages.create(this.domain, messageData);
+      console.log('Fraud alert email sent:', response.id);
     } catch (error) {
       console.error('Error sending fraud alert email:', error);
       throw new Error('Failed to send fraud alert email');
@@ -274,15 +317,25 @@ export class EmailService {
 
   async sendOTPEmail(email: string, otp: string, firstName?: string): Promise<void> {
     try {
-      const mailOptions = {
-        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
-        to: email,
+      if (!this.isConfigured) {
+        console.log('=== OTP EMAIL (DEV MODE) ===');
+        console.log('To:', email);
+        console.log('Subject: Your SiZu GiftCard Verification Code');
+        console.log('OTP Code:', otp);
+        console.log('Name:', firstName || 'Not provided');
+        console.log('============================');
+        return;
+      }
+
+      const messageData = {
+        from: `SiZu GiftCard <${this.fromEmail}>`,
+        to: [email],
         subject: 'Your SiZu GiftCard Verification Code',
-        html: this.generateOTPEmailHTML(email, otp, firstName),
+        html: this.generateOTPEmailHTML(email, otp, firstName)
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('OTP email sent:', info.messageId);
+      const response = await this.mailgunClient.messages.create(this.domain, messageData);
+      console.log('OTP email sent:', response.id);
     } catch (error) {
       console.error('Error sending OTP email:', error);
       throw new Error('Failed to send OTP email');
@@ -293,15 +346,24 @@ export class EmailService {
     try {
       const resetUrl = `${process.env.APP_URL || 'http://localhost:5000'}/reset-password/${resetToken}`;
       
-      const mailOptions = {
-        from: process.env.FROM_EMAIL || 'noreply@sizu-giftcard.com',
-        to: email,
+      if (!this.isConfigured) {
+        console.log('=== PASSWORD RESET EMAIL (DEV MODE) ===');
+        console.log('To:', email);
+        console.log('Subject: Reset Your SiZu GiftCard Password');
+        console.log('Reset URL:', resetUrl);
+        console.log('=====================================');
+        return;
+      }
+
+      const messageData = {
+        from: `SiZu GiftCard <${this.fromEmail}>`,
+        to: [email],
         subject: 'Reset Your SiZu GiftCard Password',
-        html: this.generatePasswordResetEmailHTML(email, resetUrl),
+        html: this.generatePasswordResetEmailHTML(email, resetUrl)
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Password reset email sent:', info.messageId);
+      const response = await this.mailgunClient.messages.create(this.domain, messageData);
+      console.log('Password reset email sent:', response.id);
     } catch (error) {
       console.error('Error sending password reset email:', error);
       throw new Error('Failed to send password reset email');

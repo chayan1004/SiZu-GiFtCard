@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CreditCard, Mail, Lock, User, Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
+import { CreditCard, Mail, Lock, User, Eye, EyeOff, UserPlus } from "lucide-react";
 
 export default function CustomerRegister() {
   const { register: registerUser, isLoading } = useCustomerAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [, setLocation] = useLocation();
   
   const {
     register,
@@ -33,50 +33,14 @@ export default function CustomerRegister() {
       await registerUser(data.email, data.password, data.firstName, data.lastName);
       // Store email for OTP verification page
       localStorage.setItem('verificationEmail', data.email);
-      setRegistrationSuccess(true);
+      // Immediately redirect to OTP verification page
+      setLocation('/verify-otp');
     } catch (error: any) {
       setError("root", {
         message: error.message || "Registration failed. Please try again."
       });
     }
   };
-
-  if (registrationSuccess) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
-        >
-          <Card className="border-gray-200 shadow-xl">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="bg-gradient-to-br from-green-500 to-teal-500 p-4 rounded-full">
-                  <CheckCircle className="w-12 h-12 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl font-bold">Check Your Email!</CardTitle>
-              <CardDescription className="mt-2">
-                We've sent a 6-digit verification code to your email. Please check your inbox to complete the registration.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter className="flex flex-col space-y-4">
-              <Link href="/verify-otp">
-                <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                  Enter Verification Code
-                </Button>
-              </Link>
-              <p className="text-sm text-gray-600 text-center">
-                Didn't receive the code? Check your spam folder or you can request a new code on the next page.
-              </p>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
