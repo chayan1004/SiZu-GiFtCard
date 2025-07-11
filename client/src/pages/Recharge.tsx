@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { useLogin } from "@/hooks/useLogin";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, CreditCard, Scan, History, CheckCircle, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Plus, CreditCard, Scan, History, CheckCircle } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +15,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { 
+  PageContainer, 
+  PageHeader, 
+  FormContainer, 
+  GradientButton,
+  GlassCard,
+  LoadingSpinner 
+} from "@/components/DesignSystem";
+import { CardContent } from "@/components/ui/card";
 
 const rechargeSchema = z.object({
   code: z.string().min(12, "Please enter a valid gift card code"),
