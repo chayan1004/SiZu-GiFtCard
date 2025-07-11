@@ -80,7 +80,7 @@ export default function PublicBalance() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-12 px-4">
+    <div className="min-h-screen from-blue-50 via-cyan-50 to-teal-50 py-12 px-4 bg-[#8249df]">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
