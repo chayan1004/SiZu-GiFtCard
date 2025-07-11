@@ -38,6 +38,11 @@ import UserReports from "@/pages/user/UserReports";
 import UserNotifications from "@/pages/user/UserNotifications";
 import UserSupport from "@/pages/user/UserSupport";
 import UserSettings from "@/pages/user/UserSettings";
+import PublicShop from "@/pages/PublicShop";
+import PublicRecharge from "@/pages/PublicRecharge";
+import PublicRedeem from "@/pages/PublicRedeem";
+import PublicBalance from "@/pages/PublicBalance";
+import PublicOrderHistory from "@/pages/PublicOrderHistory";
 import { Component, ReactNode } from "react";
 
 interface ErrorBoundaryProps {
@@ -101,17 +106,21 @@ function Router() {
           <Route path="/admin-login" component={Login} />
           <Route path="/dashboard" component={CustomerLogin} />
           <Route path="/user-dashboard" component={CustomerLogin} />
-          <Route path="/shop" component={Shop} />
-          <Route path="/balance" component={Balance} />
-          <Route path="/redeem" component={Redeem} />
+          <Route path="/shop" component={PublicShop} />
+          <Route path="/balance" component={PublicBalance} />
+          <Route path="/redeem" component={PublicRedeem} />
+          <Route path="/recharge" component={PublicRecharge} />
+          <Route path="/order-history" component={PublicOrderHistory} />
           <Route path="/receipt-view/:token" component={ReceiptView} />
         </>
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/shop" component={Shop} />
-          <Route path="/balance" component={Balance} />
-          <Route path="/redeem" component={Redeem} />
+          <Route path="/shop" component={PublicShop} />
+          <Route path="/balance" component={PublicBalance} />
+          <Route path="/redeem" component={PublicRedeem} />
+          <Route path="/recharge" component={PublicRecharge} />
+          <Route path="/order-history" component={PublicOrderHistory} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/dashboard/user" component={UserDashboard} />

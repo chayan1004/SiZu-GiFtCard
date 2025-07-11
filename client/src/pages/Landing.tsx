@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Gift, CreditCard, Scan, Shield, Sparkles, Star } from "lucide-react";
+import { Gift, CreditCard, Scan, Shield, Sparkles, Star, Search, ArrowDownCircle, Plus, History } from "lucide-react";
 import { motion } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import GiftCardPreview from "@/components/GiftCardPreview";
@@ -73,7 +73,7 @@ export default function Landing() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
-                onClick={handleLogin}
+                onClick={() => window.location.href = '/shop'}
                 className="gradient-primary text-white px-8 py-4 text-lg font-semibold hover:scale-105 transition-transform neon-glow btn-hover-lift"
               >
                 Shop Gift Cards
@@ -81,7 +81,7 @@ export default function Landing() {
               <Button 
                 variant="outline" 
                 className="glassmorphism text-white border-white/20 px-8 py-4 text-lg font-semibold hover:scale-105 transition-transform"
-                onClick={() => document.getElementById('balance')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.location.href = '/balance'}
               >
                 Check Balance
               </Button>
@@ -111,6 +111,116 @@ export default function Landing() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Quick Actions Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-black/20">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Gift Card Services
+            </h2>
+            <p className="text-lg text-gray-300">
+              Manage your gift cards with our easy-to-use features
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Shop */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => window.location.href = '/shop'}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-purple-600/20 rounded-2xl flex items-center justify-center">
+                    <Gift className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Shop Gift Cards</h3>
+                  <p className="text-gray-400 text-sm">Browse and purchase gift cards with AI customization</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Balance Check */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => window.location.href = '/balance'}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-600/20 rounded-2xl flex items-center justify-center">
+                    <Search className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Check Balance</h3>
+                  <p className="text-gray-400 text-sm">Instantly check your gift card balance</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Redeem */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => window.location.href = '/redeem'}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-pink-600/20 rounded-2xl flex items-center justify-center">
+                    <ArrowDownCircle className="w-8 h-8 text-pink-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Redeem</h3>
+                  <p className="text-gray-400 text-sm">Use your gift card for purchases</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Recharge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <Card className="glassmorphism border-white/20 hover:scale-105 transition-transform cursor-pointer"
+                    onClick={() => window.location.href = '/recharge'}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-green-600/20 rounded-2xl flex items-center justify-center">
+                    <Plus className="w-8 h-8 text-green-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Recharge</h3>
+                  <p className="text-gray-400 text-sm">Add more funds to your gift card</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Order History Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-8 text-center"
+          >
+            <Button
+              variant="outline"
+              className="glassmorphism text-white border-white/20 px-6 py-3 hover:scale-105 transition-transform"
+              onClick={() => window.location.href = '/order-history'}
+            >
+              <History className="w-5 h-5 mr-2" />
+              View Order History
+            </Button>
+          </motion.div>
         </div>
       </section>
 

@@ -121,6 +121,27 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### January 11, 2025 - Phase 15: Public Pages Implementation with Authentication Flow
+- **Public Feature Pages**: Created comprehensive public-facing pages for all core features
+  - PublicShop.tsx: AI-powered gift card shopping with personalized recommendations
+  - PublicBalance.tsx: No-auth balance checking functionality (fully public)
+  - PublicRecharge.tsx: Gift card top-up interface with login prompt
+  - PublicRedeem.tsx: Gift card redemption interface with login prompt
+  - PublicOrderHistory.tsx: Order lookup interface with login prompt
+- **Authentication Flow Implementation**: Correct auth behavior for each feature
+  - Balance Check: Works completely without authentication
+  - All other operations: Users can browse and fill forms, but get login prompt when submitting
+  - Login redirects implemented with toast notifications for better UX
+- **AI Integration**: Shop page enhanced with AI capabilities
+  - OpenAI integration for message generation and design recommendations
+  - Perplexity integration for real-time gift idea search
+  - API keys configured but OpenAI quota exceeded (needs billing)
+- **Landing Page Enhancement**: Added Quick Actions section
+  - Grid layout with cards for all five main features
+  - Visual icons and descriptions for each service
+  - Direct navigation to all public pages
+  - Responsive design maintaining glassmorphism aesthetic
+
 ### January 10, 2025 - Phase 14: OTP-Based Email Verification
 - **Authentication Enhancement**: Replaced link-based verification with OTP system
   - Added OTP fields to users table (verification_otp, otp_expiry)

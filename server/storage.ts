@@ -113,10 +113,13 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async upsertUser(userData: UpsertUser & { id: string }): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        ...userData,
+        updatedAt: new Date(),
+      })
       .onConflictDoUpdate({
         target: users.id,
         set: {
@@ -155,7 +158,7 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.verificationToken, token));
+      .where(eq(users.verificationOtp, token));
     return user;
   }
 

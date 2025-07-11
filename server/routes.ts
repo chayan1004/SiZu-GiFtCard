@@ -10,6 +10,7 @@ import { SquareCustomerService } from "./services/SquareCustomerService";
 import { PDFService } from "./services/PDFService";
 import { EmailService } from "./services/EmailService";
 import { QRService } from "./services/QRService";
+import { aiService } from "./services/aiService";
 import {
   createGiftCardSchema,
   redeemGiftCardSchema,
@@ -1148,6 +1149,325 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error calculating fee:", error);
       res.status(500).json({ message: "Failed to calculate fee" });
+    }
+  });
+
+  // AI Routes
+  
+  // AI Design Suggestion
+  app.post('/api/ai/suggest-design', async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      
+      if (!prompt || prompt.trim().length === 0) {
+        return res.status(400).json({ message: "Prompt is required" });
+      }
+      
+      const result = await aiService.suggestDesign(prompt);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error suggesting design:", error);
+      if (error.message.includes("API key")) {
+        return res.status(503).json({ 
+          message: "AI service not configured. Please provide OPENAI_API_KEY.",
+          requiresApiKey: true 
+        });
+      }
+      res.status(500).json({ message: "Failed to suggest design" });
+    }
+  });
+  
+  // AI Message Generation
+  app.post('/api/ai/generate-message', async (req, res) => {
+    try {
+      const { occasion, recipient, tone, senderName } = req.body;
+      
+      if (!occasion || !recipient) {
+        return res.status(400).json({ message: "Occasion and recipient are required" });
+      }
+      
+      const result = await aiService.generateMessage({
+        occasion,
+        recipient,
+        tone: tone || 'friendly',
+        senderName
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error generating message:", error);
+      if (error.message.includes("API key")) {
+        return res.status(503).json({ 
+          message: "AI service not configured. Please provide OPENAI_API_KEY.",
+          requiresApiKey: true 
+        });
+      }
+      res.status(500).json({ message: "Failed to generate message" });
+    }
+  });
+  
+  // AI Gift Ideas
+  app.post('/api/ai/gift-ideas', async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query || query.trim().length === 0) {
+        return res.status(400).json({ message: "Query is required" });
+      }
+      
+      const result = await aiService.getGiftIdeas(query);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error getting gift ideas:", error);
+      if (error.message.includes("API key")) {
+        return res.status(503).json({ 
+          message: "AI service not configured. Please provide PERPLEXITY_API_KEY or OPENAI_API_KEY.",
+          requiresApiKey: true 
+        });
+      }
+      res.status(500).json({ message: "Failed to get gift ideas" });
+    }
+  });
+  
+  // AI Recipient Analysis
+  app.post('/api/ai/analyze-recipient', async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description || description.trim().length === 0) {
+        return res.status(400).json({ message: "Description is required" });
+      }
+      
+      const result = await aiService.analyzeRecipientPreferences(description);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error analyzing recipient:", error);
+      if (error.message.includes("API key")) {
+        return res.status(503).json({ 
+          message: "AI service not configured. Please provide OPENAI_API_KEY.",
+          requiresApiKey: true 
+        });
+      }
+      res.status(500).json({ message: "Failed to analyze recipient" });
+    }
+  });
+  
+  // Public Routes
+  
+  // Public Purchase Gift Card (no auth required)
+  app.post('/api/giftcards/purchase', giftCardRateLimit, async (req, res) => {
+    try {
+      const giftCardData = createGiftCardSchema.parse(req.body);
+      
+      // Generate gift card code
+      const code = nanoid(10).toUpperCase();
+      
+      // Create gift card
+      const giftCard = await storage.createGiftCard({
+        ...giftCardData,
+        code,
+        initialAmount: giftCardData.initialAmount.toString(),
+      });
+      
+      // Create issue transaction
+      const transaction = await storage.createTransaction({
+        giftCardId: giftCard.id,
+        type: 'issue',
+        amount: giftCardData.initialAmount.toString(),
+        balanceAfter: giftCardData.initialAmount.toString(),
+        notes: 'Gift card purchased',
+      });
+      
+      // Generate receipt
+      const receiptData = {
+        giftCardCode: code,
+        amount: parseFloat(giftCardData.initialAmount),
+        design: giftCard.design,
+        recipientName: giftCard.recipientName,
+        recipientEmail: giftCard.recipientEmail,
+        senderName: giftCard.senderName,
+        customMessage: giftCard.customMessage,
+        transactionId: transaction.id,
+        timestamp: new Date().toISOString(),
+        type: 'purchase',
+      };
+      
+      const accessToken = nanoid(32);
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      
+      const receipt = await storage.createReceipt({
+        giftCardId: giftCard.id,
+        transactionId: transaction.id,
+        receiptData,
+        accessToken,
+        expiresAt,
+      });
+      
+      // Generate QR code
+      const qrCode = await qrService.generateQRCode(
+        `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/balance?code=${code}`
+      );
+      
+      // Generate PDF receipt
+      const pdfPath = await pdfService.generateReceiptPDF(receiptData, qrCode);
+      await storage.updateReceiptPdfPath(receipt.id, pdfPath);
+      
+      // Send email if recipient email provided
+      if (giftCard.recipientEmail) {
+        try {
+          await emailService.sendGiftCardEmail({
+            recipientEmail: giftCard.recipientEmail,
+            recipientName: giftCard.recipientName || 'Valued Customer',
+            senderName: giftCard.senderName || 'A Friend',
+            amount: parseFloat(giftCardData.initialAmount),
+            code: code,
+            customMessage: giftCard.customMessage || '',
+            receiptUrl: `/api/receipts/${accessToken}`,
+          });
+          await storage.markReceiptEmailSent(receipt.id);
+        } catch (emailError) {
+          console.error("Failed to send gift card email:", emailError);
+          // Don't fail the transaction if email fails
+        }
+      }
+      
+      // Broadcast revenue update
+      if ((global as any).broadcastRevenueUpdate) {
+        (global as any).broadcastRevenueUpdate(transaction);
+      }
+      
+      res.json({
+        success: true,
+        code: giftCard.code,
+        giftCardId: giftCard.id,
+        receiptUrl: `/api/receipts/${accessToken}`,
+        amount: parseFloat(giftCardData.initialAmount),
+        design: giftCard.design,
+      });
+    } catch (error) {
+      console.error("Error purchasing gift card:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to purchase gift card" });
+    }
+  });
+  
+  // Public Order Lookup
+  app.post('/api/public/orders', async (req, res) => {
+    try {
+      const { email, orderCode } = req.body;
+      
+      if (!email || !validateEmail(email)) {
+        return res.status(400).json({ message: "Valid email is required" });
+      }
+      
+      // Get all gift cards for the email (either as sender or recipient)
+      const allGiftCards = await storage.getAllGiftCards();
+      let userGiftCards = allGiftCards.filter(card => 
+        card.recipientEmail === email || 
+        (card.senderName && card.senderName.toLowerCase().includes(email.toLowerCase()))
+      );
+      
+      // If order code provided, filter by it
+      if (orderCode) {
+        userGiftCards = userGiftCards.filter(card => 
+          card.code.toUpperCase() === orderCode.toUpperCase()
+        );
+      }
+      
+      // Format as orders
+      const orders = await Promise.all(userGiftCards.map(async (card) => {
+        const transactions = await storage.getTransactionsByGiftCard(card.id);
+        const purchaseTransaction = transactions.find(t => t.type === 'issue');
+        const redemptions = transactions.filter(t => t.type === 'redeem');
+        const totalRedeemed = redemptions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        
+        return {
+          id: card.id,
+          code: card.code,
+          amount: card.initialAmount,
+          currentBalance: card.currentBalance,
+          recipientName: card.recipientName,
+          recipientEmail: card.recipientEmail,
+          senderName: card.senderName,
+          design: card.design,
+          deliveryStatus: card.deliveryStatus,
+          paymentMethodLast4: purchaseTransaction?.paymentMethodLast4,
+          paymentMethodType: purchaseTransaction?.paymentMethodType,
+          createdAt: card.createdAt,
+          isRedeemed: totalRedeemed > 0,
+          redeemedAmount: totalRedeemed.toFixed(2),
+        };
+      }));
+      
+      // Sort by most recent first
+      orders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+      res.json({ orders });
+    } catch (error) {
+      console.error("Error looking up orders:", error);
+      res.status(500).json({ message: "Failed to look up orders" });
+    }
+  });
+  
+  // Public Recharge Gift Card (placeholder - requires payment integration)
+  app.post('/api/giftcards/recharge', giftCardRateLimit, async (req, res) => {
+    try {
+      const { code, amount, paymentMethod } = req.body;
+      
+      if (!code || !amount || amount <= 0) {
+        return res.status(400).json({ message: "Valid code and amount are required" });
+      }
+      
+      const giftCard = await storage.getGiftCardByCode(code);
+      if (!giftCard) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+      
+      if (!giftCard.isActive) {
+        return res.status(400).json({ message: "Gift card is not active" });
+      }
+      
+      // TODO: Process payment with Square API
+      // For now, just return an error indicating payment processing is needed
+      
+      res.status(501).json({ 
+        message: "Recharge functionality requires payment processing setup. Please contact support.",
+        requiresPaymentSetup: true 
+      });
+    } catch (error) {
+      console.error("Error recharging gift card:", error);
+      res.status(500).json({ message: "Failed to recharge gift card" });
+    }
+  });
+  
+  // Update check balance to return all card details
+  app.post('/api/giftcards/check-balance', giftCardRateLimit, async (req, res) => {
+    try {
+      const { code } = checkBalanceSchema.parse(req.body);
+      
+      const giftCard = await storage.getGiftCardByCode(code);
+      if (!giftCard) {
+        return res.status(404).json({ message: "Gift card not found" });
+      }
+
+      res.json({
+        code: giftCard.code,
+        currentBalance: giftCard.currentBalance,
+        initialAmount: giftCard.initialAmount,
+        isActive: giftCard.isActive,
+        design: giftCard.design,
+        recipientName: giftCard.recipientName,
+        senderName: giftCard.senderName,
+        customMessage: giftCard.customMessage,
+        createdAt: giftCard.createdAt,
+      });
+    } catch (error) {
+      console.error("Error checking balance:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to check balance" });
     }
   });
 
