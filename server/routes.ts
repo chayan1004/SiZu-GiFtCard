@@ -362,6 +362,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Receipt PDF not found" });
       }
 
+      // Check if file exists
+      const fs = await import('fs');
+      if (!fs.existsSync(receipt.pdfPath)) {
+        console.error(`PDF file not found: ${receipt.pdfPath}`);
+        return res.status(404).json({ message: "Receipt PDF file not found on disk" });
+      }
+
+      // Set proper headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="receipt-${receipt.id}.pdf"`);
+      
       res.download(receipt.pdfPath, `receipt-${receipt.id}.pdf`);
     } catch (error) {
       console.error("Error serving PDF:", error);

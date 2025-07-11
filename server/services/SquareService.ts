@@ -47,10 +47,10 @@ export class SquareService {
       }
 
       return response.result.giftCard;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("Square API error:", error.errors);
-        throw new Error(`Square API error: ${error.errors?.map(e => e.detail).join(', ')}`);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.errors) {
+        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
       }
       throw error;
     }
@@ -82,10 +82,10 @@ export class SquareService {
       }
 
       return response.result.giftCardActivity;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("Square API error:", error.errors);
-        throw new Error(`Square API error: ${error.errors?.map(e => e.detail).join(', ')}`);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.errors) {
+        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
       }
       throw error;
     }
@@ -103,10 +103,10 @@ export class SquareService {
 
       const balanceAmount = response.result.giftCard?.balanceMoney?.amount;
       return balanceAmount ? Number(balanceAmount) / 100 : 0; // Convert from cents
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("Square API error:", error.errors);
-        throw new Error(`Square API error: ${error.errors?.map(e => e.detail).join(', ')}`);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.errors) {
+        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
       }
       throw error;
     }
@@ -138,10 +138,10 @@ export class SquareService {
       }
 
       return response.result.giftCardActivity;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("Square API error:", error.errors);
-        throw new Error(`Square API error: ${error.errors?.map(e => e.detail).join(', ')}`);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.errors) {
+        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
       }
       throw error;
     }
@@ -153,7 +153,7 @@ export class SquareService {
       
       const response = await giftCardActivitiesApi.listGiftCardActivities({
         giftCardId,
-        limit: 100,
+        locationId: this.locationId,
       });
       
       if (response.result.errors) {
@@ -161,10 +161,10 @@ export class SquareService {
       }
 
       return response.result.giftCardActivities || [];
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error("Square API error:", error.errors);
-        throw new Error(`Square API error: ${error.errors?.map(e => e.detail).join(', ')}`);
+    } catch (error: any) {
+      console.error("Square API error:", error);
+      if (error.errors) {
+        throw new Error(`Square API error: ${error.errors.map((e: any) => e.detail).join(', ')}`);
       }
       throw error;
     }

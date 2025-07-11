@@ -500,7 +500,7 @@ export default function Shop() {
 
                 <div className="flex gap-4">
                   <Button 
-                    onClick={() => window.open(createdGiftCard.receiptUrl, '_blank')}
+                    onClick={() => window.open(`${createdGiftCard.receiptUrl}/pdf`, '_blank')}
                     className="flex-1 gradient-primary text-white hover:opacity-90 transition-opacity"
                   >
                     <Download className="w-4 h-4 mr-2" />
