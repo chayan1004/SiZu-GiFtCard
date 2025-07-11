@@ -1,0 +1,197 @@
+{
+  "timestamp": "2025-07-11T06:07:41.006Z",
+  "endpoints": {
+    "/api/admin/stats": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "admin",
+      "message": "Authentication required"
+    },
+    "/api/admin/transactions": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "admin",
+      "message": "Authentication required"
+    },
+    "/api/admin/giftcards": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "admin",
+      "message": "Authentication required"
+    },
+    "/api/admin/fraud-alerts": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "admin",
+      "message": "Authentication required"
+    },
+    "/api/admin/users": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/admin/analytics": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/admin/security": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/admin/fees": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "admin",
+      "message": "Authentication required"
+    },
+    "/api/giftcards/mine": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "user",
+      "message": "Authentication required"
+    },
+    "/api/user/orders": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "user",
+      "message": "Authentication required"
+    },
+    "/api/user/saved-cards": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "user",
+      "message": "Authentication required"
+    },
+    "/api/user/profile": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/giftcards": {
+      "status": "PASS",
+      "httpStatus": 401,
+      "authRequired": "user",
+      "message": "Authentication required"
+    },
+    "/api/giftcards/check-balance": {
+      "status": "FAIL",
+      "httpStatus": 404,
+      "error": "Gift card not found"
+    },
+    "/api/giftcards/redeem": {
+      "status": "FAIL",
+      "httpStatus": 404,
+      "error": "Gift card not found"
+    },
+    "/api/health": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/fees/active": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "authRequired": "none",
+      "message": "Endpoint functional"
+    },
+    "/api/auth/user": {
+      "status": "FAIL",
+      "httpStatus": 401,
+      "error": "Unauthorized"
+    }
+  },
+  "database": {
+    "connection": {
+      "status": "PASS",
+      "message": "Database connection via API verified"
+    },
+    "fee_configurations": {
+      "status": "PASS",
+      "message": "Data accessible"
+    },
+    "system_health": {
+      "status": "PASS",
+      "message": "Data accessible"
+    }
+  },
+  "features": {},
+  "security": {
+    "CORS Headers": {
+      "status": "FAIL",
+      "message": "Security feature not detected"
+    },
+    "Rate Limiting": {
+      "status": "PASS",
+      "message": "Security feature active"
+    },
+    "XSS Protection": {
+      "status": "PASS",
+      "message": "Security feature active"
+    },
+    "SQL Injection Protection": {
+      "status": "PASS",
+      "message": "Security feature active"
+    }
+  },
+  "performance": {
+    "responseTime": {
+      "status": "PASS",
+      "avgMs": 15,
+      "message": "Average response time: 15ms"
+    }
+  },
+  "production": {
+    "noMocks": {
+      "status": "FAIL",
+      "message": "Found 42 instances of mock/placeholder data",
+      "instances": [
+        {
+          "file": "client/src/pages/AdminDashboard.tsx",
+          "line": 275,
+          "content": "{new Date(transaction.createdAt).toLocaleDateString()}"
+        },
+        {
+          "file": "client/src/pages/AdminGiftCards.tsx",
+          "line": 109,
+          "content": "placeholder=\"Search by code, recipient, or amount...\""
+        },
+        {
+          "file": "client/src/pages/AdminGiftCards.tsx",
+          "line": 193,
+          "content": "{new Date(card.createdAt).toLocaleDateString()}"
+        },
+        {
+          "file": "client/src/pages/AdminSecurity.tsx",
+          "line": 243,
+          "content": "<p className=\"text-xs text-gray-400 mt-1\">Tests Passed</p>"
+        },
+        {
+          "file": "client/src/pages/AdminTransactions.tsx",
+          "line": 149,
+          "content": "placeholder=\"Search transactions...\""
+        }
+      ]
+    },
+    "environment": {
+      "status": "PASS",
+      "message": "Required environment variables set"
+    },
+    "typescript": {
+      "status": "PASS",
+      "message": "TypeScript configured"
+    }
+  },
+  "summary": {
+    "total": 29,
+    "passed": 24,
+    "failed": 5,
+    "warnings": 0
+  }
+}
