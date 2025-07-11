@@ -74,7 +74,14 @@ export class SquarePaymentLinksService {
     const locationId = process.env.SQUARE_LOCATION_ID;
 
     if (!accessToken || !locationId) {
-      throw new Error('Square configuration is missing');
+      console.warn('Square configuration is missing. Payment links will be unavailable.');
+      // Initialize with dummy values to prevent errors
+      this.client = new SquareClient({
+        accessToken: 'dummy',
+        environment: SquareEnvironment.Sandbox
+      });
+      this.locationId = 'dummy';
+      return;
     }
 
     this.client = new SquareClient({
@@ -479,5 +486,12 @@ export class SquarePaymentLinksService {
   }
 }
 
-// Export singleton instance
-export const squarePaymentLinksService = new SquarePaymentLinksService();
+// Export lazy singleton instance
+let _squarePaymentLinksService: SquarePaymentLinksService | null = null;
+
+export function getSquarePaymentLinksService(): SquarePaymentLinksService {
+  if (!_squarePaymentLinksService) {
+    _squarePaymentLinksService = new SquarePaymentLinksService();
+  }
+  return _squarePaymentLinksService;
+}

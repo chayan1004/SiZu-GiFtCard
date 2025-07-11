@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { squarePaymentLinksService } from './services/SquarePaymentLinksService';
+import { getSquarePaymentLinksService } from './services/SquarePaymentLinksService';
 import { requireAnyAuth } from './middleware/customerAuth';
 import { z } from 'zod';
 
@@ -134,7 +134,7 @@ router.post('/gift-card', requireAnyAuth, async (req: Request, res: Response) =>
   try {
     const validatedData = createPaymentLinkSchema.parse(req.body);
     
-    const paymentLink = await squarePaymentLinksService.createGiftCardPaymentLink(validatedData);
+    const paymentLink = await getSquarePaymentLinksService().createGiftCardPaymentLink(validatedData);
     
     res.json({
       success: true,
@@ -163,7 +163,7 @@ router.post('/quick-pay', requireAnyAuth, async (req: Request, res: Response) =>
   try {
     const validatedData = quickPaySchema.parse(req.body);
     
-    const paymentLink = await squarePaymentLinksService.createQuickPayLink(validatedData);
+    const paymentLink = await getSquarePaymentLinksService().createQuickPayLink(validatedData);
     
     res.json({
       success: true,
@@ -192,7 +192,7 @@ router.get('/:paymentLinkId', requireAnyAuth, async (req: Request, res: Response
   try {
     const { paymentLinkId } = req.params;
     
-    const paymentLink = await squarePaymentLinksService.getPaymentLink(paymentLinkId);
+    const paymentLink = await getSquarePaymentLinksService().getPaymentLink(paymentLinkId);
     
     res.json({
       success: true,
@@ -213,7 +213,7 @@ router.patch('/:paymentLinkId', requireAnyAuth, async (req: Request, res: Respon
     const { paymentLinkId } = req.params;
     const validatedData = updatePaymentLinkSchema.parse(req.body);
     
-    const paymentLink = await squarePaymentLinksService.updatePaymentLink(paymentLinkId, validatedData);
+    const paymentLink = await getSquarePaymentLinksService().updatePaymentLink(paymentLinkId, validatedData);
     
     res.json({
       success: true,
@@ -242,7 +242,7 @@ router.delete('/:paymentLinkId', requireAnyAuth, async (req: Request, res: Respo
   try {
     const { paymentLinkId } = req.params;
     
-    await squarePaymentLinksService.deletePaymentLink(paymentLinkId);
+    await getSquarePaymentLinksService().deletePaymentLink(paymentLinkId);
     
     res.json({
       success: true,

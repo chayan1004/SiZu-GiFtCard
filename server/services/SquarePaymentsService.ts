@@ -84,16 +84,24 @@ export class SquarePaymentsService {
         return;
       }
 
-      // Otherwise, get first available location
-      const locationsApi = this.client.locationsApi;
-      const response = await locationsApi.listLocations();
-      
-      if (response.result.locations && response.result.locations.length > 0) {
-        this.locationId = response.result.locations[0].id!;
-        this.isInitialized = true;
-        console.log(`Square Payments Service initialized with location: ${this.locationId}`);
-      } else {
-        console.error("No Square locations found");
+      // Otherwise, try to get first available location
+      try {
+        const locationsApi = this.client.locationsApi;
+        if (locationsApi && locationsApi.listLocations) {
+          const response = await locationsApi.listLocations();
+          
+          if (response.result.locations && response.result.locations.length > 0) {
+            this.locationId = response.result.locations[0].id!;
+            this.isInitialized = true;
+            console.log(`Square Payments Service initialized with location: ${this.locationId}`);
+          } else {
+            console.error("No Square locations found");
+          }
+        } else {
+          console.warn("Square locationsApi not available. Payment service will be limited.");
+        }
+      } catch (apiError) {
+        console.warn("Could not fetch locations from Square API. Payment service will be limited.", apiError);
       }
     } catch (error) {
       console.error("Failed to initialize Square Payments Service:", error);
