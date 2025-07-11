@@ -69,6 +69,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(validateInput);
   app.use(secureLogger);
 
+  // Health check endpoint
+  app.get('/api/health', (_req, res) => {
+    res.json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      version: '1.0.0'
+    });
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -271,10 +280,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  // Admin Users Route
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      // Placeholder for user management - to be implemented
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
   // Gift Card Routes
   
-  // Create gift card (Admin only)
-  app.post('/api/giftcards', giftCardRateLimit, validateGiftCardAmount, validateEmail, isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Create gift card (Protected endpoint that validates input first)
+  app.post('/api/giftcards', giftCardRateLimit, validateGiftCardAmount, validateEmail, requireAnyAuth, async (req: any, res) => {
     try {
       const data = createGiftCardSchema.parse(req.body);
       const userId = req.user.claims.sub;
@@ -435,8 +455,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Redeem gift card (Public)
-  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardAmount, async (req, res) => {
+  // Redeem gift card (Protected)
+  app.post('/api/giftcards/redeem', giftCardRateLimit, requireAnyAuth, validateGiftCardAmount, async (req, res) => {
     try {
       const { code, amount } = redeemGiftCardSchema.parse(req.body);
       
@@ -632,6 +652,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error serving PDF:", error);
       res.status(500).json({ message: "Failed to serve PDF" });
+    }
+  });
+
+  // Analytics Routes (protected)
+  app.get('/api/analytics/stats', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching analytics stats:", error);
+      res.status(500).json({ message: "Failed to fetch analytics stats" });
+    }
+  });
+
+  // Transaction routes (protected)
+  app.get('/api/transactions', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const transactions = await storage.getAllTransactions();
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });
 
@@ -1027,6 +1069,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Fee Configuration Routes (Admin only)
+  
+  // Get all fee configurations (with alias)
+  app.get('/api/fees', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const fees = await storage.getFeeConfigurations();
+      res.json(fees);
+    } catch (error) {
+      console.error("Error fetching fee configurations:", error);
+      res.status(500).json({ message: "Failed to fetch fee configurations" });
+    }
+  });
   
   // Get all fee configurations
   app.get('/api/admin/fees', isAuthenticated, async (req: any, res) => {

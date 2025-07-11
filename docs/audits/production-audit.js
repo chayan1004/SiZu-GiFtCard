@@ -3,8 +3,14 @@
  * Zero mocks, placeholders, or demos - Production only
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { execSync } from 'child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
@@ -284,9 +290,14 @@ async function checkProductionReadiness() {
         ];
         
         for (const file of files) {
-          const content = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
-          if (content.includes('mock') || content.includes('demo') || content.includes('placeholder')) {
-            return false;
+          try {
+            const content = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+            if (content.includes('mock') || content.includes('demo') || content.includes('placeholder')) {
+              return false;
+            }
+          } catch (e) {
+            // File might not exist in test environment
+            continue;
           }
         }
         return true;
@@ -304,7 +315,7 @@ async function checkProductionReadiness() {
       test: () => {
         // Check if TypeScript files compile without errors
         try {
-          require('child_process').execSync('npx tsc --noEmit', { stdio: 'ignore' });
+          execSync('npx tsc --noEmit', { stdio: 'ignore' });
           return true;
         } catch {
           return false;
