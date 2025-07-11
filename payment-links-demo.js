@@ -26,6 +26,7 @@ following endpoints:
 │   "recipientName": "Jane Doe",                                     │
 │   "senderName": "John Smith",                                      │
 │   "customMessage": "Happy Birthday! Enjoy your gift card!",        │
+│   "paymentNote": "Gift card purchase for birthday present",         │
 │   "checkoutOptions": {                                              │
 │     "askForShippingAddress": false,                                │
 │     "acceptedPaymentMethods": {                                     │
@@ -35,8 +36,23 @@ following endpoints:
 │       "afterpayClearpay": false                                     │
 │     },                                                              │
 │     "allowTipping": false,                                          │
+│     "customFields": [                                               │
+│       { "title": "Special delivery instructions" },                 │
+│       { "title": "Gift wrap preference" }                          │
+│     ],                                                              │
 │     "redirectUrl": "https://example.com/thank-you",                │
-│     "merchantSupportEmail": "support@example.com"                  │
+│     "merchantSupportEmail": "support@example.com",                 │
+│     "appFeeMoney": {                                                │
+│       "amount": 1.5,                                                │
+│       "currency": "USD"                                             │
+│     },                                                              │
+│     "shippingFee": {                                                │
+│       "name": "Express Delivery",                                   │
+│       "charge": {                                                   │
+│         "amount": 4.99,                                             │
+│         "currency": "USD"                                           │
+│       }                                                             │
+│     }                                                               │
 │   },                                                                │
 │   "prePopulatedData": {                                             │
 │     "buyerEmail": "buyer@example.com",                             │
@@ -57,9 +73,36 @@ following endpoints:
 │   "success": true,                                                  │
 │   "paymentLink": {                                                  │
 │     "id": "FV5LCO32HYNIRWLS",                                      │
+│     "version": 1,                                                   │
 │     "url": "https://checkout.square.site/pay/...",                 │
-│     "orderId": "sCE4bdUkTb85...",                                  │
-│     "createdAt": "2025-01-11T14:00:00Z"                            │
+│     "orderId": "sCE4bdUkTU2OwIi0FsiYtMkmyWfZY",                   │
+│     "createdAt": "2025-01-11T14:00:00Z",                           │
+│     "paymentNote": "Gift card purchase for birthday present",       │
+│     "checkoutOptions": {                                            │
+│       "allowTipping": false,                                        │
+│       "askForShippingAddress": false,                               │
+│       "customFields": [                                             │
+│         { "title": "Special delivery instructions",                 │
+│           "uid": "QPEENYORWCHZOUL4GO3EVNKL" },                    │
+│         { "title": "Gift wrap preference",                         │
+│           "uid": "MWVZ74M34AT4NA4HK7LTB25L" }                     │
+│       ],                                                            │
+│       "merchantSupportEmail": "support@example.com",               │
+│       "appFeeMoney": { "amount": 150, "currency": "USD" },        │
+│       "shippingFee": {                                              │
+│         "name": "Express Delivery",                                 │
+│         "charge": { "amount": 499, "currency": "USD" }             │
+│       }                                                             │
+│     },                                                              │
+│     "relatedResources": {                                           │
+│       "orders": [{                                                  │
+│         "id": "C0DMgui6YFmgyURVSRtxr4EShheZY",                    │
+│         "locationId": "LD50VRHA8P636",                             │
+│         "state": "DRAFT",                                           │
+│         "version": 1,                                               │
+│         "totalMoney": { "amount": 5000, "currency": "USD" }        │
+│       }]                                                            │
+│     }                                                               │
 │   }                                                                 │
 │ }                                                                   │
 └─────────────────────────────────────────────────────────────────────┘
@@ -75,8 +118,9 @@ following endpoints:
 │   "amount": 25,                                                     │
 │   "currency": "USD",                                                │
 │   "description": "Quick payment for services",                     │
+│   "paymentNote": "This is a payment note.",                        │
 │   "checkoutOptions": {                                              │
-│     "askForShippingAddress": false,                                │
+│     "askForShippingAddress": true,                                 │
 │     "acceptedPaymentMethods": {                                     │
 │       "applePay": true,                                             │
 │       "googlePay": true,                                            │
@@ -84,7 +128,21 @@ following endpoints:
 │       "afterpayClearpay": false                                     │
 │     },                                                              │
 │     "allowTipping": true,                                           │
-│     "merchantSupportEmail": "help@example.com"                     │
+│     "merchantSupportEmail": "help@example.com",                    │
+│     "appFeeMoney": {                                                │
+│       "amount": 1.0,                                                │
+│       "currency": "USD"                                             │
+│     },                                                              │
+│     "shippingFee": {                                                │
+│       "name": "Standard Shipping",                                  │
+│       "charge": {                                                   │
+│         "amount": 4.99,                                             │
+│         "currency": "USD"                                           │
+│       }                                                             │
+│     }                                                               │
+│   },                                                                │
+│   "prePopulatedData": {                                             │
+│     "buyerEmail": "buyer_email@support.com"                        │
 │   }                                                                 │
 │ }                                                                   │
 └─────────────────────────────────────────────────────────────────────┘

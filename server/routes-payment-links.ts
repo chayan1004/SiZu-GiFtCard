@@ -15,6 +15,7 @@ const createPaymentLinkSchema = z.object({
   recipientName: z.string().max(255).optional(),
   senderName: z.string().max(255).optional(),
   customMessage: z.string().max(500).optional(),
+  paymentNote: z.string().max(1000).optional(),
   checkoutOptions: z.object({
     askForShippingAddress: z.boolean().optional(),
     acceptedPaymentMethods: z.object({
@@ -28,7 +29,18 @@ const createPaymentLinkSchema = z.object({
       title: z.string()
     })).optional(),
     redirectUrl: z.string().url().optional(),
-    merchantSupportEmail: z.string().email().optional()
+    merchantSupportEmail: z.string().email().optional(),
+    appFeeMoney: z.object({
+      amount: z.number().positive(),
+      currency: z.string().length(3).optional()
+    }).optional(),
+    shippingFee: z.object({
+      name: z.string(),
+      charge: z.object({
+        amount: z.number().positive(),
+        currency: z.string().length(3).optional()
+      })
+    }).optional()
   }).optional(),
   prePopulatedData: z.object({
     buyerEmail: z.string().email().optional(),
@@ -49,6 +61,7 @@ const quickPaySchema = z.object({
   amount: z.number().positive(),
   currency: z.string().length(3).optional(),
   description: z.string().max(1000).optional(),
+  paymentNote: z.string().max(1000).optional(),
   checkoutOptions: z.object({
     askForShippingAddress: z.boolean().optional(),
     acceptedPaymentMethods: z.object({
@@ -58,8 +71,22 @@ const quickPaySchema = z.object({
       afterpayClearpay: z.boolean().optional()
     }).optional(),
     allowTipping: z.boolean().optional(),
+    customFields: z.array(z.object({
+      title: z.string()
+    })).optional(),
     redirectUrl: z.string().url().optional(),
-    merchantSupportEmail: z.string().email().optional()
+    merchantSupportEmail: z.string().email().optional(),
+    appFeeMoney: z.object({
+      amount: z.number().positive(),
+      currency: z.string().length(3).optional()
+    }).optional(),
+    shippingFee: z.object({
+      name: z.string(),
+      charge: z.object({
+        amount: z.number().positive(),
+        currency: z.string().length(3).optional()
+      })
+    }).optional()
   }).optional(),
   prePopulatedData: z.object({
     buyerEmail: z.string().email().optional(),

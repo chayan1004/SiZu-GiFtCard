@@ -10,6 +10,7 @@ export interface CreatePaymentLinkOptions {
   recipientName?: string;
   senderName?: string;
   customMessage?: string;
+  paymentNote?: string;
   checkoutOptions?: {
     askForShippingAddress?: boolean;
     acceptedPaymentMethods?: {
@@ -24,6 +25,17 @@ export interface CreatePaymentLinkOptions {
     }>;
     redirectUrl?: string;
     merchantSupportEmail?: string;
+    appFeeMoney?: {
+      amount: number;
+      currency?: string;
+    };
+    shippingFee?: {
+      name: string;
+      charge: {
+        amount: number;
+        currency?: string;
+      };
+    };
   };
   prePopulatedData?: {
     buyerEmail?: string;
@@ -43,9 +55,14 @@ export interface PaymentLink {
   id: string;
   url: string;
   orderId: string;
+  version: number;
   createdAt: string;
   checkoutOptions?: any;
   prePopulatedData?: any;
+  paymentNote?: string;
+  relatedResources?: {
+    orders?: any[];
+  };
 }
 
 export class SquarePaymentLinksService {
@@ -105,6 +122,27 @@ export class SquarePaymentLinksService {
         checkoutOptions.merchantSupportEmail = options.checkoutOptions.merchantSupportEmail;
       }
 
+      if (options.checkoutOptions?.customFields) {
+        checkoutOptions.customFields = options.checkoutOptions.customFields;
+      }
+
+      if (options.checkoutOptions?.appFeeMoney) {
+        checkoutOptions.appFeeMoney = {
+          amount: BigInt(Math.round(options.checkoutOptions.appFeeMoney.amount * 100)),
+          currency: options.checkoutOptions.appFeeMoney.currency || 'USD'
+        };
+      }
+
+      if (options.checkoutOptions?.shippingFee) {
+        checkoutOptions.shippingFee = {
+          name: options.checkoutOptions.shippingFee.name,
+          charge: {
+            amount: BigInt(Math.round(options.checkoutOptions.shippingFee.charge.amount * 100)),
+            currency: options.checkoutOptions.shippingFee.charge.currency || 'USD'
+          }
+        };
+      }
+
       // Build the request
       const request: any = {
         idempotencyKey: nanoid(),
@@ -124,6 +162,11 @@ export class SquarePaymentLinksService {
       // Add description if provided
       if (options.description) {
         request.description = options.description;
+      }
+
+      // Add payment note if provided
+      if (options.paymentNote) {
+        request.paymentNote = options.paymentNote;
       }
 
       // Add pre-populated data if provided
@@ -146,14 +189,23 @@ export class SquarePaymentLinksService {
       const response = await this.client.checkoutApi.createPaymentLink(request);
 
       if (response.result.paymentLink) {
-        return {
+        const result: PaymentLink = {
           id: response.result.paymentLink.id!,
           url: response.result.paymentLink.url!,
           orderId: response.result.paymentLink.orderId!,
+          version: response.result.paymentLink.version || 1,
           createdAt: response.result.paymentLink.createdAt!,
           checkoutOptions: response.result.paymentLink.checkoutOptions,
-          prePopulatedData: response.result.paymentLink.prePopulatedData
+          prePopulatedData: response.result.paymentLink.prePopulatedData,
+          paymentNote: response.result.paymentLink.paymentNote
         };
+
+        // Include related resources if available
+        if (response.result.relatedResources) {
+          result.relatedResources = response.result.relatedResources;
+        }
+
+        return result;
       }
 
       throw new Error('Failed to create payment link');
@@ -174,6 +226,7 @@ export class SquarePaymentLinksService {
     amount: number;
     currency?: string;
     description?: string;
+    paymentNote?: string;
     checkoutOptions?: CreatePaymentLinkOptions['checkoutOptions'];
     prePopulatedData?: CreatePaymentLinkOptions['prePopulatedData'];
   }): Promise<PaymentLink> {
@@ -204,17 +257,30 @@ export class SquarePaymentLinksService {
         request.description = options.description;
       }
 
+      if (options.paymentNote) {
+        request.paymentNote = options.paymentNote;
+      }
+
       const response = await this.client.checkoutApi.createPaymentLink(request);
 
       if (response.result.paymentLink) {
-        return {
+        const result: PaymentLink = {
           id: response.result.paymentLink.id!,
           url: response.result.paymentLink.url!,
           orderId: response.result.paymentLink.orderId || '',
+          version: response.result.paymentLink.version || 1,
           createdAt: response.result.paymentLink.createdAt!,
           checkoutOptions: response.result.paymentLink.checkoutOptions,
-          prePopulatedData: response.result.paymentLink.prePopulatedData
+          prePopulatedData: response.result.paymentLink.prePopulatedData,
+          paymentNote: response.result.paymentLink.paymentNote
         };
+
+        // Include related resources if available
+        if (response.result.relatedResources) {
+          result.relatedResources = response.result.relatedResources;
+        }
+
+        return result;
       }
 
       throw new Error('Failed to create quick pay link');
@@ -235,14 +301,23 @@ export class SquarePaymentLinksService {
       const response = await this.client.checkoutApi.retrievePaymentLink(paymentLinkId);
 
       if (response.result.paymentLink) {
-        return {
+        const result: PaymentLink = {
           id: response.result.paymentLink.id!,
           url: response.result.paymentLink.url!,
           orderId: response.result.paymentLink.orderId!,
+          version: response.result.paymentLink.version || 1,
           createdAt: response.result.paymentLink.createdAt!,
           checkoutOptions: response.result.paymentLink.checkoutOptions,
-          prePopulatedData: response.result.paymentLink.prePopulatedData
+          prePopulatedData: response.result.paymentLink.prePopulatedData,
+          paymentNote: response.result.paymentLink.paymentNote
         };
+
+        // Include related resources if available
+        if (response.result.relatedResources) {
+          result.relatedResources = response.result.relatedResources;
+        }
+
+        return result;
       }
 
       throw new Error('Payment link not found');
@@ -261,6 +336,7 @@ export class SquarePaymentLinksService {
   async updatePaymentLink(paymentLinkId: string, updates: {
     checkoutOptions?: CreatePaymentLinkOptions['checkoutOptions'];
     prePopulatedData?: CreatePaymentLinkOptions['prePopulatedData'];
+    paymentNote?: string;
   }): Promise<PaymentLink> {
     try {
       const request: any = {
@@ -275,17 +351,30 @@ export class SquarePaymentLinksService {
         request.paymentLink.prePopulatedData = updates.prePopulatedData;
       }
 
+      if (updates.paymentNote) {
+        request.paymentLink.paymentNote = updates.paymentNote;
+      }
+
       const response = await this.client.checkoutApi.updatePaymentLink(paymentLinkId, request);
 
       if (response.result.paymentLink) {
-        return {
+        const result: PaymentLink = {
           id: response.result.paymentLink.id!,
           url: response.result.paymentLink.url!,
           orderId: response.result.paymentLink.orderId!,
+          version: response.result.paymentLink.version || 1,
           createdAt: response.result.paymentLink.createdAt!,
           checkoutOptions: response.result.paymentLink.checkoutOptions,
-          prePopulatedData: response.result.paymentLink.prePopulatedData
+          prePopulatedData: response.result.paymentLink.prePopulatedData,
+          paymentNote: response.result.paymentLink.paymentNote
         };
+
+        // Include related resources if available
+        if (response.result.relatedResources) {
+          result.relatedResources = response.result.relatedResources;
+        }
+
+        return result;
       }
 
       throw new Error('Failed to update payment link');
@@ -367,6 +456,23 @@ export class SquarePaymentLinksService {
 
     if (options?.merchantSupportEmail) {
       checkoutOptions.merchantSupportEmail = options.merchantSupportEmail;
+    }
+
+    if (options?.appFeeMoney) {
+      checkoutOptions.appFeeMoney = {
+        amount: BigInt(Math.round(options.appFeeMoney.amount * 100)),
+        currency: options.appFeeMoney.currency || 'USD'
+      };
+    }
+
+    if (options?.shippingFee) {
+      checkoutOptions.shippingFee = {
+        name: options.shippingFee.name,
+        charge: {
+          amount: BigInt(Math.round(options.shippingFee.charge.amount * 100)),
+          currency: options.shippingFee.charge.currency || 'USD'
+        }
+      };
     }
 
     return checkoutOptions;
