@@ -39,7 +39,10 @@ import {
   validateEmail,
   corsOptions,
   validateApiKey,
-  secureLogger
+  secureLogger,
+  validateGiftCardCode,
+  validateId,
+  sanitizeString
 } from "./middleware/security";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -70,6 +73,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(httpsRedirect);
   app.use(securityHeaders);
   app.use(cors(corsOptions));
+  
+  // Set additional CORS headers for all responses
+  app.use((req, res, next) => {
+    // Ensure CORS headers are set for all responses
+    const origin = req.get('origin');
+    if (origin) {
+      res.setHeader('Vary', 'Origin');
+    }
+    
+    // Add security headers for API responses
+    if (req.path.startsWith('/api/')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    
+    next();
+  });
   
   // Apply rate limiting only to API routes and not to Vite development routes
   app.use((req, res, next) => {
@@ -406,7 +427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check balance (Public)
-  app.post('/api/giftcards/balance', giftCardRateLimit, async (req, res) => {
+  app.post('/api/giftcards/balance', giftCardRateLimit, validateGiftCardCode, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
       
@@ -434,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Alternative check balance endpoint (Public) 
-  app.post('/api/giftcards/check-balance', giftCardRateLimit, async (req, res) => {
+  app.post('/api/giftcards/check-balance', giftCardRateLimit, validateGiftCardCode, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
       
@@ -462,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Redeem gift card (Public)
-  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardAmount, async (req, res) => {
+  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardCode, validateGiftCardAmount, async (req, res) => {
     try {
       const { code, amount } = redeemGiftCardSchema.parse(req.body);
       
@@ -584,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get transactions for a specific gift card
-  app.get('/api/giftcards/:id/transactions', requireAnyAuth, async (req: any, res) => {
+  app.get('/api/giftcards/:id/transactions', requireAnyAuth, validateId, async (req: any, res) => {
     try {
       const user = getAuthenticatedUser(req);
       if (!user) {
@@ -693,7 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/fraud-alerts/:id/resolve', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/admin/fraud-alerts/:id/resolve', isAuthenticated, requireAdmin, validateId, async (req: any, res) => {
     try {
       const { id } = req.params;
       const userId = req.user.claims.sub;

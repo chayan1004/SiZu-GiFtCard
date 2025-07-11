@@ -80,41 +80,84 @@ export const httpsRedirect = (req: Request, res: Response, next: NextFunction) =
 // Input validation middleware
 export const validateInput = (req: Request, res: Response, next: NextFunction) => {
   const body = req.body;
+  const query = req.query;
+  const params = req.params;
   
-  // Check for common injection patterns with specific error messages
+  // Enhanced SQL injection patterns with specific error messages
   const dangerousPatterns = [
     { pattern: /('|\\')|(;|\\;)|\||\*/, message: 'SQL injection characters detected. Please remove special characters like quotes, semicolons, or pipes.' },
+    { pattern: /(union|select|insert|update|delete|drop|exec|execute|xp_|sp_|cmd|cast|convert|declare|varchar|nvarchar)\s/gi, message: 'SQL keywords detected. Please use plain text without database commands.' },
+    { pattern: /(-{2}|\/\*|\*\/|@@|@)/, message: 'SQL comment sequences detected. Please remove comment markers.' },
     { pattern: /<script[^>]*>.*?<\/script>/gi, message: 'Script tags are not allowed. Please remove any HTML script elements.' },
     { pattern: /javascript\s*:/gi, message: 'JavaScript protocol is not allowed in input fields.' },
     { pattern: /vbscript\s*:/gi, message: 'VBScript protocol is not allowed in input fields.' },
     { pattern: /onload\s*=/gi, message: 'Event handlers are not allowed. Please remove "onload" attributes.' },
     { pattern: /onerror\s*=/gi, message: 'Event handlers are not allowed. Please remove "onerror" attributes.' },
+    { pattern: /onclick\s*=/gi, message: 'Event handlers are not allowed. Please remove "onclick" attributes.' },
+    { pattern: /onmouseover\s*=/gi, message: 'Event handlers are not allowed. Please remove "onmouseover" attributes.' },
+    { pattern: /<iframe|<frame|<embed|<object/gi, message: 'Embedded content tags are not allowed.' },
+    { pattern: /&#\d+;|&#x[\da-fA-F]+;|\\u[\da-fA-F]{4}|\\x[\da-fA-F]{2}/, message: 'Encoded characters detected. Please use plain text.' },
   ];
 
-  const checkValue = (value: any): string | null => {
+  // Check value with depth limit to prevent deep object traversal attacks
+  const checkValue = (value: any, depth: number = 0): string | null => {
+    if (depth > 10) {
+      return 'Input structure too deep. Please simplify your data.';
+    }
+    
     if (typeof value === 'string') {
+      // Additional length check
+      if (value.length > 10000) {
+        return 'Input too long. Please limit text to 10,000 characters.';
+      }
+      
+      // Check against all patterns
       for (const { pattern, message } of dangerousPatterns) {
         if (pattern.test(value)) {
           return message;
         }
       }
+      
+      // Check for null bytes
+      if (value.includes('\0')) {
+        return 'Null bytes are not allowed in input.';
+      }
     }
-    if (typeof value === 'object' && value !== null) {
-      for (const val of Object.values(value)) {
-        const result = checkValue(val);
+    
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const result = checkValue(item, depth + 1);
         if (result) return result;
       }
     }
+    
+    if (typeof value === 'object' && value !== null) {
+      for (const val of Object.values(value)) {
+        const result = checkValue(val, depth + 1);
+        if (result) return result;
+      }
+    }
+    
     return null;
   };
 
-  const errorMessage = checkValue(body);
-  if (errorMessage) {
-    return res.status(400).json({ 
-      error: 'Invalid input detected',
-      message: errorMessage,
-      suggestion: 'Please ensure your input contains only regular text and numbers without special characters or code.'
-    });
+  // Validate all input sources
+  const sources = [
+    { data: body, name: 'body' },
+    { data: query, name: 'query' },
+    { data: params, name: 'params' }
+  ];
+  
+  for (const { data, name } of sources) {
+    const errorMessage = checkValue(data);
+    if (errorMessage) {
+      return res.status(400).json({ 
+        error: 'Invalid input detected',
+        message: errorMessage,
+        source: name,
+        suggestion: 'Please ensure your input contains only regular text and numbers without special characters or code.'
+      });
+    }
   }
 
   next();
@@ -153,19 +196,106 @@ export const validateGiftCardAmount = (req: Request, res: Response, next: NextFu
 
 // Email validation
 export const validateEmail = (req: Request, res: Response, next: NextFunction) => {
-  const { email, recipientEmail } = req.body;
-  const targetEmail = email || recipientEmail;
+  const { email, recipientEmail, senderEmail } = req.body;
+  const emails = [email, recipientEmail, senderEmail].filter(Boolean);
 
-  if (targetEmail) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  for (const targetEmail of emails) {
+    // Enhanced email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    // Check basic format
     if (!emailRegex.test(targetEmail)) {
       return res.status(400).json({
         error: 'Invalid email',
         message: 'Please provide a valid email address'
       });
     }
+    
+    // Check length
+    if (targetEmail.length > 254) {
+      return res.status(400).json({
+        error: 'Invalid email',
+        message: 'Email address is too long'
+      });
+    }
+    
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+      /[<>'"]/,
+      /\.\./,
+      /^\.|\.$/, 
+      /@.*@/
+    ];
+    
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(targetEmail)) {
+        return res.status(400).json({
+          error: 'Invalid email',
+          message: 'Email contains invalid characters'
+        });
+      }
+    }
   }
 
+  next();
+};
+
+// Gift card code validation
+export const validateGiftCardCode = (req: Request, res: Response, next: NextFunction) => {
+  const { code, giftCardCode } = req.body;
+  const targetCode = code || giftCardCode;
+  
+  if (targetCode) {
+    // Gift card codes should only contain alphanumeric characters
+    if (!/^[A-Z0-9]{6,20}$/i.test(targetCode)) {
+      return res.status(400).json({
+        error: 'Invalid gift card code',
+        message: 'Gift card codes must be 6-20 alphanumeric characters'
+      });
+    }
+  }
+  
+  next();
+};
+
+// Sanitize string inputs
+export const sanitizeString = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+  
+  // Remove null bytes
+  let sanitized = input.replace(/\0/g, '');
+  
+  // Trim whitespace
+  sanitized = sanitized.trim();
+  
+  // Remove control characters except newlines and tabs
+  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  
+  // Limit length
+  if (sanitized.length > 1000) {
+    sanitized = sanitized.substring(0, 1000);
+  }
+  
+  return sanitized;
+};
+
+// ID parameter validation
+export const validateId = (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  
+  if (id) {
+    // UUIDs or numeric IDs only
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const numericRegex = /^\d+$/;
+    
+    if (!uuidRegex.test(id) && !numericRegex.test(id)) {
+      return res.status(400).json({
+        error: 'Invalid ID',
+        message: 'ID must be a valid UUID or numeric value'
+      });
+    }
+  }
+  
   next();
 };
 
@@ -227,30 +357,59 @@ function maskSensitiveData(data: any): any {
 // CORS configuration
 export const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (mobile apps, etc.)
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
 
-    // In development, allow all origins
+    // In development, allow localhost origins
     if (process.env.NODE_ENV === 'development') {
-      return callback(null, true);
+      const devOrigins = [
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5000',
+        'http://127.0.0.1:5173'
+      ];
+      
+      if (devOrigins.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
     }
 
-    // Allow Replit domains
+    // Production allowed origins
     const allowedOrigins = [
       'https://replit.com',
       'https://replit.dev',
-      ...(process.env.REPLIT_DOMAINS?.split(',') || [])
+      'https://replit.app',
+      ...(process.env.REPLIT_DOMAINS?.split(',').map(domain => `https://${domain}`) || []),
+      ...(process.env.ALLOWED_ORIGINS?.split(',') || [])
     ];
 
-    if (allowedOrigins.some(allowed => origin.includes(allowed))) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // Check exact match first
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    
+    // Check if origin ends with allowed domains
+    const allowedDomains = ['.replit.com', '.replit.dev', '.replit.app'];
+    if (allowedDomains.some(domain => origin.endsWith(domain))) {
+      return callback(null, true);
+    }
+
+    // Log rejected origins in development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`CORS: Rejected origin ${origin}`);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Accept', 'Origin'],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count', 'X-Rate-Limit-Remaining', 'X-Rate-Limit-Reset'],
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 // API key validation (for Square integration)
