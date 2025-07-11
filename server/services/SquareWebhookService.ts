@@ -147,6 +147,14 @@ export class SquareWebhookService {
           await this.handlePayoutUpdated(event);
           break;
 
+        // Online Checkout events
+        case 'online_checkout.location_settings.updated':
+          await this.handleOnlineCheckoutLocationSettingsUpdated(event);
+          break;
+        case 'online_checkout.merchant_settings.updated':
+          await this.handleOnlineCheckoutMerchantSettingsUpdated(event);
+          break;
+
         default:
           console.log(`Unhandled webhook event type: ${event.type}`);
       }
@@ -250,9 +258,10 @@ export class SquareWebhookService {
           type: activity.type.toLowerCase(),
           amount: amount,
           balanceAfter: amount,
-          description: `Square activity: ${activity.type}`,
-        squareActivityId: activity.id
-      });
+          notes: `Square activity: ${activity.type}, Activity ID: ${activity.id}`,
+          squareTransactionId: activity.id
+        });
+      }
     }
   }
 
@@ -442,6 +451,67 @@ export class SquareWebhookService {
   private async handlePayoutUpdated(event: WebhookEvent) {
     const payout = event.data.object;
     console.log(`Payout updated: ${payout.id}, Status: ${payout.status}`);
+  }
+
+  // Online Checkout event handlers
+  private async handleOnlineCheckoutLocationSettingsUpdated(event: WebhookEvent) {
+    const settings = event.data.object.location_settings;
+    console.log(`Online checkout location settings updated for location: ${settings.location_id}`);
+    console.log(`  Branding:`);
+    console.log(`    Button color: ${settings.branding.button_color}`);
+    console.log(`    Button shape: ${settings.branding.button_shape}`);
+    console.log(`    Header type: ${settings.branding.header_type}`);
+    console.log(`  Coupons enabled: ${settings.coupons.enabled}`);
+    console.log(`  Customer notes enabled: ${settings.customer_notes_enabled}`);
+    
+    if (settings.tipping) {
+      console.log(`  Tipping:`);
+      console.log(`    Default percent: ${settings.tipping.default_percent}%`);
+      console.log(`    Smart tipping enabled: ${settings.tipping.smart_tipping_enabled}`);
+      console.log(`    Percentages: ${settings.tipping.percentages.join('%, ')}%`);
+      
+      if (settings.tipping.smart_tips) {
+        console.log(`    Smart tips:`);
+        settings.tipping.smart_tips.forEach((tip: any) => {
+          console.log(`      $${tip.amount / 100} ${tip.currency}`);
+        });
+      }
+    }
+    
+    console.log(`  Updated at: ${settings.updated_at}`);
+  }
+
+  private async handleOnlineCheckoutMerchantSettingsUpdated(event: WebhookEvent) {
+    const settings = event.data.object.merchant_settings;
+    console.log(`Online checkout merchant settings updated`);
+    console.log(`  Payment methods:`);
+    
+    if (settings.payment_methods.apple_pay) {
+      console.log(`    Apple Pay enabled: ${settings.payment_methods.apple_pay.enabled}`);
+    }
+    
+    if (settings.payment_methods.google_pay) {
+      console.log(`    Google Pay enabled: ${settings.payment_methods.google_pay.enabled}`);
+    }
+    
+    if (settings.payment_methods.cash_app) {
+      console.log(`    Cash App enabled: ${settings.payment_methods.cash_app.enabled}`);
+    }
+    
+    if (settings.payment_methods.afterpay_clearpay) {
+      const afterpay = settings.payment_methods.afterpay_clearpay;
+      console.log(`    Afterpay/Clearpay enabled: ${afterpay.enabled}`);
+      
+      if (afterpay.item_eligibility_range) {
+        console.log(`      Item range: $${afterpay.item_eligibility_range.min.amount / 100} - $${afterpay.item_eligibility_range.max.amount / 100}`);
+      }
+      
+      if (afterpay.order_eligibility_range) {
+        console.log(`      Order range: $${afterpay.order_eligibility_range.min.amount / 100} - $${afterpay.order_eligibility_range.max.amount / 100}`);
+      }
+    }
+    
+    console.log(`  Updated at: ${settings.updated_at}`);
   }
 
   /**

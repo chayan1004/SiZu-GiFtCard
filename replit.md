@@ -121,7 +121,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### January 11, 2025 - Phase 21: Complete Square Gift Card Webhook Integration
+### January 11, 2025 - Phase 21: Complete Square Gift Card & Online Checkout Webhook Integration
 - **Gift Card Webhook Processing**: All 6 gift card webhook types fully implemented
   - gift_card.created: Tracks new gift cards in NOT_ACTIVE state
   - gift_card.updated: Monitors balance changes from $0 to $30
@@ -129,6 +129,9 @@ Preferred communication style: Simple, everyday language.
   - gift_card.customer_unlinked: Tracks customer disassociation
   - gift_card.activity.created: Records ACTIVATE events with initial balance
   - gift_card.activity.updated: Handles IMPORT and other activity updates
+- **Online Checkout Webhook Processing**: 2 new webhook types for checkout configuration
+  - online_checkout.location_settings.updated: Handles branding, tipping, coupons, and customer notes
+  - online_checkout.merchant_settings.updated: Manages payment methods (Apple Pay, Google Pay, Cash App, Afterpay)
 - **Database Connection Optimization**: Upgraded to Neon pooler URL
   - Changed from standard URL to pooler URL (`.neon.tech` to `-pooler.neon.tech`)
   - Reduced max connections from 20 to 10 for better pooler efficiency
@@ -138,10 +141,11 @@ Preferred communication style: Simple, everyday language.
   - Activity data properly accessed via `event.data.object.gift_card_activity`
   - Customer linking properly tracks linked/unlinked customer IDs
   - All webhook handlers now display complete event details
-- **Production-Ready Gift Card Integration**: Complete lifecycle tracking
+- **Production-Ready Integration**: Complete lifecycle tracking
   - GAN (Gift Account Number) syncing with local database
   - Real-time balance updates from Square to local records
   - Customer association tracking for personalized features
+  - Dynamic payment method availability based on configuration
   - Complete audit trail with activity logging
 
 ### January 11, 2025 - Phase 20: Square API Integration Complete - Production Ready
