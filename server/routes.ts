@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import cors from "cors";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { SquareService } from "./services/SquareService";
@@ -17,6 +18,19 @@ import {
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import {
+  generalRateLimit,
+  authRateLimit,
+  giftCardRateLimit,
+  securityHeaders,
+  httpsRedirect,
+  validateInput,
+  validateGiftCardAmount,
+  validateEmail,
+  corsOptions,
+  validateApiKey,
+  secureLogger
+} from "./middleware/security";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
@@ -24,6 +38,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const pdfService = new PDFService();
   const emailService = new EmailService();
   const qrService = new QRService();
+
+  // Security middleware
+  app.use(httpsRedirect);
+  app.use(securityHeaders);
+  app.use(cors(corsOptions));
+  app.use(generalRateLimit);
+  app.use(validateInput);
+  app.use(secureLogger);
 
   // Auth middleware
   await setupAuth(app);
@@ -57,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gift Card Routes
   
   // Create gift card (Admin only)
-  app.post('/api/giftcards', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/giftcards', giftCardRateLimit, validateGiftCardAmount, validateEmail, isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const data = createGiftCardSchema.parse(req.body);
       const userId = req.user.claims.sub;
@@ -155,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check balance (Public)
-  app.post('/api/giftcards/balance', async (req, res) => {
+  app.post('/api/giftcards/balance', giftCardRateLimit, async (req, res) => {
     try {
       const { code } = checkBalanceSchema.parse(req.body);
       
@@ -183,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Redeem gift card (Public)
-  app.post('/api/giftcards/redeem', async (req, res) => {
+  app.post('/api/giftcards/redeem', giftCardRateLimit, validateGiftCardAmount, async (req, res) => {
     try {
       const { code, amount } = redeemGiftCardSchema.parse(req.body);
       
