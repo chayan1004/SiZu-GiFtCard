@@ -205,6 +205,18 @@ export class SquarePaymentsService {
 
       const payment = response.result.payment;
       console.log(`Payment created successfully: ${payment.id}`);
+      
+      // Log ACH payment details if applicable
+      if (payment.sourceType === 'BANK_ACCOUNT' && payment.bankAccountDetails) {
+        console.log('ACH Payment Details:', {
+          paymentId: payment.id,
+          status: payment.status,
+          bankName: payment.bankAccountDetails.bankName,
+          transferType: payment.bankAccountDetails.transferType,
+          accountType: payment.bankAccountDetails.achDetails?.accountType,
+          accountSuffix: payment.bankAccountDetails.achDetails?.accountNumberSuffix
+        });
+      }
 
       return {
         success: true,

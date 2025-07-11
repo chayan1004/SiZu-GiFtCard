@@ -72,13 +72,75 @@ ach.addEventListener('ontokenization', (event) => {
 
 4. **Payment Processing**
    - Backend creates order
-   - Processes ACH payment
-   - Payment enters PENDING state
+   - Processes ACH payment with status "PENDING"
+   - Payment updates to "COMPLETED" after settlement (1 minute in sandbox, 3-5 days in production)
+
+### ACH Payment Response Structure
+
+When an ACH payment is created, Square returns detailed bank account information:
+
+```json
+{
+  "payment": {
+    "id": "VMnh7EfZj6XR7ykHLWCXAkYDnxEZY",
+    "created_at": "2020-10-19T00:28:36.827Z",
+    "amount_money": {
+      "amount": 10000,
+      "currency": "USD"
+    },
+    "status": "PENDING",
+    "source_type": "BANK_ACCOUNT",
+    "bank_account_details": {
+      "bank_name": "Citizens Bank",
+      "transfer_type": "ACH",
+      "account_ownership_type": "INDIVIDUAL",
+      "fingerprint": "sq-1-FlS9Z5LyPjofrv9KWv1...Pud8YioqOqAw",
+      "country": "US",
+      "ach_details": {
+        "routing_number": "0111111111",
+        "account_number_suffix": "000",
+        "account_type": "CHECKING"
+      }
+    }
+  }
+}
+```
+
+Key fields:
+- `source_type`: Always "BANK_ACCOUNT" for ACH payments
+- `transfer_type`: Always "ACH" for ACH transfers
+- `status`: Starts as "PENDING", updates to "COMPLETED" when settled
+- `bank_account_details`: Contains bank name, account type, and masked routing info
 
 5. **Settlement (3-5 days)**
    - Payment clears through ACH network
    - Status updates to COMPLETED
    - Gift card activated
+   - Webhook notification sent (payment.updated)
+
+### ACH Disputes
+
+ACH disputes differ significantly from credit card disputes:
+
+#### Key Differences
+- **Return Windows**: 
+  - Consumer accounts: 60 days from original transaction
+  - Business accounts: 2 days from original transaction
+- **Contestability**: Unlike credit card disputes, sellers CANNOT contest ACH reversals
+- **Resolution**: Sellers must handle disputes directly with customers
+- **Automatic Honor**: Square and its ODFI honor all customer return requests within the window
+
+#### When Disputes Occur
+1. Customer requests return through their bank
+2. Square receives return request from customer's bank
+3. Funds automatically removed from seller's Square account
+4. Seller must resolve directly with customer
+
+#### Best Practices
+- Clear authorization language during checkout
+- Save transaction records and customer consent
+- Prompt customer service for ACH payment issues
+- Consider higher risk for business accounts (2-day window)
 
 ### Testing
 

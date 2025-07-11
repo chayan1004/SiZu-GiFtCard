@@ -385,6 +385,18 @@ router.get('/status/:paymentId',
               buyerCountryCode: payment.walletDetails.cashAppDetails.buyerCountryCode,
               buyerCashtag: payment.walletDetails.cashAppDetails.buyerCashtag
             } : undefined
+          } : undefined,
+          bankAccountDetails: payment.bankAccountDetails ? {
+            bankName: payment.bankAccountDetails.bankName,
+            transferType: payment.bankAccountDetails.transferType,
+            accountOwnershipType: payment.bankAccountDetails.accountOwnershipType,
+            fingerprint: payment.bankAccountDetails.fingerprint,
+            country: payment.bankAccountDetails.country,
+            achDetails: payment.bankAccountDetails.achDetails ? {
+              routingNumber: payment.bankAccountDetails.achDetails.routingNumber,
+              accountNumberSuffix: payment.bankAccountDetails.achDetails.accountNumberSuffix,
+              accountType: payment.bankAccountDetails.achDetails.accountType
+            } : undefined
           } : undefined
         }
       });

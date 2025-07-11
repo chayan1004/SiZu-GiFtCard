@@ -87,19 +87,34 @@ The system has achieved a 98% health score based on comprehensive testing across
 - **Frontend**: 
   - ACH payment method in checkout
   - Plaid Link integration for bank authentication
-  - Event listener for tokenization
+  - Event listener for tokenization (ontokenization)
   - Processing time alerts (3-5 days)
+  - Form validation before bank connection
 - **Backend**:
   - ACH token handling (bauth: prefix)
-  - Payment processing with autocomplete flag
+  - Payment processing with proper response structure
+  - Bank account details in payment status (bank name, account type, routing suffix)
   - Fee structure: 1% (min $1)
+  - Status tracking: PENDING → COMPLETED
+- **Payment Response Details**:
+  - source_type: "BANK_ACCOUNT"
+  - transfer_type: "ACH"
+  - Bank account information including masked routing/account numbers
+  - Account ownership type (INDIVIDUAL/BUSINESS)
+- **Dispute Handling**:
+  - 60-day return window for consumer accounts
+  - 2-day return window for business accounts
+  - Sellers cannot contest ACH reversals
+  - Direct customer resolution required
 - **Security**:
   - SQL injection protection updated for ACH tokens
   - Input validation bypassed for payment endpoints
+  - Enhanced logging for ACH payment details
 - **Testing**:
   - Comprehensive test suite created
   - Sandbox tokens for different scenarios
-  - Documentation complete
+  - 1-minute settlement in sandbox (vs 3-5 days production)
+  - Documentation aligned with official Square docs
 
 ### 7. Multi-Merchant OAuth System ✅
 **Implemented:**
