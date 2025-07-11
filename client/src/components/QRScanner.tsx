@@ -24,6 +24,12 @@ export default function QRScanner({ onResult }: QRScannerProps) {
   const startCamera = async () => {
     try {
       setError(null);
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera access not supported in this browser');
+      }
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment', // Use back camera on mobile
@@ -36,15 +42,23 @@ export default function QRScanner({ onResult }: QRScannerProps) {
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
-        setIsScanning(true);
         
-        // Start scanning for QR codes
-        scanQRCode();
+        // Add error handling for video play
+        try {
+          await videoRef.current.play();
+          setIsScanning(true);
+          
+          // Start scanning for QR codes
+          scanQRCode();
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+          setError('Unable to start camera preview. Please try again.');
+        }
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please ensure you have granted camera permissions.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`Unable to access camera: ${errorMessage}. Please ensure you have granted camera permissions.`);
     }
   };
 
