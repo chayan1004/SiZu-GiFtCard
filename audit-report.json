@@ -1,0 +1,186 @@
+{
+  "summary": {
+    "total": 25,
+    "passed": 20,
+    "failed": 2,
+    "warnings": 3
+  },
+  "timestamp": "2025-07-11T05:12:08.589Z",
+  "details": [
+    {
+      "timestamp": "2025-07-11T05:12:01.952Z",
+      "category": "SERVER",
+      "test": "Health Check",
+      "status": "PASS",
+      "details": "Server is running"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:01.979Z",
+      "category": "SERVER",
+      "test": "Static Files",
+      "status": "PASS",
+      "details": "Frontend is being served"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:01.995Z",
+      "category": "AUTH",
+      "test": "Unauthenticated Access",
+      "status": "PASS",
+      "details": "Properly returns 401"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:02.012Z",
+      "category": "AUTH",
+      "test": "Login Endpoint",
+      "status": "FAIL",
+      "details": "Expected 302, got 500"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.234Z",
+      "category": "AUTH",
+      "test": "Logout Endpoint",
+      "status": "PASS",
+      "details": "Redirects properly"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.239Z",
+      "category": "API",
+      "test": "Get User Gift Cards",
+      "status": "PASS",
+      "details": "Properly requires authentication"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.255Z",
+      "category": "API",
+      "test": "Check Balance",
+      "status": "PASS",
+      "details": "Accessible without auth (200)"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.284Z",
+      "category": "API",
+      "test": "Redeem Gift Card",
+      "status": "PASS",
+      "details": "Accessible without auth (400)"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.288Z",
+      "category": "API",
+      "test": "Admin Stats",
+      "status": "PASS",
+      "details": "Properly requires authentication"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.301Z",
+      "category": "API",
+      "test": "Admin Gift Cards",
+      "status": "WARN",
+      "details": "Status: 200"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.304Z",
+      "category": "API",
+      "test": "Admin Transactions",
+      "status": "PASS",
+      "details": "Properly requires authentication"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.441Z",
+      "category": "API",
+      "test": "Active Fees",
+      "status": "PASS",
+      "details": "Accessible without auth (200)"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.444Z",
+      "category": "API",
+      "test": "User Orders",
+      "status": "PASS",
+      "details": "Properly requires authentication"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.449Z",
+      "category": "API",
+      "test": "Saved Cards",
+      "status": "WARN",
+      "details": "Status: 200"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.482Z",
+      "category": "DATABASE",
+      "test": "Fee Configurations",
+      "status": "PASS",
+      "details": "5 active fees found"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.491Z",
+      "category": "SECURITY",
+      "test": "SQL Injection Protection",
+      "status": "PASS",
+      "details": "Input properly handled"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.493Z",
+      "category": "SECURITY",
+      "test": "XSS Protection",
+      "status": "WARN",
+      "details": "Status: 400"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.497Z",
+      "category": "SECURITY",
+      "test": "Header: x-content-type-options",
+      "status": "PASS",
+      "details": "nosniff"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.498Z",
+      "category": "SECURITY",
+      "test": "Header: x-frame-options",
+      "status": "PASS",
+      "details": "DENY"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.498Z",
+      "category": "SECURITY",
+      "test": "Header: x-xss-protection",
+      "status": "PASS",
+      "details": "1; mode=block"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.517Z",
+      "category": "FEATURES",
+      "test": "Balance Check - Invalid Code",
+      "status": "FAIL",
+      "details": "Expected 404, got 200"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.522Z",
+      "category": "FEATURES",
+      "test": "Redemption Validation",
+      "status": "PASS",
+      "details": "Rejects invalid amount"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.556Z",
+      "category": "FEATURES",
+      "test": "Receipt Access",
+      "status": "PASS",
+      "details": "Returns 404 for invalid token"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.584Z",
+      "category": "PERFORMANCE",
+      "test": "API Response Time",
+      "status": "PASS",
+      "details": "27ms"
+    },
+    {
+      "timestamp": "2025-07-11T05:12:08.588Z",
+      "category": "PERFORMANCE",
+      "test": "Static Asset Loading",
+      "status": "PASS",
+      "details": "4ms"
+    }
+  ]
+}
