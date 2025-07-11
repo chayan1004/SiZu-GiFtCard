@@ -2033,19 +2033,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   (global as any).broadcastFraudAlert = broadcastFraudAlert;
   (global as any).broadcastRevenueUpdate = broadcastRevenueUpdate;
 
-  // Admin middleware
-  const requireAdmin = (req: any, res: any, next: any) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
-
-    next();
-  };
-
   // Admin users endpoint
   app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
     try {

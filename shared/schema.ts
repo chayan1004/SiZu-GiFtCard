@@ -598,38 +598,6 @@ export interface OrderHistoryResponse {
   };
 }
 
-// Square Payments tracking
-export const squarePayments = pgTable('square_payments', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  paymentId: varchar('payment_id', { length: 255 }).notNull().unique(),
-  orderId: varchar('order_id', { length: 255 }),
-  status: varchar('status', { length: 50 }).notNull(),
-  amount: integer('amount').notNull(),
-  currency: varchar('currency', { length: 3 }).default('USD'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
-});
 
-// Webhook events tracking
-export const webhookEvents = pgTable('webhook_events', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  eventId: varchar('event_id', { length: 255 }).notNull().unique(),
-  eventType: varchar('event_type', { length: 100 }).notNull(),
-  processed: boolean('processed').default(false),
-  payload: jsonb('payload'),
-  createdAt: timestamp('created_at').defaultNow()
-});
 
-// Export all tables
-export {
-  sessions,
-  users,
-  giftCards,
-  giftCardTransactions,
-  receipts,
-  fraudAlerts,
-  savedCards,
-  feeConfigurations,
-  squarePayments,
-  webhookEvents
-};
+// Tables are already exported individually above
