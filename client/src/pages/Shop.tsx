@@ -43,30 +43,6 @@ export default function Shop() {
     enabled: step === 2,
   });
 
-  // Calculate total price based on selected design and amount
-  const calculateTotalPrice = () => {
-    const amount = form.watch('initialAmount') || 0;
-    const design = form.watch('design');
-    let totalFees = 0;
-
-    if (activeFees.length > 0) {
-      // Add design-specific fee
-      if (design === 'premium') {
-        const premiumFee = activeFees.find(fee => fee.feeType === 'premium');
-        if (premiumFee) {
-          totalFees += parseFloat(premiumFee.feeAmount);
-        }
-      } else if (design === 'classic' || design === 'love') {
-        const standardFee = activeFees.find(fee => fee.feeType === 'standard');
-        if (standardFee) {
-          totalFees += parseFloat(standardFee.feeAmount);
-        }
-      }
-    }
-
-    return amount + totalFees;
-  };
-
   const form = useForm<CreateGiftCardForm>({
     resolver: zodResolver(createGiftCardSchema),
     defaultValues: {
@@ -78,6 +54,30 @@ export default function Shop() {
       senderName: "",
     },
   });
+
+  // Calculate total price based on selected design and amount
+  const calculateTotalPrice = () => {
+    const amount = form.watch('initialAmount') || 0;
+    const design = form.watch('design');
+    let totalFees = 0;
+
+    if (activeFees.length > 0) {
+      // Add design-specific fee
+      if (design === 'premium') {
+        const premiumFee = activeFees.find((fee: any) => fee.feeType === 'premium');
+        if (premiumFee) {
+          totalFees += parseFloat(premiumFee.feeAmount);
+        }
+      } else if (design === 'classic' || design === 'love') {
+        const standardFee = activeFees.find((fee: any) => fee.feeType === 'standard');
+        if (standardFee) {
+          totalFees += parseFloat(standardFee.feeAmount);
+        }
+      }
+    }
+
+    return amount + totalFees;
+  };
 
   const createGiftCardMutation = useMutation({
     mutationFn: async (data: CreateGiftCardForm) => {
