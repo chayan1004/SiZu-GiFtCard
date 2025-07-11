@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Core browser compatibility fix - suppress outdated data warnings
+process.env.BROWSERSLIST_IGNORE_OLD_DATA = 'true';
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

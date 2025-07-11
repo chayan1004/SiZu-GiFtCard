@@ -101,15 +101,24 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
-    "drizzle-kit": "^0.30.4",
-    "esbuild": "^0.25.0",
+    "drizzle-kit": "^0.30.6",
+    "esbuild": "^0.25.6",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.1",
-    "typescript": "5.6.3",
+    "tsx": "^4.20.3",
+    "typescript": "^5.6.3",
     "vite": "^5.4.19"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
-  }
+  },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead",
+    "Chrome >= 85",
+    "Firefox >= 85",
+    "Safari >= 14",
+    "Edge >= 85"
+  ]
 }
