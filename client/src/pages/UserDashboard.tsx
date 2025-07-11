@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Gift,
   Clock,
-  DollarSign
+  DollarSign,
+  Plus
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
