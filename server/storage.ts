@@ -23,12 +23,20 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, gte, lte } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 // Interface for storage operations
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Customer authentication operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createCustomer(userData: any): Promise<User>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
   
   // Gift Card operations
   createGiftCard(giftCard: InsertGiftCard & { code: string }): Promise<GiftCard>;
@@ -116,6 +124,57 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  // Customer authentication operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+    return user;
+  }
+
+  async createCustomer(userData: any): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: nanoid(),
+        ...userData,
+        role: 'customer',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return user;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.verificationToken, token));
+    return user;
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.resetToken, token));
+    return user;
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...data,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
