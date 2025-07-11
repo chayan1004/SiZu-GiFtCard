@@ -113,14 +113,14 @@ function Router() {
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
-          <Route path="/login" component={CustomerLogin} />
+          <Route path="/login" component={() => { window.location.href = '/api/login'; return null; }} />
           <Route path="/register" component={CustomerRegister} />
           <Route path="/verify-otp" component={VerifyOTP} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/reset-password/:token" component={ResetPassword} />
           <Route path="/admin-login" component={Login} />
-          <Route path="/dashboard" component={CustomerLogin} />
-          <Route path="/user-dashboard" component={CustomerLogin} />
+          <Route path="/dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
+          <Route path="/user-dashboard" component={() => { window.location.href = '/api/login'; return null; }} />
           <Route path="/shop" component={SimpleShop} />
           <Route path="/balance" component={PublicBalance} />
           <Route path="/redeem" component={PublicRedeem} />

@@ -141,6 +141,10 @@ Preferred communication style: Simple, everyday language.
   - User data retrieval: 200 responses with user ID and email from Replit
   - Domain registration: Both localhost and production domains properly configured
   - Session persistence: User remains authenticated across requests
+- **AUTHENTICATION CONFLICT RESOLVED**: Fixed dual authentication system causing 401 errors
+  - Updated useCombinedAuth hook to only check admin authentication
+  - Eliminated redundant customer auth checks that were failing
+  - Removed conflicting authentication states between admin and customer systems
 - **SYSTEM STATUS**: 100% operational and deployment ready
   - All compilation errors resolved
   - Database connection stable and tested
