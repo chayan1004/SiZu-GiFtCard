@@ -116,7 +116,17 @@ export default function Balance() {
               
               <div className="flex gap-4">
                 <GradientButton 
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    if (!giftCardCode.trim()) {
+                      toast({
+                        title: "Invalid Input",
+                        description: "Please enter a gift card code.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    checkBalanceMutation.mutate(giftCardCode.trim());
+                  }}
                   disabled={checkBalanceMutation.isPending || !giftCardCode.trim()}
                   className="flex-1"
                 >
