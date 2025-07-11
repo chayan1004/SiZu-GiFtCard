@@ -1,14 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Gift, CreditCard, Sparkles, Heart, Star, Loader2, Download, Mail } from "lucide-react";
-import { motion } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { 
+  Gift, CreditCard, Sparkles, Heart, Star, Loader2, Download, Mail, 
+  Palette, Type, Image, Wand2, ChevronRight, ChevronLeft, Eye,
+  Zap, Brush, Layout, Camera, Globe, Sparkle, MessageSquare
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,16 +26,118 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+// Extended schema with advanced customization options
 const createGiftCardSchema = z.object({
   initialAmount: z.coerce.number().min(1, "Amount must be at least $1").max(500, "Amount cannot exceed $500"),
-  design: z.enum(["classic", "love", "premium"]).default("classic"),
+  design: z.string().default("modern-gradient"),
   customMessage: z.string().max(500, "Message too long").optional(),
   recipientEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
   recipientName: z.string().max(100, "Name too long").optional(),
   senderName: z.string().max(100, "Name too long").optional(),
+  // Advanced customization
+  primaryColor: z.string().default("#7c3aed"),
+  secondaryColor: z.string().default("#ec4899"),
+  fontFamily: z.string().default("Inter"),
+  fontSize: z.number().default(16),
+  pattern: z.string().default("none"),
+  animation: z.string().default("none"),
+  borderStyle: z.string().default("rounded"),
+  textAlign: z.string().default("center"),
 });
 
 type CreateGiftCardForm = z.infer<typeof createGiftCardSchema>;
+
+// Design templates with predefined styles
+const designTemplates = [
+  {
+    id: "modern-gradient",
+    name: "Modern Gradient",
+    primaryColor: "#7c3aed",
+    secondaryColor: "#ec4899",
+    pattern: "gradient",
+    animation: "float",
+    preview: "bg-gradient-to-br from-purple-600 to-pink-500"
+  },
+  {
+    id: "elegant-gold",
+    name: "Elegant Gold",
+    primaryColor: "#f59e0b",
+    secondaryColor: "#dc2626",
+    pattern: "luxury",
+    animation: "shimmer",
+    preview: "bg-gradient-to-r from-amber-500 to-red-600"
+  },
+  {
+    id: "ocean-breeze",
+    name: "Ocean Breeze",
+    primaryColor: "#0891b2",
+    secondaryColor: "#10b981",
+    pattern: "waves",
+    animation: "wave",
+    preview: "bg-gradient-to-tr from-cyan-600 to-emerald-500"
+  },
+  {
+    id: "cosmic-night",
+    name: "Cosmic Night",
+    primaryColor: "#6366f1",
+    secondaryColor: "#8b5cf6",
+    pattern: "stars",
+    animation: "twinkle",
+    preview: "bg-gradient-to-b from-indigo-500 to-violet-500"
+  },
+  {
+    id: "love-romance",
+    name: "Love & Romance",
+    primaryColor: "#ec4899",
+    secondaryColor: "#f43f5e",
+    pattern: "hearts",
+    animation: "pulse",
+    preview: "bg-gradient-to-br from-pink-500 to-rose-500"
+  },
+  {
+    id: "minimalist",
+    name: "Minimalist",
+    primaryColor: "#374151",
+    secondaryColor: "#6b7280",
+    pattern: "none",
+    animation: "none",
+    preview: "bg-gray-700"
+  }
+];
+
+// Font options
+const fontOptions = [
+  { value: "Inter", label: "Inter (Modern)" },
+  { value: "Playfair Display", label: "Playfair (Elegant)" },
+  { value: "Roboto", label: "Roboto (Clean)" },
+  { value: "Dancing Script", label: "Dancing Script (Fancy)" },
+  { value: "Montserrat", label: "Montserrat (Professional)" },
+  { value: "Pacifico", label: "Pacifico (Fun)" }
+];
+
+// Pattern options
+const patternOptions = [
+  { value: "none", label: "None" },
+  { value: "gradient", label: "Gradient" },
+  { value: "dots", label: "Dots" },
+  { value: "lines", label: "Lines" },
+  { value: "waves", label: "Waves" },
+  { value: "hearts", label: "Hearts" },
+  { value: "stars", label: "Stars" },
+  { value: "confetti", label: "Confetti" }
+];
+
+// Animation options
+const animationOptions = [
+  { value: "none", label: "None" },
+  { value: "float", label: "Float" },
+  { value: "pulse", label: "Pulse" },
+  { value: "shimmer", label: "Shimmer" },
+  { value: "wave", label: "Wave" },
+  { value: "twinkle", label: "Twinkle" },
+  { value: "bounce", label: "Bounce" },
+  { value: "rotate", label: "Rotate" }
+];
 
 export default function Shop() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -36,6 +145,8 @@ export default function Shop() {
   const queryClient = useQueryClient();
   const [step, setStep] = useState(1);
   const [createdGiftCard, setCreatedGiftCard] = useState<any>(null);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  const [activeCustomTab, setActiveCustomTab] = useState('template');
 
   // Fetch active fees
   const { data: activeFees = [] } = useQuery({
@@ -47,11 +158,34 @@ export default function Shop() {
     resolver: zodResolver(createGiftCardSchema),
     defaultValues: {
       initialAmount: 50,
-      design: "classic",
+      design: "modern-gradient",
       customMessage: "",
       recipientEmail: "",
       recipientName: "",
       senderName: "",
+      primaryColor: "#7c3aed",
+      secondaryColor: "#ec4899",
+      fontFamily: "Inter",
+      fontSize: 16,
+      pattern: "gradient",
+      animation: "float",
+      borderStyle: "rounded",
+      textAlign: "center",
+    },
+  });
+
+  // AI Message Generation
+  const generateMessageMutation = useMutation({
+    mutationFn: async (params: any) => {
+      const response = await apiRequest('POST', '/api/ai/generate-message', params);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue('customMessage', data.message);
+      toast({
+        title: "Message Generated!",
+        description: "AI has created a personalized message for your gift card.",
+      });
     },
   });
 
@@ -59,24 +193,39 @@ export default function Shop() {
   const calculateTotalPrice = () => {
     const amount = Number(form.watch('initialAmount')) || 0;
     const design = form.watch('design');
+    const animation = form.watch('animation');
     let totalFees = 0;
 
     if (activeFees && activeFees.length > 0) {
-      // Add design-specific fee
-      if (design === 'premium') {
+      // Premium templates
+      if (['elegant-gold', 'cosmic-night'].includes(design)) {
         const premiumFee = activeFees.find((fee: any) => fee.feeType === 'premium');
         if (premiumFee && premiumFee.feeAmount) {
           totalFees += parseFloat(premiumFee.feeAmount) || 0;
         }
-      } else if (design === 'classic' || design === 'love') {
+      } else {
         const standardFee = activeFees.find((fee: any) => fee.feeType === 'standard');
         if (standardFee && standardFee.feeAmount) {
           totalFees += parseFloat(standardFee.feeAmount) || 0;
         }
       }
+
+      // Animation fee
+      if (animation !== 'none') {
+        totalFees += 2.99; // Animation effect fee
+      }
     }
 
     return Number(amount + totalFees);
+  };
+
+  // Apply design template
+  const applyTemplate = (template: typeof designTemplates[0]) => {
+    form.setValue('design', template.id);
+    form.setValue('primaryColor', template.primaryColor);
+    form.setValue('secondaryColor', template.secondaryColor);
+    form.setValue('pattern', template.pattern);
+    form.setValue('animation', template.animation);
   };
 
   const createGiftCardMutation = useMutation({

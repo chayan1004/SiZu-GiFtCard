@@ -9,6 +9,7 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Home from "@/pages/Home";
 import Shop from "@/pages/Shop";
+import EnhancedShop from "@/pages/EnhancedShop";
 import Balance from "@/pages/Balance";
 import Redeem from "@/pages/Redeem";
 import Recharge from "@/pages/Recharge";
@@ -117,7 +118,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
-          <Route path="/shop" component={Shop} />
+          <Route path="/shop" component={EnhancedShop} />
           <Route path="/balance" component={Balance} />
           <Route path="/redeem" component={Redeem} />
           <Route path="/recharge" component={Recharge} />
