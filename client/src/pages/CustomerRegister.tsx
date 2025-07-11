@@ -382,35 +382,79 @@ export default function CustomerRegister() {
                 </motion.div>
               </CardContent>
 
-            <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                disabled={isSubmitting || isLoading}
-              >
-                {isSubmitting || isLoading ? (
-                  <span className="flex items-center">
-                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                    Creating Account...
-                  </span>
-                ) : (
-                  <span className="flex items-center">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Create Account
-                  </span>
-                )}
-              </Button>
+              <CardFooter className="flex flex-col space-y-4 pt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.1 }}
+                  className="w-full"
+                >
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-semibold rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    disabled={isSubmitting || isLoading}
+                  >
+                    {isSubmitting || isLoading ? (
+                      <span className="flex items-center">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"
+                        />
+                        Creating your account...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <UserPlus className="mr-3 h-5 w-5" />
+                        Create Your Account
+                      </span>
+                    )}
+                  </Button>
+                </motion.div>
 
-              <div className="text-center text-sm text-gray-600">
-                Already have an account?{" "}
-                <Link href="/login" className="text-purple-600 hover:underline font-medium">
-                  Sign in
-                </Link>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="text-center text-sm text-white/80"
+                >
+                  Already have an account?{" "}
+                  <Link href="/login" className="text-emerald-300 hover:text-white font-medium transition-colors cursor-pointer">
+                    Sign in here
+                  </Link>
+                </motion.div>
+              </CardFooter>
+            </form>
+          </Card>
+
+          {/* Benefits section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+            className="mt-6 grid grid-cols-3 gap-4 text-center text-white/60 text-xs"
+          >
+            <div className="flex flex-col items-center space-y-2">
+              <div className="bg-white/10 p-2 rounded-lg">
+                <ShieldCheck className="w-4 h-4" />
               </div>
-            </CardFooter>
-          </form>
-        </Card>
-      </motion.div>
+              <span>Secure & Safe</span>
+            </div>
+            <div className="flex flex-col items-center space-y-2">
+              <div className="bg-white/10 p-2 rounded-lg">
+                <Gift className="w-4 h-4" />
+              </div>
+              <span>Premium Features</span>
+            </div>
+            <div className="flex flex-col items-center space-y-2">
+              <div className="bg-white/10 p-2 rounded-lg">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <span>24/7 Support</span>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
