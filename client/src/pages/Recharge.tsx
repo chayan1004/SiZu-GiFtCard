@@ -53,8 +53,8 @@ export default function Recharge() {
   // Fetch user's gift cards
   const { data: userGiftCards } = useQuery({
     queryKey: ['/api/giftcards/mine'],
-    retry: false,
     enabled: isAuthenticated,
+    retry: false,
   });
 
   const rechargeGiftCardMutation = useMutation({
@@ -64,35 +64,17 @@ export default function Recharge() {
     },
     onSuccess: (data) => {
       setRechargeResult(data);
-      form.reset();
+      setCurrentBalance(data.newBalance);
       toast({
         title: "Recharge Successful!",
-        description: `Added $${data.rechargedAmount.toFixed(2)} to your gift card. New balance: $${data.newBalance.toFixed(2)}`,
+        description: `Added $${data.rechargeAmount.toFixed(2)}. New balance: $${data.newBalance.toFixed(2)}`,
       });
     },
     onError: (error) => {
       setRechargeResult(null);
       toast({
         title: "Recharge Failed",
-        description: "Unable to recharge gift card. Please check your code and try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const checkBalanceMutation = useMutation({
-    mutationFn: async (code: string) => {
-      const response = await apiRequest('POST', '/api/giftcards/balance', { code });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setCurrentBalance(data.balance);
-    },
-    onError: (error) => {
-      setCurrentBalance(null);
-      toast({
-        title: "Error",
-        description: "Unable to check balance. Please verify your gift card code.",
+        description: "Unable to recharge gift card. Please try again.",
         variant: "destructive",
       });
     },
@@ -108,52 +90,27 @@ export default function Recharge() {
     }, 1000);
   };
 
-  const handleQRScan = (result: string) => {
-    setShowQRScanner(false);
-    
-    // Try to extract gift card code from QR result
-    try {
-      if (result.startsWith('http://') || result.startsWith('https://')) {
-        const url = new URL(result);
-        const code = url.searchParams.get('code');
-        if (code) {
-          form.setValue('code', code);
-          checkBalanceMutation.mutate(code);
-          toast({
-            title: "QR Code Scanned",
-            description: "Gift card code has been filled in automatically.",
-          });
-          return;
-        }
-      }
-    } catch (error) {
-      // If not a URL, assume it's a direct code
-      if (result.startsWith('GC')) {
-        form.setValue('code', result);
-        checkBalanceMutation.mutate(result);
-        toast({
-          title: "QR Code Scanned",
-          description: "Gift card code has been filled in automatically.",
-        });
-      } else {
-        toast({
-          title: "Invalid QR Code",
-          description: "The scanned QR code doesn't contain a valid gift card code.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
   const onSubmit = (data: RechargeFormData) => {
     if (!isAuthenticated) {
       handleLogin();
       return;
     }
+    
+    const amount = parseFloat(data.amount);
+    if (amount > 0) {
+      rechargeGiftCardMutation.mutate({
+        code: data.code,
+        amount: amount,
+      });
+    }
+  };
 
-    rechargeGiftCardMutation.mutate({
-      code: data.code,
-      amount: parseFloat(data.amount)
+  const handleQRCodeScanned = (code: string) => {
+    form.setValue('code', code);
+    setShowQRScanner(false);
+    toast({
+      title: "QR Code Scanned!",
+      description: "Gift card code has been filled in.",
     });
   };
 
@@ -161,11 +118,9 @@ export default function Recharge() {
     form.setValue('amount', amount.toString());
   };
 
-  const handleCheckBalance = () => {
-    const code = form.getValues('code');
-    if (code) {
-      checkBalanceMutation.mutate(code);
-    }
+  const handleSavedCardSelect = (card: any) => {
+    form.setValue('code', card.code);
+    setCurrentBalance(card.currentBalance);
   };
 
   return (
@@ -181,30 +136,21 @@ export default function Recharge() {
         <div className="max-w-2xl mx-auto">
           <PageHeader
             title="Recharge Gift Card"
-            subtitle="Add more funds to your existing gift card"
+            subtitle="Add funds to your existing gift card"
           />
 
-          <Tabs defaultValue="manual" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8 bg-white/10 border-white/20">
-              <TabsTrigger value="manual" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Manual
-              </TabsTrigger>
-              <TabsTrigger value="qr" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
-                <Scan className="w-4 h-4 mr-2" />
-                QR Scanner
-              </TabsTrigger>
-              <TabsTrigger value="saved" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white">
-                <History className="w-4 h-4 mr-2" />
-                Saved Cards
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="manual">
-              <FormContainer
-                title="Manual Entry"
-                description="Enter your gift card code and recharge amount"
-              >
+          <FormContainer
+            title="Gift Card Recharge"
+            description={!isAuthenticated ? "Please log in to recharge your gift card" : "Choose how to enter your gift card details"}
+          >
+            <Tabs defaultValue="manual" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                <TabsTrigger value="scan">QR Scanner</TabsTrigger>
+                <TabsTrigger value="saved">Saved Cards</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="manual">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
@@ -214,40 +160,17 @@ export default function Recharge() {
                         <FormItem>
                           <FormLabel className="text-white">Gift Card Code</FormLabel>
                           <FormControl>
-                            <div className="flex gap-2">
-                              <Input
-                                {...field}
-                                placeholder="Enter your gift card code"
-                                className="bg-white/10 border-white/20 text-white placeholder-gray-400"
-                                disabled={rechargeGiftCardMutation.isPending}
-                              />
-                              <GradientButton
-                                type="button"
-                                variant="outline"
-                                onClick={handleCheckBalance}
-                                disabled={!field.value || checkBalanceMutation.isPending}
-                              >
-                                {checkBalanceMutation.isPending ? (
-                                  <LoadingSpinner size="sm" />
-                                ) : (
-                                  "Check"
-                                )}
-                              </GradientButton>
-                            </div>
+                            <Input
+                              placeholder="Enter your gift card code"
+                              {...field}
+                              disabled={rechargeGiftCardMutation.isPending}
+                              className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-
-                    {currentBalance !== null && (
-                      <div className="bg-white/5 rounded-lg p-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-300">Current Balance:</span>
-                          <span className="text-white font-semibold">${currentBalance.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    )}
 
                     <FormField
                       control={form.control}
@@ -257,13 +180,13 @@ export default function Recharge() {
                           <FormLabel className="text-white">Recharge Amount</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
                               type="number"
-                              min="1"
-                              step="0.01"
                               placeholder="Enter amount to add"
-                              className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                              {...field}
                               disabled={rechargeGiftCardMutation.isPending}
+                              className="bg-white/10 border-white/20 text-white placeholder-gray-400"
+                              step="0.01"
+                              min="0"
                             />
                           </FormControl>
                           <FormMessage />
@@ -271,20 +194,31 @@ export default function Recharge() {
                       )}
                     />
 
+                    {/* Current Balance Display */}
+                    {currentBalance !== null && (
+                      <div className="bg-white/5 rounded-lg p-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-300">Current Balance:</span>
+                          <span className="text-green-400 font-semibold">
+                            ${currentBalance.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Preset Amounts */}
                     <div className="space-y-2">
                       <Label className="text-white">Quick Amounts</Label>
                       <div className="grid grid-cols-5 gap-2">
                         {PRESET_AMOUNTS.map((amount) => (
-                          <GradientButton
+                          <button
                             key={amount}
                             type="button"
-                            variant="outline"
                             onClick={() => handlePresetAmount(amount)}
-                            className="text-xs"
+                            className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg p-2 text-white text-sm transition-colors"
                           >
                             ${amount}
-                          </GradientButton>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -297,7 +231,7 @@ export default function Recharge() {
                       {rechargeGiftCardMutation.isPending ? (
                         <>
                           <LoadingSpinner size="sm" />
-                          Processing...
+                          Recharging...
                         </>
                       ) : (
                         <>
@@ -308,79 +242,79 @@ export default function Recharge() {
                     </GradientButton>
                   </form>
                 </Form>
-              </FormContainer>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="qr">
-              <FormContainer
-                title="QR Scanner"
-                description="Scan your gift card QR code for quick recharge"
-              >
+              <TabsContent value="scan">
                 <div className="space-y-4">
                   <div className="text-center">
-                    <GradientButton 
+                    <p className="text-gray-300 mb-4">
+                      Use your camera to scan the QR code on your gift card
+                    </p>
+                    <GradientButton
+                      type="button"
                       onClick={() => setShowQRScanner(true)}
                       className="w-full"
                     >
                       <Scan className="w-4 h-4 mr-2" />
-                      Open QR Scanner
+                      Start QR Scanner
                     </GradientButton>
                   </div>
-                  
+
                   {showQRScanner && (
                     <div className="mt-4">
-                      <QRScanner 
-                        onScan={handleQRScan}
+                      <QRScanner
+                        onCodeScanned={handleQRCodeScanned}
                         onClose={() => setShowQRScanner(false)}
                       />
                     </div>
                   )}
                 </div>
-              </FormContainer>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="saved">
-              <FormContainer
-                title="Saved Cards"
-                description="Select from your previously used gift cards"
-              >
+              <TabsContent value="saved">
                 <div className="space-y-4">
                   {userGiftCards && userGiftCards.length > 0 ? (
                     <div className="grid gap-3">
                       {userGiftCards.map((card: any) => (
                         <div
                           key={card.id}
-                          className="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-white/20 transition-colors cursor-pointer"
-                          onClick={() => {
-                            form.setValue('code', card.code);
-                            checkBalanceMutation.mutate(card.code);
-                          }}
+                          className="bg-white/5 rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-colors"
+                          onClick={() => handleSavedCardSelect(card)}
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex justify-between items-center">
                             <div>
-                              <div className="font-mono text-sm text-white">{card.code}</div>
-                              <div className="text-xs text-gray-300">{card.design} • ${card.balance.toFixed(2)}</div>
+                              <div className="text-white font-medium">{card.design}</div>
+                              <div className="text-xs text-gray-400 font-mono">{card.code}</div>
                             </div>
-                            <Badge variant="secondary" className="bg-white/10 text-white">
-                              ${card.balance.toFixed(2)}
-                            </Badge>
+                            <div className="text-right">
+                              <div className="text-green-400 font-semibold">
+                                ${card.currentBalance.toFixed(2)}
+                              </div>
+                              <Badge variant="secondary" className="text-xs">
+                                {card.design}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-300">No saved gift cards found</p>
-                      <p className="text-sm text-gray-400 mt-2">
-                        {isAuthenticated ? "Purchase a gift card to get started" : "Sign in to view your saved cards"}
-                      </p>
+                      <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-white mb-2">No Saved Cards</h3>
+                      <p className="text-gray-300 mb-4">You don't have any saved gift cards yet</p>
+                      <GradientButton 
+                        onClick={() => window.location.href = '/shop'}
+                        className="w-full"
+                      >
+                        Buy a Gift Card
+                      </GradientButton>
                     </div>
                   )}
                 </div>
-              </FormContainer>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+            </Tabs>
+          </FormContainer>
 
           {/* Recharge Result */}
           {rechargeResult && (
@@ -397,36 +331,46 @@ export default function Recharge() {
                         Recharge Successful!
                       </h3>
                       <p className="text-gray-300">
-                        Your gift card has been recharged successfully
+                        Your gift card has been recharged
                       </p>
                     </div>
                     
                     <div className="bg-white/5 rounded-lg p-4 space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Gift Card Code:</span>
-                        <span className="text-white font-mono">{rechargeResult.code}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-300">Amount Added:</span>
-                        <span className="text-green-400 font-semibold">+${rechargeResult.rechargedAmount.toFixed(2)}</span>
+                        <span className="text-gray-300">Recharge Amount:</span>
+                        <span className="text-green-400 font-semibold text-lg">
+                          +${rechargeResult.rechargeAmount.toFixed(2)}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-300">New Balance:</span>
-                        <span className="text-white font-semibold">${rechargeResult.newBalance.toFixed(2)}</span>
+                        <span className="text-white font-semibold text-lg">
+                          ${rechargeResult.newBalance.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-300">Transaction ID:</span>
+                        <span className="text-white font-mono text-sm">
+                          {rechargeResult.transactionId}
+                        </span>
                       </div>
                     </div>
                     
-                    <GradientButton 
-                      onClick={() => {
-                        setRechargeResult(null);
-                        form.reset();
-                        setCurrentBalance(null);
-                      }}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Recharge Another Card
-                    </GradientButton>
+                    <div className="flex gap-2">
+                      <GradientButton 
+                        onClick={() => window.location.href = '/balance'}
+                        className="flex-1"
+                      >
+                        Check Balance
+                      </GradientButton>
+                      <GradientButton 
+                        onClick={() => window.location.href = '/orders'}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        View Orders
+                      </GradientButton>
+                    </div>
                   </div>
                 </CardContent>
               </GlassCard>
