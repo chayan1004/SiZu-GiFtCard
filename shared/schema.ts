@@ -315,6 +315,22 @@ export const webhookEvents = pgTable("webhook_events", {
   index("idx_webhook_events_created_at").on(table.createdAt),
 ]);
 
+// OAuth States table - temporary storage for OAuth flow states
+export const oauthStates = pgTable("oauth_states", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  state: varchar("state").notNull().unique(),
+  userId: varchar("user_id").references(() => users.id),
+  redirectUri: text("redirect_uri"),
+  scopes: text("scopes").array(),
+  metadata: jsonb("metadata"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_oauth_states_state").on(table.state),
+  index("idx_oauth_states_expires_at").on(table.expiresAt),
+  index("idx_oauth_states_user").on(table.userId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   issuedGiftCards: many(giftCards),
@@ -494,18 +510,6 @@ export type InsertSquarePayment = typeof squarePayments.$inferInsert;
 
 export type WebhookEvent = typeof webhookEvents.$inferSelect;
 export type InsertWebhookEvent = typeof webhookEvents.$inferInsert;
-
-// OAuth States table (for temporary OAuth flow states)
-export const oauthStates = pgTable("oauth_states", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  state: varchar("state").notNull().unique(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  expiresAt: timestamp("expires_at").notNull(),
-}, (table) => [
-  index("idx_oauth_states_state").on(table.state),
-  index("idx_oauth_states_expires").on(table.expiresAt),
-]);
 
 export type OAuthState = typeof oauthStates.$inferSelect;
 export type InsertOAuthState = typeof oauthStates.$inferInsert;
