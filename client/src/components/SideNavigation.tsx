@@ -14,7 +14,15 @@ import {
   UserCircle,
   History,
   Shield,
-  Wallet
+  Wallet,
+  FileQuestion,
+  RefreshCcw,
+  Link2,
+  Webhook,
+  Mail,
+  Palette,
+  FileText,
+  Database
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -38,7 +46,15 @@ export default function SideNavigation({ user, onLogout, isAdmin = false }: Side
     { path: '/admin/fees', label: 'Fee Management', icon: DollarSign },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin/security', label: 'Security', icon: Shield },
-    { path: '/admin/settings', label: 'Settings', icon: Settings },
+    { path: '/admin/disputes', label: 'Disputes', icon: FileQuestion },
+    { path: '/admin/refunds', label: 'Refunds', icon: RefreshCcw },
+    { path: '/admin/payment-links', label: 'Payment Links', icon: Link2 },
+    { path: '/admin/webhooks', label: 'Webhooks', icon: Webhook },
+    { path: '/admin/email-templates', label: 'Email Templates', icon: Mail },
+    { path: '/admin/gift-card-designs', label: 'Card Designs', icon: Palette },
+    { path: '/admin/system-settings', label: 'System Settings', icon: Settings },
+    { path: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
+    { path: '/admin/database-tools', label: 'Database', icon: Database },
   ];
 
   const userNavItems = [

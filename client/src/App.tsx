@@ -25,6 +25,15 @@ import AdminSecurity from "@/pages/AdminSecurity";
 import AdminRevenue from "@/pages/AdminRevenue";
 import AdminFeeManagement from "@/pages/AdminFeeManagement";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import AdminDisputes from "@/pages/admin/AdminDisputes";
+import AdminRefunds from "@/pages/admin/AdminRefunds";
+import AdminPaymentLinks from "@/pages/admin/AdminPaymentLinks";
+import AdminWebhooks from "@/pages/admin/AdminWebhooks";
+import AdminEmailTemplates from "@/pages/admin/AdminEmailTemplates";
+import AdminGiftCardDesigns from "@/pages/admin/AdminGiftCardDesigns";
+import AdminSystemSettings from "@/pages/admin/AdminSystemSettings";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
+import AdminDatabaseTools from "@/pages/admin/AdminDatabaseTools";
 import Profile from "@/pages/Profile";
 import OrderHistory from "@/pages/OrderHistory";
 import OrderDetails from "@/pages/OrderDetails";
@@ -140,6 +149,15 @@ function Router() {
           <Route path="/admin/revenue" component={AdminRevenue} />
           <Route path="/admin/fees" component={AdminFeeManagement} />
           <Route path="/admin/settings" component={AdminSettings} />
+          <Route path="/admin/disputes" component={AdminDisputes} />
+          <Route path="/admin/refunds" component={AdminRefunds} />
+          <Route path="/admin/payment-links" component={AdminPaymentLinks} />
+          <Route path="/admin/webhooks" component={AdminWebhooks} />
+          <Route path="/admin/email-templates" component={AdminEmailTemplates} />
+          <Route path="/admin/gift-card-designs" component={AdminGiftCardDesigns} />
+          <Route path="/admin/system-settings" component={AdminSystemSettings} />
+          <Route path="/admin/audit-logs" component={AdminAuditLogs} />
+          <Route path="/admin/database-tools" component={AdminDatabaseTools} />
           <Route path="/profile" component={Profile} />
           <Route path="/orders" component={OrderHistory} />
           <Route path="/orders/:orderId" component={OrderDetails} />
