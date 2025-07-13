@@ -16,6 +16,9 @@ externalPort = 80
 
 [env]
 PORT = "5000"
+DATABASE_URL = "postgresql://user:password@localhost:5432/database"
+SESSION_SECRET = "your-secret-key-here"
+REPLIT_DOMAINS = "yourdomain.replit.app"
 
 [workflows]
 runButton = "Project"
